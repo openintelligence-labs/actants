@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-kit"
+version = "0.3.0"
+description = "Unified LLM gateway: Ollama/OpenAI/Anthropic with cost tracking, tracing, semantic caching, tool-calling agents, structured output, retry, and fallback. Local-first, Ollama-default."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Open Intelligence Labs contributors" }]
+requires-python = ">=3.12"
+keywords = [
+    "llm",
+    "ollama",
+    "agent",
+    "openai",
+    "anthropic",
+    "gemini",
+    "groq",
+    "mistral",
+    "local-first",
+    "streaming",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "httpx>=0.27",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "structlog>=24.1",
+    "opentelemetry-api>=1.25",
+    "opentelemetry-sdk>=1.25",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.30"]
+anthropic = ["anthropic>=0.30"]
+gemini = []  # Uses httpx, already a core dep
+groq = ["openai>=1.30"]  # Groq exposes an OpenAI-compatible API
+mistral = ["openai>=1.30"]  # Mistral exposes an OpenAI-compatible API
+cache = ["sqlite-vec>=0.1.0"]
+all = [
+    "openai>=1.30",
+    "anthropic>=0.30",
+    "sqlite-vec>=0.1.0",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-httpx>=0.30",
+    "ruff>=0.4",
+    "build>=1.0",
+    "twine>=5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/openintelligence-labs/agentic-kit"
+Repository = "https://github.com/openintelligence-labs/agentic-kit"
+Issues = "https://github.com/openintelligence-labs/agentic-kit/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+agentic_kit = ["py.typed"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "A", "C4", "SIM"]
+ignore = ["UP047"]  # PEP 695 type params — requires 3.12+, but noisy for generics with bounds

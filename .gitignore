@@ -1,11 +1,19 @@
 # architecture docs (uncooked — kept local until polished)
 docs/
 
+# mkdocs site (not yet ready to commit)
+docs_site/
+mkdocs.yml
+.github/workflows/docs.yml
+
 # Claude Code config (local-only)
 .claude/
 
 # CLAUDE.md (uncooked — kept local until polished)
 CLAUDE.md
+
+# mkdocs build output
+site/
 
 __pycache__/
 *.py[cod]

@@ -2,216 +2,238 @@
 
 [![PyPI](https://img.shields.io/pypi/v/agentic-kit)](https://pypi.org/project/agentic-kit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-![CI](https://github.com/openintelligence-labs/agentic-kit/actions/workflows/ci.yml/badge.svg)
-![Python](https://img.shields.io/badge/python-3.12%2B-blue)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
+[![Tests](https://img.shields.io/badge/tests-153%20passing-brightgreen)]()
 
-> **The unified LLM gateway for the Open Intelligence Labs ecosystem.** One async API for Ollama, OpenAI, Anthropic, Gemini, Groq, and Mistral — plus cost tracking, OpenTelemetry tracing, semantic caching, streaming tool calls, partial-JSON streaming, structured output, retry, and fallback. Local-first, Ollama-default.
+**The local-first AI agent framework. No API keys. No telemetry. Imports in 1 millisecond.**
 
-⭐ **Star this repo** if it saves you from writing another LLM wrapper.
+```python
+from agentic_kit import Agent
 
-## Why
+agent = Agent()                                # Ollama default — no API key
+print(await agent.run("Hello!"))               # Runs offline, on your laptop
+```
 
-Every agent project ends up re-writing the same plumbing: provider abstractions, retries, cost math, tracing, caching, tool-calling loops. `agentic-kit` is that layer, extracted from production use in the Open Intelligence Labs projects (DeepDive, MeetMind, SecondBrain, BuildShip) so you don't have to write it again.
+That's the whole quickstart. No signup. No `OPENAI_API_KEY`. No phone-home.
 
-**Unopinionated primitives, not a framework.** No hidden magic, no giant DAGs, no global state. Compose what you need; delete what you don't.
+---
+
+## Why agentic-kit
+
+Five things this framework does that no incumbent does together:
+
+| | What | Why it matters |
+|---|---|---|
+| **Local-first** | Defaults to Ollama. OpenAI is opt-in. | Privacy, cost, offline work — by default, not as a plugin. |
+| **Zero telemetry** | No analytics. No phone-home. CI-enforced. | What your agent sends, *you* sent. Nothing else. |
+| **Sub-2ms cold import** | PEP 562 lazy module loading. Measured. | CLIs feel native. Serverless costs nothing extra. |
+| **Native MCP server + client** | 2 lines to expose your agent. 3 to consume one. | Your agent IS a Claude Desktop extension. |
+| **Native A2A protocol** | Auto-generated Agent Card. Streaming SSE. | Agents in different frameworks talk to each other. |
+
+If you want one of these, plenty of frameworks have it. If you want all five, agentic-kit is the only choice.
+
+---
+
+## Compared to other Python agent frameworks
+
+Real numbers, on the same machine, this Python:
+
+| Framework | Bare `import` (ms) | First-use import (ms) | Default LLM | Telemetry on by default | MCP server |
+|---|---:|---:|---|---|---|
+| **agentic-kit** | **1.1** | **210.7** | **Ollama** | **No (CI-enforced)** | **2 lines** |
+| smolagents | 186.7 | 185.6 | HF API | No | ❌ |
+| autogen-agentchat | 20.3 | 228.5 | OpenAI / Azure | No | ❌ |
+| langchain | 43.4 | 289.4 | OpenAI | LangSmith push | ❌ |
+| langgraph | 0.1 | 307.6 | OpenAI | LangSmith push | ❌ |
+| agno | 21.1 | 304.7 | OpenAI | AgentOS push | ❌ |
+| llama_index | 497.5 | 510.9 | OpenAI | Partial | ❌ |
+| pydantic_ai | 526.8 | 523.4 | OpenAI | No | partial |
+| crewai | 541.8 | 544.8 | OpenAI | Yes (broken opt-out) | ❌ |
+
+Reproduce yourself: `python -m agentic_kit.bench`.
+
+The honest take: **smolagents beats us on import speed**. They're ~1k LOC, we're ~5k. They trade features for size — no MCP server, no A2A, no embeddings, no storage primitives. We trade a little speed for those.
+
+---
 
 ## Install
 
 ```bash
-pip install agentic-kit                          # core + Ollama (local) + Gemini (httpx)
-pip install 'agentic-kit[openai,anthropic]'      # OpenAI & Anthropic SDKs
-pip install 'agentic-kit[groq,mistral]'          # OpenAI-compatible providers
-pip install 'agentic-kit[cache]'                 # sqlite-vec semantic cache
-pip install 'agentic-kit[all]'                   # everything
-ollama pull llama3.2                             # default local model
+pip install agentic-kit                                # core + Ollama
+pip install 'agentic-kit[openai,anthropic]'            # cloud providers
+pip install 'agentic-kit[mcp]'                         # MCP client + server
+pip install 'agentic-kit[a2a]'                         # A2A client + server
+pip install 'agentic-kit[cli]'                         # Click + Rich helpers
+pip install 'agentic-kit[all]'                         # everything
+
+ollama pull llama3.2                                   # default local model
 ```
 
-## 30-second tour
+---
+
+## What you can build
+
+### A local agent with tools (zero config)
 
 ```python
 import asyncio
-from agentic_kit import LLM
+from agentic_kit import Agent, LLM, ToolRegistry
 
 async def main():
-    llm = LLM()  # defaults to Ollama at localhost:11434
-    r = await llm.complete("One sentence on why local-first AI matters.")
-    print(r.content, "|", r.usage.total_tokens, "tokens |", f"${r.cost_usd}")
+    tools = ToolRegistry()
+
+    async def add(a: int, b: int) -> int:
+        return a + b
+
+    tools.register_function(
+        "add", "Add two integers", add,
+        input_schema={"type": "object",
+                      "properties": {"a": {"type": "integer"}, "b": {"type": "integer"}},
+                      "required": ["a", "b"]},
+    )
+
+    agent = Agent(llm=LLM(model="llama3.2"), tools=tools)
+    result = await agent.run("What is 17 + 25?")
+    print(result.content)
 
 asyncio.run(main())
 ```
 
-Swap providers with one env var:
-
-```bash
-export AGENTIC_KIT_PROVIDER=anthropic
-export AGENTIC_KIT_MODEL=claude-haiku-4-5-20251001
-export AGENTIC_KIT_API_KEY=sk-ant-...
-```
-
-## What's in the box
-
-| Capability | What it does |
-|---|---|
-| **Unified client** | `LLM` — one async API for Ollama, OpenAI, Anthropic, Gemini, Groq, Mistral. |
-| **Cost tracking** | `CostTracker` aggregates `cost_usd` per request, per model, per tag. |
-| **Tracing** | Every call wrapped in an OpenTelemetry span with usage attributes. |
-| **Exact-match cache** | `InMemoryCache` with TTL for deterministic prompts. |
-| **Semantic cache** | `SqliteVecCache` — cosine-similarity hits via sqlite-vec. |
-| **Tool calling** | `ToolRegistry` + `LLM.run_agent()` — unified tool calls across all providers. |
-| **Streaming tool calls** | `LLM.stream_events()` / `run_agent_stream()` — typed deltas for text + tool calls. |
-| **Structured output** | `LLM.extract(prompt, PydanticModel)` — JSON with self-repair. |
-| **Partial-JSON streaming** | `LLM.extract_stream()` — progressive pydantic objects as they arrive. |
-| **Retry** | `RetryPolicy` — exponential backoff with jitter. |
-| **Fallback** | `FallbackProvider` — chain providers: Ollama → cloud. |
-| **Local-first** | Ollama is the default. No API key required. |
-| **Async everywhere** | Every I/O path is `async` / `await`. |
-| **Zero telemetry** | No phone-home. Ever. |
-
-## Cookbook
-
-### Track cost per phase of an agent
+### Stream every event
 
 ```python
-from agentic_kit import LLM, CostTracker
-
-tracker = CostTracker()
-llm = LLM(cost_tracker=tracker)
-await llm.complete("plan: ...", tag="plan")
-await llm.complete("summarize: ...", tag="summarize")
-print(tracker.snapshot())
-# {'total_usd': ..., 'by_tag': {'plan': ..., 'summarize': ...}, ...}
-```
-
-### Run an agent with tools
-
-```python
-from agentic_kit import LLM, ToolRegistry
-
-tools = ToolRegistry()
-tools.register_function(
-    "add", "Add two numbers.",
-    lambda a, b: a + b,
-    input_schema={"type": "object", "properties": {
-        "a": {"type": "number"}, "b": {"type": "number"}
-    }, "required": ["a", "b"]},
+from agentic_kit.agents import (
+    AgentTextDelta, AgentToolCallStarted, AgentToolCallCompleted, AgentRunCompleted,
 )
 
-llm = LLM(model="llama3.1")  # use a model with tool support
-result = await llm.run_agent("what is 17 + 25?", tools=tools)
-print(result.content)  # "17 + 25 equals 42."
+async for event in agent.stream("explain transformers in one paragraph"):
+    match event:
+        case AgentTextDelta(text=t):              print(t, end="", flush=True)
+        case AgentToolCallStarted(call=c):        print(f"\n→ {c.name}({c.arguments})")
+        case AgentToolCallCompleted(value=v):     print(f"  ✓ {v}")
+        case AgentRunCompleted(content=final):    print(f"\n[done — {len(final)} chars]")
 ```
 
-### Extract structured data
+### Expose your agent as an MCP server (two lines)
 
 ```python
-from pydantic import BaseModel
-from agentic_kit import LLM
-
-class Issue(BaseModel):
-    title: str
-    severity: str
-    components: list[str]
-
-issue = await LLM().extract("Bug: checkout crashes on 0% coupon...", Issue)
-print(issue.severity)
+from agentic_kit.mcp import serve
+serve(agent)                                       # stdio (Claude Desktop)
+serve(agent, transport="streamable-http", port=8000)  # HTTP for remote clients
 ```
 
-### Semantic cache (local, free)
+Now Claude Desktop, IDEs, and any MCP-aware app can call your agent's tools.
+
+### Consume any MCP server as agent tools
 
 ```python
-from agentic_kit import LLM
-from agentic_kit.cache.embeddings import OllamaEmbedder
-from agentic_kit.cache.semantic import SqliteVecCache
+from agentic_kit.mcp import MCPClient
 
-cache = SqliteVecCache(
-    path="cache.db",
-    embedder=OllamaEmbedder(model="nomic-embed-text"),
-    similarity_threshold=0.15,
-)
-llm = LLM(cache=cache)
-await llm.complete("What is the capital of France?")      # miss → hits Ollama
-await llm.complete("France capital — what is it?")         # hit, no LLM call
+async with MCPClient({
+    "git": {"command": "uvx", "args": ["mcp-server-git"]},
+    "fs":  {"command": "uvx", "args": ["mcp-server-filesystem", "/tmp"]},
+}) as mcp:
+    agent = Agent(llm=LLM(), tools=mcp.tools())
+    await agent.run("show me the git status of this repo")
 ```
 
-### Local-first with cloud fallback
+### Speak A2A — your agent is callable from any A2A client
 
 ```python
-from agentic_kit import LLM, FallbackProvider, OllamaProvider, RetryPolicy
-from agentic_kit.llm.openai_provider import OpenAIProvider
-
-llm = LLM(
-    provider=FallbackProvider([
-        (OllamaProvider(), "llama3.2"),
-        (OpenAIProvider(), "gpt-4o-mini"),
-    ]),
-    retry_policy=RetryPolicy(max_attempts=3),
-)
+from agentic_kit.a2a import serve
+serve(agent, host="0.0.0.0", port=9000)
+# Mounts /.well-known/agent-card.json + JSON-RPC at /
 ```
 
-## Configuration
+```python
+from agentic_kit.a2a import RemoteAgent
 
-All settings read from env, prefix `AGENTIC_KIT_`:
+remote = RemoteAgent("https://research-agent.example.com")
+agent = Agent(llm=LLM(), tools=[remote])
+await agent.run("Ask the research agent about transformers.")
+```
 
-| Variable | Default |
-|---|---|
-| `AGENTIC_KIT_PROVIDER` | `ollama` |
-| `AGENTIC_KIT_MODEL` | `llama3.2` |
-| `AGENTIC_KIT_BASE_URL` | `http://localhost:11434` |
-| `AGENTIC_KIT_API_KEY` | *(unset)* |
-| `AGENTIC_KIT_TEMPERATURE` | `0.7` |
+### Switch providers without changing your code
+
+```python
+agent = Agent(llm=LLM(provider="openai", model="gpt-4o"))      # OpenAI
+agent = Agent(llm=LLM(provider="anthropic", model="claude-3-5-sonnet"))  # Claude
+agent = Agent(llm=LLM(provider="groq", model="llama-3.3-70b-versatile")) # Groq
+agent = Agent()                                                # Ollama (default)
+```
+
+OpenAI, Anthropic, Gemini, Groq, Mistral, Ollama — same `LLM()` class, same `Agent`.
+
+---
 
 ## Architecture
 
-```mermaid
-graph LR
-    App[Your agent] --> LLM
-    LLM --> Cache[(Semantic cache)]
-    LLM --> Tracker[CostTracker]
-    LLM --> Otel[OpenTelemetry]
-    LLM --> Retry[Retry policy]
-    LLM --> Provider
-    Provider --> Ollama
-    Provider --> OpenAI
-    Provider --> Anthropic
-    LLM --> Tools[ToolRegistry]
+agentic-kit follows the **ReAct loop** (Reason → Act → Observe) using each model's native tool-calling — no `Thought:`/`Action:` prompt-engineering tricks. The model emits structured tool calls; we dispatch them and feed results back.
+
+The whole framework is ~50 public symbols, ~5,000 LOC, three abstraction layers:
+
+```
+Agent           → state, memory, hooks, streaming events
+LLM             → provider gateway, retry, fallback, cost, cache
+BaseLLMProvider → Ollama / OpenAI / Anthropic / Gemini / Groq / Mistral
 ```
 
-## Principles
+Plus opt-in modules: `mcp/`, `a2a/`, `embeddings/`, `storage/`, `cli/`, `tracing/`, `observability/`, `config/`, `testing/`.
 
-- **Local-first.** Ollama is default; everything works offline.
-- **Zero telemetry.** No analytics, no phone-home.
-- **Async-only.** Every I/O path is `async` / `await`.
-- **Typed.** Full type hints, pydantic for all data.
-- **Composable primitives.** No mandatory DAG, no global state.
+You can read every line of the framework in one sitting. That's the point.
 
-## Roadmap
+---
 
-- [x] Ollama, OpenAI, Anthropic, Gemini, Groq, Mistral providers
-- [x] Cost tracking + versioned pricing table
-- [x] OpenTelemetry tracing
-- [x] In-memory + SQLite-vec semantic cache
-- [x] Tool registry + agent loop (`LLM.run_agent`)
-- [x] Streaming agent loop (`LLM.run_agent_stream`) with typed deltas
-- [x] Structured output (`LLM.extract`) + partial-JSON streaming (`LLM.extract_stream`)
-- [x] Retry / exponential backoff
-- [x] Multi-provider fallback
-- [ ] MCP (Model Context Protocol) server/client
-- [ ] Vision / multimodal inputs across providers
-- [ ] Cerebras / SambaNova / DeepSeek providers
+## What we won't build
 
-## Contributing
+A framework's "no" list is more important than its "yes" list. We will not add:
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Join us on [Discord](https://discord.gg/openintelligence-labs).
+- **Vector DB integrations** beyond SQLite (sqlite-vec scales to ~100M vectors)
+- **Multi-agent metaphors** ("Crews", "Societies", "Workflows") — A2A covers it
+- **RAG-as-a-feature** — embeddings + storage are primitives; RAG is an app pattern
+- **Code-execution agents** — sandbox quality is a separate product
+- **Visual graph builders** — LangGraph Studio territory
+- **Hosted SaaS / paid tier** — we sell nothing
+- **Sync API** — async only, one way to do it
 
-## Part of the Open Intelligence Labs ecosystem
+If you want any of those, grab a different framework.
 
-`agentic-kit` powers every project in the [Open Intelligence Labs](https://github.com/openintelligence-labs) family — open source AI tools that replace expensive SaaS:
+---
 
-- [DeepDive](https://github.com/openintelligence-labs/deepdive) — deep research agent (replaces Perplexity Pro)
-- [MeetMind](https://github.com/openintelligence-labs/meetmind) — meeting assistant (replaces Otter.ai)
-- [BuildShip](https://github.com/openintelligence-labs/buildship) — AI app builder (replaces Lovable / v0)
-- [SecondBrain](https://github.com/openintelligence-labs/secondbrain) — personal memory (replaces Rewind.ai)
+## OpenTelemetry GenAI conformance
 
-## License
+agentic-kit emits spans following [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) (semconv v1.40.0+):
 
-MIT
+```
+invoke_agent llama3.2          (CLIENT)
+├── chat llama3.2              (CLIENT)
+├── execute_tool search        (INTERNAL)
+├── chat llama3.2              (CLIENT)
+└── execute_tool fetch_url     (INTERNAL)
+```
+
+All `gen_ai.*` attribute names match the spec exactly. Cost is namespaced under `agentic_kit.cost.usd` (the spec doesn't define a cost attribute). Forward-compatibility via `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental`.
+
+Works with Phoenix, Langfuse, Logfire, Datadog, any OTel-compatible backend.
+
+---
+
+## Status
+
+- **Version:** 0.5.0 (in development)
+- **Tests:** 153 passing
+- **Cold import:** 1.1 ms median (CI-enforced under 50 ms)
+- **License:** MIT
+- **Python:** 3.12+
+
+---
+
+## Project & community
+
+Part of [Open Intelligence Labs](https://github.com/openintelligence-labs) — a collection of independent local-first AI projects sharing this framework.
+
+- **Issues / discussions:** GitHub Issues
+- **Roadmap:** See `docs/V0.5_PLAN.md`
+- **Differentiation:** See `docs/DIFFERENTIATION.md`
+
+If this framework saves you from writing another LLM wrapper, **star the repo** — it's the cheapest way to help us stay independent.

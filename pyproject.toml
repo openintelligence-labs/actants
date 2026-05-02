@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentic-kit"
-version = "0.3.0"
-description = "Unified LLM gateway: Ollama/OpenAI/Anthropic with cost tracking, tracing, semantic caching, tool-calling agents, structured output, retry, and fallback. Local-first, Ollama-default."
+version = "0.5.0"
+description = "Local-first AI app framework: LLM gateway, agents, embeddings, storage, CLI helpers, observability. Build agents with one import. Ollama-default, async, typed."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Open Intelligence Labs contributors" }]
@@ -23,11 +23,16 @@ keywords = [
     "streaming",
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 dependencies = [
     "httpx>=0.27",
@@ -45,10 +50,20 @@ gemini = []  # Uses httpx, already a core dep
 groq = ["openai>=1.30"]  # Groq exposes an OpenAI-compatible API
 mistral = ["openai>=1.30"]  # Mistral exposes an OpenAI-compatible API
 cache = ["sqlite-vec>=0.1.0"]
+cli = ["click>=8.1", "rich>=13.7"]
+mcp = ["mcp>=1.0"]
+a2a = ["a2a-sdk>=1.0", "starlette>=0.36", "uvicorn>=0.27"]
 all = [
     "openai>=1.30",
     "anthropic>=0.30",
     "sqlite-vec>=0.1.0",
+    "click>=8.1",
+    "rich>=13.7",
+]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings>=0.25",
+    "mkdocstrings-python>=1.10",
 ]
 dev = [
     "pytest>=8.0",
@@ -57,12 +72,16 @@ dev = [
     "ruff>=0.4",
     "build>=1.0",
     "twine>=5.0",
+    "click>=8.1",
+    "rich>=13.7",
 ]
 
 [project.urls]
 Homepage = "https://github.com/openintelligence-labs/agentic-kit"
 Repository = "https://github.com/openintelligence-labs/agentic-kit"
 Issues = "https://github.com/openintelligence-labs/agentic-kit/issues"
+Documentation = "https://agentic-kit.openintelligence-labs.org"
+Changelog = "https://github.com/openintelligence-labs/agentic-kit/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

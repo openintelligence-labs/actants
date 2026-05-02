@@ -8,7 +8,7 @@ from __future__ import annotations
 import asyncio
 import os
 
-from agentic_kit import (
+from actants import (
     LLM,
     FallbackProvider,
     OllamaProvider,
@@ -19,7 +19,7 @@ from agentic_kit import (
 async def main() -> None:
     providers: list = [(OllamaProvider(), "llama3.2")]
     if os.environ.get("OPENAI_API_KEY"):
-        from agentic_kit.llm.openai_provider import OpenAIProvider
+        from actants.llm.openai_provider import OpenAIProvider
 
         providers.append((OpenAIProvider(), "gpt-4o-mini"))
 

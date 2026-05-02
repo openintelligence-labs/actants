@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from agentic_kit.agents import (
+from actants.agents import (
     Agent,
     AgentRunCompleted,
     AgentStepCompleted,
@@ -12,13 +12,13 @@ from agentic_kit.agents import (
     AgentToolCallCompleted,
     AgentToolCallStarted,
 )
-from agentic_kit.llm.client import LLM
-from agentic_kit.testing import (
+from actants.llm.client import LLM
+from actants.testing import (
     FakeLLMProvider,
     fake_completion,
     fake_tool_call_completion,
 )
-from agentic_kit.tools.registry import ToolRegistry
+from actants.tools.registry import ToolRegistry
 
 
 @pytest.mark.asyncio
@@ -85,7 +85,7 @@ async def test_stream_updates_memory_to_match_run():
 
 @pytest.mark.asyncio
 async def test_stream_propagates_errors_via_on_error_hook():
-    from agentic_kit.agents import AgentHooks
+    from actants.agents import AgentHooks
 
     captured = []
 

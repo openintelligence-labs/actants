@@ -9,7 +9,7 @@ import asyncio
 
 from pydantic import BaseModel, Field
 
-from agentic_kit import LLM
+from actants import LLM
 
 
 class IssueReport(BaseModel):

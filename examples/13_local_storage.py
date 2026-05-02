@@ -7,11 +7,11 @@ Run::
 
 from __future__ import annotations
 
-from agentic_kit import JsonlAppender, app_data_dir, open_sqlite, read_jsonl
+from actants import JsonlAppender, app_data_dir, open_sqlite, read_jsonl
 
 
 def main() -> None:
-    data_dir = app_data_dir("agentic-kit-demo")
+    data_dir = app_data_dir("actants-demo")
 
     db_path = data_dir / "events.db"
     with open_sqlite(db_path) as conn:

@@ -6,8 +6,8 @@ import pytest
 
 a2a = pytest.importorskip("a2a")
 
-from agentic_kit.a2a import build_agent_card  # noqa: E402
-from agentic_kit.tools.registry import ToolRegistry  # noqa: E402
+from actants.a2a import build_agent_card  # noqa: E402
+from actants.tools.registry import ToolRegistry  # noqa: E402
 
 
 def test_card_has_required_fields():

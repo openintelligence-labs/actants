@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from agentic_kit.embeddings import Embeddings
-from agentic_kit.testing import FakeEmbeddingProvider
+from actants.embeddings import Embeddings
+from actants.testing import FakeEmbeddingProvider
 
 
 @pytest.mark.asyncio

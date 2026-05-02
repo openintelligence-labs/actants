@@ -7,7 +7,7 @@ Run::
 
 from __future__ import annotations
 
-from agentic_kit import AppSettings, app_cache_dir, app_config_dir, app_data_dir
+from actants import AppSettings, app_cache_dir, app_config_dir, app_data_dir
 
 
 class MySettings(AppSettings):

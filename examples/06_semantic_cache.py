@@ -2,7 +2,7 @@
 
 Prereqs:
 - `ollama pull nomic-embed-text`
-- `pip install 'agentic-kit[cache]'`
+- `pip install 'actants[cache]'`
 
 Run: `python examples/06_semantic_cache.py`
 """
@@ -11,14 +11,14 @@ from __future__ import annotations
 
 import asyncio
 
-from agentic_kit import LLM
-from agentic_kit.cache.embeddings import OllamaEmbedder
-from agentic_kit.cache.semantic import SqliteVecCache
+from actants import LLM
+from actants.cache.embeddings import OllamaEmbedder
+from actants.cache.semantic import SqliteVecCache
 
 
 async def main() -> None:
     cache = SqliteVecCache(
-        path="/tmp/agentic_kit_demo.db",
+        path="/tmp/actants_demo.db",
         embedder=OllamaEmbedder(model="nomic-embed-text"),
         similarity_threshold=0.15,
     )

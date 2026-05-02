@@ -1,6 +1,6 @@
-# agentic-kit
+# actants
 
-[![PyPI](https://img.shields.io/pypi/v/agentic-kit)](https://pypi.org/project/agentic-kit/)
+[![PyPI](https://img.shields.io/pypi/v/actants)](https://pypi.org/project/actants/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-153%20passing-brightgreen)]()
@@ -8,7 +8,7 @@
 **The local-first AI agent framework. No API keys. No telemetry. Imports in 1 millisecond.**
 
 ```python
-from agentic_kit import Agent
+from actants import Agent
 
 agent = Agent()                                # Ollama default — no API key
 print(await agent.run("Hello!"))               # Runs offline, on your laptop
@@ -18,7 +18,7 @@ That's the whole quickstart. No signup. No `OPENAI_API_KEY`. No phone-home.
 
 ---
 
-## Why agentic-kit
+## Why actants
 
 Five things this framework does that no incumbent does together:
 
@@ -30,7 +30,7 @@ Five things this framework does that no incumbent does together:
 | **Native MCP server + client** | 2 lines to expose your agent. 3 to consume one. | Your agent IS a Claude Desktop extension. |
 | **Native A2A protocol** | Auto-generated Agent Card. Streaming SSE. | Agents in different frameworks talk to each other. |
 
-If you want one of these, plenty of frameworks have it. If you want all five, agentic-kit is the only choice.
+If you want one of these, plenty of frameworks have it. If you want all five, actants is the only choice.
 
 ---
 
@@ -40,7 +40,7 @@ Real numbers, on the same machine, this Python:
 
 | Framework | Bare `import` (ms) | First-use import (ms) | Default LLM | Telemetry on by default | MCP server |
 |---|---:|---:|---|---|---|
-| **agentic-kit** | **1.1** | **210.7** | **Ollama** | **No (CI-enforced)** | **2 lines** |
+| **actants** | **1.1** | **210.7** | **Ollama** | **No (CI-enforced)** | **2 lines** |
 | smolagents | 186.7 | 185.6 | HF API | No | ❌ |
 | autogen-agentchat | 20.3 | 228.5 | OpenAI / Azure | No | ❌ |
 | langchain | 43.4 | 289.4 | OpenAI | LangSmith push | ❌ |
@@ -50,7 +50,7 @@ Real numbers, on the same machine, this Python:
 | pydantic_ai | 526.8 | 523.4 | OpenAI | No | partial |
 | crewai | 541.8 | 544.8 | OpenAI | Yes (broken opt-out) | ❌ |
 
-Reproduce yourself: `python -m agentic_kit.bench`.
+Reproduce yourself: `python -m actants.bench`.
 
 The honest take: **smolagents beats us on import speed**. They're ~1k LOC, we're ~5k. They trade features for size — no MCP server, no A2A, no embeddings, no storage primitives. We trade a little speed for those.
 
@@ -59,12 +59,12 @@ The honest take: **smolagents beats us on import speed**. They're ~1k LOC, we're
 ## Install
 
 ```bash
-pip install agentic-kit                                # core + Ollama
-pip install 'agentic-kit[openai,anthropic]'            # cloud providers
-pip install 'agentic-kit[mcp]'                         # MCP client + server
-pip install 'agentic-kit[a2a]'                         # A2A client + server
-pip install 'agentic-kit[cli]'                         # Click + Rich helpers
-pip install 'agentic-kit[all]'                         # everything
+pip install actants                                # core + Ollama
+pip install 'actants[openai,anthropic]'            # cloud providers
+pip install 'actants[mcp]'                         # MCP client + server
+pip install 'actants[a2a]'                         # A2A client + server
+pip install 'actants[cli]'                         # Click + Rich helpers
+pip install 'actants[all]'                         # everything
 
 ollama pull llama3.2                                   # default local model
 ```
@@ -77,7 +77,7 @@ ollama pull llama3.2                                   # default local model
 
 ```python
 import asyncio
-from agentic_kit import Agent, LLM, ToolRegistry
+from actants import Agent, LLM, ToolRegistry
 
 async def main():
     tools = ToolRegistry()
@@ -102,7 +102,7 @@ asyncio.run(main())
 ### Stream every event
 
 ```python
-from agentic_kit.agents import (
+from actants.agents import (
     AgentTextDelta, AgentToolCallStarted, AgentToolCallCompleted, AgentRunCompleted,
 )
 
@@ -117,7 +117,7 @@ async for event in agent.stream("explain transformers in one paragraph"):
 ### Expose your agent as an MCP server (two lines)
 
 ```python
-from agentic_kit.mcp import serve
+from actants.mcp import serve
 serve(agent)                                       # stdio (Claude Desktop)
 serve(agent, transport="streamable-http", port=8000)  # HTTP for remote clients
 ```
@@ -127,7 +127,7 @@ Now Claude Desktop, IDEs, and any MCP-aware app can call your agent's tools.
 ### Consume any MCP server as agent tools
 
 ```python
-from agentic_kit.mcp import MCPClient
+from actants.mcp import MCPClient
 
 async with MCPClient({
     "git": {"command": "uvx", "args": ["mcp-server-git"]},
@@ -140,13 +140,13 @@ async with MCPClient({
 ### Speak A2A — your agent is callable from any A2A client
 
 ```python
-from agentic_kit.a2a import serve
+from actants.a2a import serve
 serve(agent, host="0.0.0.0", port=9000)
 # Mounts /.well-known/agent-card.json + JSON-RPC at /
 ```
 
 ```python
-from agentic_kit.a2a import RemoteAgent
+from actants.a2a import RemoteAgent
 
 remote = RemoteAgent("https://research-agent.example.com")
 agent = Agent(llm=LLM(), tools=[remote])
@@ -168,7 +168,7 @@ OpenAI, Anthropic, Gemini, Groq, Mistral, Ollama — same `LLM()` class, same `A
 
 ## Architecture
 
-agentic-kit follows the **ReAct loop** (Reason → Act → Observe) using each model's native tool-calling — no `Thought:`/`Action:` prompt-engineering tricks. The model emits structured tool calls; we dispatch them and feed results back.
+actants follows the **ReAct loop** (Reason → Act → Observe) using each model's native tool-calling — no `Thought:`/`Action:` prompt-engineering tricks. The model emits structured tool calls; we dispatch them and feed results back.
 
 The whole framework is ~50 public symbols, ~5,000 LOC, three abstraction layers:
 
@@ -202,7 +202,7 @@ If you want any of those, grab a different framework.
 
 ## OpenTelemetry GenAI conformance
 
-agentic-kit emits spans following [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) (semconv v1.40.0+):
+actants emits spans following [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) (semconv v1.40.0+):
 
 ```
 invoke_agent llama3.2          (CLIENT)
@@ -212,7 +212,7 @@ invoke_agent llama3.2          (CLIENT)
 └── execute_tool fetch_url     (INTERNAL)
 ```
 
-All `gen_ai.*` attribute names match the spec exactly. Cost is namespaced under `agentic_kit.cost.usd` (the spec doesn't define a cost attribute). Forward-compatibility via `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental`.
+All `gen_ai.*` attribute names match the spec exactly. Cost is namespaced under `actants.cost.usd` (the spec doesn't define a cost attribute). Forward-compatibility via `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental`.
 
 Works with Phoenix, Langfuse, Logfire, Datadog, any OTel-compatible backend.
 

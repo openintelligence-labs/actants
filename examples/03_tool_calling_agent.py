@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime
 
-from agentic_kit import LLM, ToolRegistry
+from actants import LLM, ToolRegistry
 
 
 async def add(a: float, b: float) -> float:

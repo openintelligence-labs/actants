@@ -6,9 +6,9 @@ import pytest
 
 a2a = pytest.importorskip("a2a")
 
-from agentic_kit.a2a import RemoteAgent  # noqa: E402
-from agentic_kit.a2a.client import _slug_from_url  # noqa: E402
-from agentic_kit.tools.base import Tool  # noqa: E402
+from actants.a2a import RemoteAgent  # noqa: E402
+from actants.a2a.client import _slug_from_url  # noqa: E402
+from actants.tools.base import Tool  # noqa: E402
 
 
 def test_remote_agent_is_a_tool():

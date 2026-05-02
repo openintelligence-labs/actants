@@ -3,8 +3,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from agentic_kit.llm.base import ChatMessage
-from agentic_kit.llm.ollama import OllamaProvider
+from actants.llm.base import ChatMessage
+from actants.llm.ollama import OllamaProvider
 
 
 def _fake_transport(handler):

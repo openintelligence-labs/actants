@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import asyncio
 
-from agentic_kit import LLM, Agent
-from agentic_kit.mcp import MCPClient
-from agentic_kit.tools.registry import ToolRegistry
+from actants import LLM, Agent
+from actants.mcp import MCPClient
+from actants.tools.registry import ToolRegistry
 
 
 async def main() -> None:

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from agentic_kit.agents import Agent, AgentHooks, ConversationMemory
-from agentic_kit.llm.client import LLM
-from agentic_kit.testing import (
+from actants.agents import Agent, AgentHooks, ConversationMemory
+from actants.llm.client import LLM
+from actants.testing import (
     FakeLLMProvider,
     fake_completion,
     fake_tool_call_completion,
 )
-from agentic_kit.tools.registry import ToolRegistry
+from actants.tools.registry import ToolRegistry
 
 
 @pytest.mark.asyncio

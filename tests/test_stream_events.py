@@ -3,7 +3,7 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from agentic_kit.llm.base import (
+from actants.llm.base import (
     ChatMessage,
     FinishDelta,
     TextDelta,
@@ -11,7 +11,7 @@ from agentic_kit.llm.base import (
     ToolSpec,
     UsageDelta,
 )
-from agentic_kit.llm.ollama import OllamaProvider
+from actants.llm.ollama import OllamaProvider
 
 
 @pytest.mark.asyncio

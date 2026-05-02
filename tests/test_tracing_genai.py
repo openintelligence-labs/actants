@@ -7,8 +7,8 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from agentic_kit.tracing import genai as genai_mod
-from agentic_kit.tracing.genai import (
+from actants.tracing import genai as genai_mod
+from actants.tracing.genai import (
     KNOWN_PROVIDERS,
     chat_span,
     embeddings_span,
@@ -24,7 +24,7 @@ def exporter(monkeypatch):
     provider = TracerProvider()
     exp = InMemorySpanExporter()
     provider.add_span_processor(SimpleSpanProcessor(exp))
-    monkeypatch.setattr(genai_mod, "get_tracer", lambda: provider.get_tracer("agentic_kit"))
+    monkeypatch.setattr(genai_mod, "get_tracer", lambda: provider.get_tracer("actants"))
     yield exp
     exp.clear()
 
@@ -57,7 +57,7 @@ async def test_chat_span_uses_spec_name_and_attrs(exporter):
     assert attrs["gen_ai.request.stream"] is True
     assert attrs["gen_ai.usage.input_tokens"] == 42
     assert attrs["gen_ai.usage.output_tokens"] == 15
-    assert attrs["agentic_kit.cost.usd"] == 0.0
+    assert attrs["actants.cost.usd"] == 0.0
 
 
 @pytest.mark.asyncio
@@ -104,7 +104,7 @@ async def test_embeddings_span(exporter):
     assert s.name == "embeddings nomic-embed-text"
     attrs = dict(s.attributes)
     assert attrs["gen_ai.operation.name"] == "embeddings"
-    assert attrs["agentic_kit.embeddings.input_count"] == 3
+    assert attrs["actants.embeddings.input_count"] == 3
 
 
 def test_known_providers_includes_ollama_first_class():
@@ -122,4 +122,4 @@ async def test_record_response_skips_none_attributes(exporter):
     assert attrs["gen_ai.usage.input_tokens"] == 10
     # Things we didn't set should not appear.
     assert "gen_ai.response.model" not in attrs
-    assert "agentic_kit.cost.usd" not in attrs
+    assert "actants.cost.usd" not in attrs

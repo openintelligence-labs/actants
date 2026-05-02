@@ -10,8 +10,8 @@ from __future__ import annotations
 import asyncio
 import sys
 
-from agentic_kit import LLM, ToolRegistry
-from agentic_kit.llm.base import FinishDelta, TextDelta, ToolCallDelta, UsageDelta
+from actants import LLM, ToolRegistry
+from actants.llm.base import FinishDelta, TextDelta, ToolCallDelta, UsageDelta
 
 
 async def multiply(a: float, b: float) -> float:

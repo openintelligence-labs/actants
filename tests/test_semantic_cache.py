@@ -6,8 +6,8 @@ import pytest
 
 pytest.importorskip("sqlite_vec")
 
-from agentic_kit.cache.semantic import SqliteVecCache  # noqa: E402
-from agentic_kit.llm.base import ChatMessage, CompletionResult, TokenUsage  # noqa: E402
+from actants.cache.semantic import SqliteVecCache  # noqa: E402
+from actants.llm.base import ChatMessage, CompletionResult, TokenUsage  # noqa: E402
 
 
 class StubEmbedder:
@@ -90,8 +90,8 @@ async def test_sqlite_vec_cache_threshold_rejects_dissimilar(tmp_path):
 async def test_semantic_cache_via_llm_client(tmp_path):
     from collections.abc import AsyncIterator
 
-    from agentic_kit.llm.base import BaseLLMProvider
-    from agentic_kit.llm.client import LLM
+    from actants.llm.base import BaseLLMProvider
+    from actants.llm.client import LLM
 
     class CountingProvider(BaseLLMProvider):
         name = "counting"

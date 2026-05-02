@@ -4,15 +4,15 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from agentic_kit.cache.memory import InMemoryCache
-from agentic_kit.cost.tracker import CostTracker
-from agentic_kit.llm.base import (
+from actants.cache.memory import InMemoryCache
+from actants.cost.tracker import CostTracker
+from actants.llm.base import (
     BaseLLMProvider,
     CompletionResult,
     TokenUsage,
 )
-from agentic_kit.llm.client import LLM
-from agentic_kit.policies.retry import RetryPolicy
+from actants.llm.client import LLM
+from actants.policies.retry import RetryPolicy
 
 
 class CountingProvider(BaseLLMProvider):

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import asyncio
 
-from agentic_kit import LLM, Agent, AgentHooks, ConversationMemory, ToolRegistry
+from actants import LLM, Agent, AgentHooks, ConversationMemory, ToolRegistry
 
 
 async def main() -> None:

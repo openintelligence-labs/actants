@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from agentic_kit.tools.base import Tool, ToolError
-from agentic_kit.tools.registry import ToolRegistry
+from actants.tools.base import Tool, ToolError
+from actants.tools.registry import ToolRegistry
 
 
 async def add(a: int, b: int) -> int:

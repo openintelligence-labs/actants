@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from agentic_kit.policies.retry import RetryPolicy, retry_async
+from actants.policies.retry import RetryPolicy, retry_async
 
 
 @pytest.mark.asyncio

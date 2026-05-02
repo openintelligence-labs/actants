@@ -1,4 +1,4 @@
-"""Roundtrip tests for agentic_kit.mcp.serve / build_server."""
+"""Roundtrip tests for actants.mcp.serve / build_server."""
 
 from __future__ import annotations
 
@@ -7,11 +7,11 @@ import pytest
 mcp = pytest.importorskip("mcp")
 from mcp.shared.memory import create_connected_server_and_client_session  # noqa: E402
 
-from agentic_kit.agents import Agent  # noqa: E402
-from agentic_kit.llm.client import LLM  # noqa: E402
-from agentic_kit.mcp import build_server  # noqa: E402
-from agentic_kit.testing import FakeLLMProvider  # noqa: E402
-from agentic_kit.tools.registry import ToolRegistry  # noqa: E402
+from actants.agents import Agent  # noqa: E402
+from actants.llm.client import LLM  # noqa: E402
+from actants.mcp import build_server  # noqa: E402
+from actants.testing import FakeLLMProvider  # noqa: E402
+from actants.tools.registry import ToolRegistry  # noqa: E402
 
 
 def _make_registry() -> ToolRegistry:

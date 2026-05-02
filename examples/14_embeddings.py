@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import asyncio
 
-from agentic_kit import Embeddings
+from actants import Embeddings
 
 
 async def main() -> None:

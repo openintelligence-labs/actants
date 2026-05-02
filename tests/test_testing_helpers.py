@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from agentic_kit.testing import (
+from actants.testing import (
     FakeEmbeddingProvider,
     FakeLLMProvider,
     fake_completion,
@@ -21,7 +21,7 @@ async def test_fake_llm_pops_responses_in_order():
 
 @pytest.mark.asyncio
 async def test_fake_llm_records_calls():
-    from agentic_kit.llm.base import ChatMessage
+    from actants.llm.base import ChatMessage
 
     fake = FakeLLMProvider([fake_completion("ok")])
     msgs = [ChatMessage(role="user", content="hi")]

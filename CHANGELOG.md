@@ -1,24 +1,35 @@
 # Changelog
 
-## [0.5.1] - 2026-05-03
+## [0.5.2] - 2026-05-03
+
+### Documentation
+
+- Rewrote README and several `docs_site/` pages (`index`, `differentiation`,
+  `faq`, migration guides) in a neutral technical tone. Removed manifesto
+  framing, "what we won't build" lists, and competitor-comparison sections
+  that were inappropriate for a pre-1.0 library.
+
+### Note on 0.5.0 and 0.5.1
+
+Both 0.5.0 and 0.5.1 are yanked. They shipped the same code as 0.5.2 but
+with documentation that included unverified comparison numbers (0.5.0) and
+manifesto-style framing (0.5.1). Use 0.5.2 instead.
+
+## [0.5.1] - 2026-05-03 (yanked)
 
 ### Documentation
 
 - Removed comparison-benchmark table and specific timing claims from README
-  and docs that lacked verifiable measurement methodology. The internal
-  `actants.bench` harness still exists for users to run their own
-  reproducible measurements locally.
+  and docs that lacked verifiable measurement methodology.
 - Removed unverified competitor-issue references and quantitative
   "Nx faster" claims from migration guides.
 
-### Note on 0.5.0
-
-Version 0.5.0 was published on 2026-05-03 and yanked the same day. The 0.5.1
-release contains the same code with corrected documentation.
+(Yanked: README still contained inappropriate manifesto/positioning sections.
+See 0.5.2.)
 
 ## [0.5.0] - 2026-04-29 (yanked)
 
-The release that delivers the wedge: **local-first, zero-telemetry, async-only, native MCP + A2A, OTel-conformant.**
+First release of the renamed framework (previously `agentic-kit`). Adds native MCP and A2A integration, an `Agent` class with streaming, OpenTelemetry GenAI conformance, and several app-level helpers (config, CLI, embeddings, storage, testing).
 
 ### Added — interop
 
@@ -64,7 +75,7 @@ The release that delivers the wedge: **local-first, zero-telemetry, async-only, 
 
 ### Documentation
 
-- **README rewritten** — local-first hero, runnable code without API keys, real benchmark table, "what we won't build" list.
+- **README rewritten** — local-first quickstart and runnable examples without API keys.
 - **mkdocs site** under `docs_site/`: quickstart, concepts (Agent / LLM / Tools / Streaming / ReAct), MCP client+server, A2A client+server, cookbook (research-agent, mcp-tools, a2a-pair), migration guides (LangChain, CrewAI, Pydantic AI), reference (differentiation, benchmarks, OTel).
 
 ### Known follow-ups (deferred to 0.6+)

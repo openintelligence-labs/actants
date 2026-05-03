@@ -4,100 +4,137 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
 
-**A local-first AI agent framework. No API keys. No telemetry. Built for offline-first development.**
-
-```python
-from actants import Agent
-
-agent = Agent()                                # Ollama default — no API key
-print(await agent.run("Hello!"))               # Runs offline, on your laptop
-```
-
-That's the whole quickstart. No signup. No `OPENAI_API_KEY`. No phone-home.
-
----
-
-## Why actants
-
-| | What | Why it matters |
-|---|---|---|
-| **Local-first** | Defaults to Ollama. OpenAI is opt-in. | Privacy, cost, offline work — by default, not as a plugin. |
-| **Zero telemetry** | No analytics. No phone-home. | What your agent sends, *you* sent. Nothing else. |
-| **Lazy imports** | PEP 562 module-level lazy loading. | Only pay for what you use. |
-| **Native MCP server + client** | A few lines to expose your agent. A few lines to consume one. | Your agent IS a Claude Desktop extension. |
-| **Native A2A protocol** | Auto-generated Agent Card. Streaming SSE. | Agents in different frameworks talk to each other. |
-
----
+A Python framework for building LLM agents. Defaults to Ollama for local
+development; integrates OpenAI, Anthropic, Gemini, Groq, and Mistral via
+opt-in extras. Includes MCP (Model Context Protocol) and A2A (Agent2Agent
+Protocol) clients and servers, an embeddings client, SQLite-based storage
+helpers, OpenTelemetry GenAI tracing, and a Click + Rich CLI scaffold.
 
 ## Install
 
 ```bash
-pip install actants                                # core + Ollama
-pip install 'actants[openai,anthropic]'            # cloud providers
-pip install 'actants[mcp]'                         # MCP client + server
-pip install 'actants[a2a]'                         # A2A client + server
-pip install 'actants[cli]'                         # Click + Rich helpers
-pip install 'actants[all]'                         # everything
-
-ollama pull llama3.2                               # default local model
+pip install actants
 ```
 
----
+Optional extras:
 
-## What you can build
+| Extra | Adds |
+|---|---|
+| `openai` | OpenAI provider |
+| `anthropic` | Anthropic provider |
+| `gemini` | Google Gemini provider |
+| `groq` | Groq provider |
+| `mistral` | Mistral provider |
+| `mcp` | MCP client + server |
+| `a2a` | A2A client + server |
+| `cache` | sqlite-vec semantic cache |
+| `cli` | Click + Rich CLI helpers |
+| `all` | OpenAI + Anthropic + cache + cli |
 
-### A local agent with tools (zero config)
+```bash
+pip install 'actants[openai,anthropic,mcp,a2a]'
+```
+
+For the default Ollama provider, also install
+[Ollama](https://ollama.com) and pull a model:
+
+```bash
+ollama pull llama3.2
+```
+
+## Quickstart
 
 ```python
 import asyncio
-from actants import Agent, LLM, ToolRegistry
+from actants import Agent
 
 async def main():
-    tools = ToolRegistry()
-
-    async def add(a: int, b: int) -> int:
-        return a + b
-
-    tools.register_function(
-        "add", "Add two integers", add,
-        input_schema={"type": "object",
-                      "properties": {"a": {"type": "integer"}, "b": {"type": "integer"}},
-                      "required": ["a", "b"]},
-    )
-
-    agent = Agent(llm=LLM(model="llama3.2"), tools=tools)
-    result = await agent.run("What is 17 + 25?")
+    agent = Agent()                              # Ollama, llama3.2 by default
+    result = await agent.run("Say hello.")
     print(result.content)
 
 asyncio.run(main())
 ```
 
-### Stream every event
+## Tools
+
+Register async functions as tools and pass them to an `Agent`:
+
+```python
+from actants import Agent, LLM, ToolRegistry
+
+tools = ToolRegistry()
+
+async def add(a: int, b: int) -> int:
+    return a + b
+
+tools.register_function(
+    "add",
+    "Add two integers",
+    add,
+    input_schema={
+        "type": "object",
+        "properties": {"a": {"type": "integer"}, "b": {"type": "integer"}},
+        "required": ["a", "b"],
+    },
+)
+
+agent = Agent(llm=LLM(model="llama3.2"), tools=tools)
+result = await agent.run("What is 17 + 25?")
+```
+
+The model decides when to call the tool; `Agent` dispatches it and feeds
+the result back through the tool-calling loop.
+
+## Streaming
+
+`Agent.stream()` yields typed events:
 
 ```python
 from actants.agents import (
-    AgentTextDelta, AgentToolCallStarted, AgentToolCallCompleted, AgentRunCompleted,
+    AgentTextDelta,
+    AgentToolCallStarted,
+    AgentToolCallCompleted,
+    AgentRunCompleted,
 )
 
 async for event in agent.stream("explain transformers in one paragraph"):
     match event:
-        case AgentTextDelta(text=t):              print(t, end="", flush=True)
-        case AgentToolCallStarted(call=c):        print(f"\n→ {c.name}({c.arguments})")
-        case AgentToolCallCompleted(value=v):     print(f"  ✓ {v}")
-        case AgentRunCompleted(content=final):    print(f"\n[done — {len(final)} chars]")
+        case AgentTextDelta(text=t):
+            print(t, end="", flush=True)
+        case AgentToolCallStarted(call=c):
+            print(f"\n→ {c.name}({c.arguments})")
+        case AgentToolCallCompleted(value=v):
+            print(f"  ← {v}")
+        case AgentRunCompleted():
+            print()
 ```
 
-### Expose your agent as an MCP server
+## Switching providers
+
+```python
+from actants import Agent, LLM
+
+Agent(llm=LLM())                                                    # Ollama (default)
+Agent(llm=LLM(provider="openai", model="gpt-4o"))                   # OPENAI_API_KEY
+Agent(llm=LLM(provider="anthropic", model="claude-3-5-sonnet"))     # ANTHROPIC_API_KEY
+Agent(llm=LLM(provider="groq", model="llama-3.3-70b-versatile"))    # GROQ_API_KEY
+```
+
+See [Configuration](https://github.com/openintelligence-labs/actants/blob/main/docs_site/configuration.md)
+for the full list of environment variables.
+
+## MCP
+
+Expose an agent's tools over the Model Context Protocol:
 
 ```python
 from actants.mcp import serve
-serve(agent)                                              # stdio (Claude Desktop)
-serve(agent, transport="streamable-http", port=8000)      # HTTP for remote clients
+serve(agent)                                              # stdio
+serve(agent, transport="streamable-http", port=8000)      # HTTP
 ```
 
-Now Claude Desktop, IDEs, and any MCP-aware app can call your agent's tools.
-
-### Consume any MCP server as agent tools
+Consume tools from one or more MCP servers:
 
 ```python
 from actants.mcp import MCPClient
@@ -107,99 +144,61 @@ async with MCPClient({
     "fs":  {"command": "uvx", "args": ["mcp-server-filesystem", "/tmp"]},
 }) as mcp:
     agent = Agent(llm=LLM(), tools=mcp.tools())
-    await agent.run("show me the git status of this repo")
 ```
 
-### Speak A2A — your agent is callable from any A2A client
+The config shape matches Claude Desktop's `mcpServers`. Requires the
+`[mcp]` extra and the official `mcp` Python SDK.
+
+## A2A
+
+Run an agent as an A2A server:
 
 ```python
 from actants.a2a import serve
 serve(agent, host="0.0.0.0", port=9000)
-# Mounts /.well-known/agent-card.json + JSON-RPC at /
+# /.well-known/agent-card.json + JSON-RPC at /
 ```
+
+Call a remote A2A agent as a tool:
 
 ```python
 from actants.a2a import RemoteAgent
 
-remote = RemoteAgent("https://research-agent.example.com")
+remote = RemoteAgent("https://example.com")
 agent = Agent(llm=LLM(), tools=[remote])
-await agent.run("Ask the research agent about transformers.")
 ```
 
-### Switch providers without changing your code
+The Agent Card is auto-generated from the agent's tool registry. Streaming
+uses Server-Sent Events. Requires the `[a2a]` extra and the official
+`a2a-sdk` Python package.
 
-```python
-agent = Agent(llm=LLM(provider="openai", model="gpt-4o"))                 # OpenAI
-agent = Agent(llm=LLM(provider="anthropic", model="claude-3-5-sonnet"))   # Claude
-agent = Agent(llm=LLM(provider="groq", model="llama-3.3-70b-versatile"))  # Groq
-agent = Agent()                                                           # Ollama (default)
-```
+## Tracing
 
-OpenAI, Anthropic, Gemini, Groq, Mistral, Ollama — same `LLM()` class, same `Agent`.
+`actants` emits OpenTelemetry GenAI semantic-convention spans
+(`invoke_agent`, `chat`, `execute_tool`, `embeddings`). Cost is recorded
+under `actants.cost.usd` because the OTel GenAI spec does not yet define a
+cost attribute. Spans are forwarded to whichever OTLP collector you
+configure; `actants` itself sends nothing.
 
----
-
-## Architecture
-
-actants follows the **ReAct loop** (Reason → Act → Observe) using each model's native tool-calling — no `Thought:`/`Action:` prompt-engineering tricks. The model emits structured tool calls; we dispatch them and feed results back.
-
-Three abstraction layers:
+## Project layout
 
 ```
-Agent           → state, memory, hooks, streaming events
-LLM             → provider gateway, retry, fallback, cost, cache
-BaseLLMProvider → Ollama / OpenAI / Anthropic / Gemini / Groq / Mistral
+Agent           state, memory, hooks, streaming events
+LLM             provider gateway, retry, fallback, cost, cache
+Provider        Ollama, OpenAI, Anthropic, Gemini, Groq, Mistral
 ```
 
-Plus opt-in modules: `mcp/`, `a2a/`, `embeddings/`, `storage/`, `cli/`, `tracing/`, `observability/`, `config/`, `testing/`.
-
----
-
-## What we won't build
-
-A framework's "no" list is more important than its "yes" list. We will not add:
-
-- **Vector DB integrations** beyond SQLite (sqlite-vec scales well for local use)
-- **Multi-agent metaphors** ("Crews", "Societies", "Workflows") — A2A covers it
-- **RAG-as-a-feature** — embeddings + storage are primitives; RAG is an app pattern
-- **Code-execution agents** — sandbox quality is a separate product
-- **Visual graph builders**
-- **Hosted SaaS / paid tier** — we sell nothing
-- **Sync API** — async only, one way to do it
-
-If you want any of those, grab a different framework.
-
----
-
-## OpenTelemetry GenAI conformance
-
-actants emits spans following [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/):
-
-```
-invoke_agent llama3.2          (CLIENT)
-├── chat llama3.2              (CLIENT)
-├── execute_tool search        (INTERNAL)
-├── chat llama3.2              (CLIENT)
-└── execute_tool fetch_url     (INTERNAL)
-```
-
-All `gen_ai.*` attribute names match the spec. Cost is namespaced under `actants.cost.usd` (the spec doesn't define a cost attribute). Opt into experimental attributes via `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental`.
-
-Works with Phoenix, Langfuse, Logfire, Datadog, any OTel-compatible backend.
-
----
+Opt-in modules: `mcp`, `a2a`, `embeddings`, `storage`, `cli`, `tracing`,
+`observability`, `config`, `testing`.
 
 ## Status
 
-- **License:** MIT
-- **Python:** 3.12+
+`actants` is pre-1.0. The public API listed in `actants.__all__` is
+documented; everything else is implementation detail and may change. The
+package emits no telemetry.
 
----
+## Links
 
-## Project & community
-
-Part of [Open Intelligence Labs](https://github.com/openintelligence-labs) — a collection of independent local-first AI projects.
-
-- **Issues / discussions:** GitHub Issues
-
-If this framework saves you from writing another LLM wrapper, **star the repo**.
+- Issues: https://github.com/openintelligence-labs/actants/issues
+- License: [MIT](LICENSE)
+- Part of [Open Intelligence Labs](https://github.com/openintelligence-labs)

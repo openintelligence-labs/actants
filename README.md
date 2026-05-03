@@ -3,9 +3,8 @@
 [![PyPI](https://img.shields.io/pypi/v/actants)](https://pypi.org/project/actants/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-153%20passing-brightgreen)]()
 
-**The local-first AI agent framework. No API keys. No telemetry. Imports in 1 millisecond.**
+**A local-first AI agent framework. No API keys. No telemetry. Built for offline-first development.**
 
 ```python
 from actants import Agent
@@ -20,39 +19,13 @@ That's the whole quickstart. No signup. No `OPENAI_API_KEY`. No phone-home.
 
 ## Why actants
 
-Five things this framework does that no incumbent does together:
-
 | | What | Why it matters |
 |---|---|---|
 | **Local-first** | Defaults to Ollama. OpenAI is opt-in. | Privacy, cost, offline work — by default, not as a plugin. |
-| **Zero telemetry** | No analytics. No phone-home. CI-enforced. | What your agent sends, *you* sent. Nothing else. |
-| **Sub-2ms cold import** | PEP 562 lazy module loading. Measured. | CLIs feel native. Serverless costs nothing extra. |
-| **Native MCP server + client** | 2 lines to expose your agent. 3 to consume one. | Your agent IS a Claude Desktop extension. |
+| **Zero telemetry** | No analytics. No phone-home. | What your agent sends, *you* sent. Nothing else. |
+| **Lazy imports** | PEP 562 module-level lazy loading. | Only pay for what you use. |
+| **Native MCP server + client** | A few lines to expose your agent. A few lines to consume one. | Your agent IS a Claude Desktop extension. |
 | **Native A2A protocol** | Auto-generated Agent Card. Streaming SSE. | Agents in different frameworks talk to each other. |
-
-If you want one of these, plenty of frameworks have it. If you want all five, actants is the only choice.
-
----
-
-## Compared to other Python agent frameworks
-
-Real numbers, on the same machine, this Python:
-
-| Framework | Bare `import` (ms) | First-use import (ms) | Default LLM | Telemetry on by default | MCP server |
-|---|---:|---:|---|---|---|
-| **actants** | **1.1** | **210.7** | **Ollama** | **No (CI-enforced)** | **2 lines** |
-| smolagents | 186.7 | 185.6 | HF API | No | ❌ |
-| autogen-agentchat | 20.3 | 228.5 | OpenAI / Azure | No | ❌ |
-| langchain | 43.4 | 289.4 | OpenAI | LangSmith push | ❌ |
-| langgraph | 0.1 | 307.6 | OpenAI | LangSmith push | ❌ |
-| agno | 21.1 | 304.7 | OpenAI | AgentOS push | ❌ |
-| llama_index | 497.5 | 510.9 | OpenAI | Partial | ❌ |
-| pydantic_ai | 526.8 | 523.4 | OpenAI | No | partial |
-| crewai | 541.8 | 544.8 | OpenAI | Yes (broken opt-out) | ❌ |
-
-Reproduce yourself: `python -m actants.bench`.
-
-The honest take: **smolagents beats us on import speed**. They're ~1k LOC, we're ~5k. They trade features for size — no MCP server, no A2A, no embeddings, no storage primitives. We trade a little speed for those.
 
 ---
 
@@ -66,7 +39,7 @@ pip install 'actants[a2a]'                         # A2A client + server
 pip install 'actants[cli]'                         # Click + Rich helpers
 pip install 'actants[all]'                         # everything
 
-ollama pull llama3.2                                   # default local model
+ollama pull llama3.2                               # default local model
 ```
 
 ---
@@ -114,12 +87,12 @@ async for event in agent.stream("explain transformers in one paragraph"):
         case AgentRunCompleted(content=final):    print(f"\n[done — {len(final)} chars]")
 ```
 
-### Expose your agent as an MCP server (two lines)
+### Expose your agent as an MCP server
 
 ```python
 from actants.mcp import serve
-serve(agent)                                       # stdio (Claude Desktop)
-serve(agent, transport="streamable-http", port=8000)  # HTTP for remote clients
+serve(agent)                                              # stdio (Claude Desktop)
+serve(agent, transport="streamable-http", port=8000)      # HTTP for remote clients
 ```
 
 Now Claude Desktop, IDEs, and any MCP-aware app can call your agent's tools.
@@ -156,10 +129,10 @@ await agent.run("Ask the research agent about transformers.")
 ### Switch providers without changing your code
 
 ```python
-agent = Agent(llm=LLM(provider="openai", model="gpt-4o"))      # OpenAI
-agent = Agent(llm=LLM(provider="anthropic", model="claude-3-5-sonnet"))  # Claude
-agent = Agent(llm=LLM(provider="groq", model="llama-3.3-70b-versatile")) # Groq
-agent = Agent()                                                # Ollama (default)
+agent = Agent(llm=LLM(provider="openai", model="gpt-4o"))                 # OpenAI
+agent = Agent(llm=LLM(provider="anthropic", model="claude-3-5-sonnet"))   # Claude
+agent = Agent(llm=LLM(provider="groq", model="llama-3.3-70b-versatile"))  # Groq
+agent = Agent()                                                           # Ollama (default)
 ```
 
 OpenAI, Anthropic, Gemini, Groq, Mistral, Ollama — same `LLM()` class, same `Agent`.
@@ -170,7 +143,7 @@ OpenAI, Anthropic, Gemini, Groq, Mistral, Ollama — same `LLM()` class, same `A
 
 actants follows the **ReAct loop** (Reason → Act → Observe) using each model's native tool-calling — no `Thought:`/`Action:` prompt-engineering tricks. The model emits structured tool calls; we dispatch them and feed results back.
 
-The whole framework is ~50 public symbols, ~5,000 LOC, three abstraction layers:
+Three abstraction layers:
 
 ```
 Agent           → state, memory, hooks, streaming events
@@ -180,19 +153,17 @@ BaseLLMProvider → Ollama / OpenAI / Anthropic / Gemini / Groq / Mistral
 
 Plus opt-in modules: `mcp/`, `a2a/`, `embeddings/`, `storage/`, `cli/`, `tracing/`, `observability/`, `config/`, `testing/`.
 
-You can read every line of the framework in one sitting. That's the point.
-
 ---
 
 ## What we won't build
 
 A framework's "no" list is more important than its "yes" list. We will not add:
 
-- **Vector DB integrations** beyond SQLite (sqlite-vec scales to ~100M vectors)
+- **Vector DB integrations** beyond SQLite (sqlite-vec scales well for local use)
 - **Multi-agent metaphors** ("Crews", "Societies", "Workflows") — A2A covers it
 - **RAG-as-a-feature** — embeddings + storage are primitives; RAG is an app pattern
 - **Code-execution agents** — sandbox quality is a separate product
-- **Visual graph builders** — LangGraph Studio territory
+- **Visual graph builders**
 - **Hosted SaaS / paid tier** — we sell nothing
 - **Sync API** — async only, one way to do it
 
@@ -202,7 +173,7 @@ If you want any of those, grab a different framework.
 
 ## OpenTelemetry GenAI conformance
 
-actants emits spans following [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) (semconv v1.40.0+):
+actants emits spans following [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/):
 
 ```
 invoke_agent llama3.2          (CLIENT)
@@ -212,7 +183,7 @@ invoke_agent llama3.2          (CLIENT)
 └── execute_tool fetch_url     (INTERNAL)
 ```
 
-All `gen_ai.*` attribute names match the spec exactly. Cost is namespaced under `actants.cost.usd` (the spec doesn't define a cost attribute). Forward-compatibility via `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental`.
+All `gen_ai.*` attribute names match the spec. Cost is namespaced under `actants.cost.usd` (the spec doesn't define a cost attribute). Opt into experimental attributes via `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental`.
 
 Works with Phoenix, Langfuse, Logfire, Datadog, any OTel-compatible backend.
 
@@ -220,9 +191,6 @@ Works with Phoenix, Langfuse, Logfire, Datadog, any OTel-compatible backend.
 
 ## Status
 
-- **Version:** 0.5.0 (in development)
-- **Tests:** 153 passing
-- **Cold import:** 1.1 ms median (CI-enforced under 50 ms)
 - **License:** MIT
 - **Python:** 3.12+
 
@@ -230,10 +198,8 @@ Works with Phoenix, Langfuse, Logfire, Datadog, any OTel-compatible backend.
 
 ## Project & community
 
-Part of [Open Intelligence Labs](https://github.com/openintelligence-labs) — a collection of independent local-first AI projects sharing this framework.
+Part of [Open Intelligence Labs](https://github.com/openintelligence-labs) — a collection of independent local-first AI projects.
 
 - **Issues / discussions:** GitHub Issues
-- **Roadmap:** See `docs/V0.5_PLAN.md`
-- **Differentiation:** See `docs/DIFFERENTIATION.md`
 
-If this framework saves you from writing another LLM wrapper, **star the repo** — it's the cheapest way to help us stay independent.
+If this framework saves you from writing another LLM wrapper, **star the repo**.

@@ -1,8 +1,24 @@
 # Changelog
 
-## [0.5.0] - 2026-04-29
+## [0.5.1] - 2026-05-03
 
-The release that delivers the wedge: **local-first, zero-telemetry, async-only, sub-2ms cold import, native MCP + A2A, OTel-conformant.**
+### Documentation
+
+- Removed comparison-benchmark table and specific timing claims from README
+  and docs that lacked verifiable measurement methodology. The internal
+  `actants.bench` harness still exists for users to run their own
+  reproducible measurements locally.
+- Removed unverified competitor-issue references and quantitative
+  "Nx faster" claims from migration guides.
+
+### Note on 0.5.0
+
+Version 0.5.0 was published on 2026-05-03 and yanked the same day. The 0.5.1
+release contains the same code with corrected documentation.
+
+## [0.5.0] - 2026-04-29 (yanked)
+
+The release that delivers the wedge: **local-first, zero-telemetry, async-only, native MCP + A2A, OTel-conformant.**
 
 ### Added — interop
 
@@ -36,15 +52,15 @@ The release that delivers the wedge: **local-first, zero-telemetry, async-only, 
 
 ### Added — tooling
 
-- **`actants.bench`** — competitor benchmark harness:
-  - `python -m actants.bench` outputs Markdown comparison table
-  - Measures bare `import`, first-use import, and `Agent()` instantiation across LangChain, LlamaIndex, Pydantic AI, CrewAI, smolagents, Agno, AutoGen.
-  - All numbers reproducible — fresh subprocess per sample.
+- **`actants.bench`** — internal benchmark harness:
+  - `python -m actants.bench` outputs a Markdown comparison table for local measurement.
+  - Measures bare `import`, first-use import, and `Agent()` instantiation.
+  - Each measurement runs in a fresh subprocess.
 
 ### Changed — performance
 
-- **`actants/__init__.py` is now PEP 562 lazy** — bare `import actants` is ~1 ms median (down from ~140 ms in 0.4.x). Public API is unchanged; symbols load on first attribute access.
-- **CI gate**: `tests/test_cold_import.py` enforces bare-import < 50 ms median. Anyone introducing an eager top-level import fails CI immediately.
+- **`actants/__init__.py` is now PEP 562 lazy** — module symbols load on first attribute access rather than at import time. Public API is unchanged.
+- **CI gate**: `tests/test_cold_import.py` enforces an upper bound on bare-import time so eager top-level imports fail CI.
 
 ### Documentation
 

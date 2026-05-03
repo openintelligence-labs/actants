@@ -1,4 +1,4 @@
-"""End-to-end: agentic-kit serves an MCP server, agentic-kit consumes it.
+"""End-to-end: actants serves an MCP server, actants consumes it.
 
 The full-circle test that proves both halves of the MCP module work together.
 """
@@ -10,14 +10,14 @@ import pytest
 mcp = pytest.importorskip("mcp")
 from mcp.shared.memory import create_connected_server_and_client_session  # noqa: E402
 
-from agentic_kit.mcp import build_server  # noqa: E402
-from agentic_kit.mcp.adapters import mcp_tool_to_agentic_tool  # noqa: E402
-from agentic_kit.tools.registry import ToolRegistry  # noqa: E402
+from actants.mcp import build_server  # noqa: E402
+from actants.mcp.adapters import mcp_tool_to_agentic_tool  # noqa: E402
+from actants.tools.registry import ToolRegistry  # noqa: E402
 
 
 @pytest.mark.asyncio
 async def test_full_circle_serve_then_consume():
-    """Serve a registry, then consume it back as agentic-kit tools.
+    """Serve a registry, then consume it back as actants tools.
 
     What the agent sees on the consumer side must be functionally identical
     to what the producer registered.

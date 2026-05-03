@@ -4,8 +4,8 @@ import time
 
 import pytest
 
-from agentic_kit.cache.memory import InMemoryCache, make_key
-from agentic_kit.llm.base import ChatMessage, CompletionResult, TokenUsage
+from actants.cache.memory import InMemoryCache, make_key
+from actants.llm.base import ChatMessage, CompletionResult, TokenUsage
 
 
 def _result(text: str = "hi") -> CompletionResult:

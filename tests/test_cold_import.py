@@ -1,4 +1,4 @@
-"""CI gate: ``import agentic_kit`` must stay under 200ms.
+"""CI gate: ``import actants`` must stay under 200ms.
 
 This is a wedge — every framework ships with multi-second imports. We don't.
 The gate exists so a careless eager-import in __init__.py fails CI immediately.
@@ -15,11 +15,11 @@ HOT_INSTANTIATE_BUDGET_MS = 5.0
 
 
 def _measure_subprocess_import_ms() -> float:
-    """Spawn a fresh Python and time ``import agentic_kit`` end-to-end."""
+    """Spawn a fresh Python and time ``import actants`` end-to-end."""
     code = (
         "import time, sys; "
         "t = time.perf_counter(); "
-        "import agentic_kit; "
+        "import actants; "
         "print((time.perf_counter() - t) * 1000)"
     )
     out = subprocess.run(
@@ -37,13 +37,13 @@ def test_cold_import_under_200ms():
     median = samples[1]
     assert median < COLD_IMPORT_BUDGET_MS, (
         f"Cold import too slow: {median:.1f} ms (budget: {COLD_IMPORT_BUDGET_MS}). "
-        f"Samples: {samples}. Add eager imports to agentic_kit/__init__.py only "
+        f"Samples: {samples}. Add eager imports to actants/__init__.py only "
         f"after profiling and confirming budget headroom."
     )
 
 
 def test_no_attribute_access_keeps_import_minimal():
-    """``import agentic_kit`` alone (no attribute access) must be near-instant."""
+    """``import actants`` alone (no attribute access) must be near-instant."""
     samples = []
     for _ in range(3):
         out = subprocess.run(
@@ -51,7 +51,7 @@ def test_no_attribute_access_keeps_import_minimal():
                 sys.executable,
                 "-c",
                 "import time; t=time.perf_counter(); "
-                "import agentic_kit; "
+                "import actants; "
                 "print((time.perf_counter()-t)*1000)",
             ],
             capture_output=True,
@@ -67,9 +67,9 @@ def test_no_attribute_access_keeps_import_minimal():
 
 def test_agent_instantiation_after_warm_import_is_fast():
     """Once warm, instantiating an Agent should be sub-5ms."""
-    from agentic_kit.agents import Agent
-    from agentic_kit.llm.client import LLM
-    from agentic_kit.testing import FakeLLMProvider
+    from actants.agents import Agent
+    from actants.llm.client import LLM
+    from actants.testing import FakeLLMProvider
 
     # Warm up
     provider = FakeLLMProvider()

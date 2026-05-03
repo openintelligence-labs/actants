@@ -8,12 +8,12 @@ mcp = pytest.importorskip("mcp")
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.shared.memory import create_connected_server_and_client_session  # noqa: E402
 
-from agentic_kit.mcp.adapters import (  # noqa: E402
+from actants.mcp.adapters import (  # noqa: E402
     _flatten_content,
     call_result_to_tool_result,
     mcp_tool_to_agentic_tool,
 )
-from agentic_kit.tools.base import ToolError  # noqa: E402
+from actants.tools.base import ToolError  # noqa: E402
 
 
 def _build_server() -> FastMCP:

@@ -5,7 +5,7 @@ from collections.abc import AsyncIterator
 import pytest
 from pydantic import BaseModel
 
-from agentic_kit.llm.base import (
+from actants.llm.base import (
     BaseLLMProvider,
     CompletionResult,
     FinishDelta,
@@ -13,8 +13,8 @@ from agentic_kit.llm.base import (
     TextDelta,
     TokenUsage,
 )
-from agentic_kit.llm.client import LLM
-from agentic_kit.llm.partial_json import parse_partial_json
+from actants.llm.client import LLM
+from actants.llm.partial_json import parse_partial_json
 
 
 class Report(BaseModel):

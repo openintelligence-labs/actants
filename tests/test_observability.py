@@ -5,7 +5,7 @@ import json
 
 import structlog
 
-from agentic_kit.observability import get_logger, setup_logging
+from actants.observability import get_logger, setup_logging
 
 
 def test_setup_logging_pretty_renders_to_stream():

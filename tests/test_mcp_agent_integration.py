@@ -16,15 +16,15 @@ mcp = pytest.importorskip("mcp")
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.shared.memory import create_connected_server_and_client_session  # noqa: E402
 
-from agentic_kit.agents import Agent  # noqa: E402
-from agentic_kit.llm.client import LLM  # noqa: E402
-from agentic_kit.mcp.adapters import mcp_tool_to_agentic_tool  # noqa: E402
-from agentic_kit.testing import (  # noqa: E402
+from actants.agents import Agent  # noqa: E402
+from actants.llm.client import LLM  # noqa: E402
+from actants.mcp.adapters import mcp_tool_to_agentic_tool  # noqa: E402
+from actants.testing import (  # noqa: E402
     FakeLLMProvider,
     fake_completion,
     fake_tool_call_completion,
 )
-from agentic_kit.tools.registry import ToolRegistry  # noqa: E402
+from actants.tools.registry import ToolRegistry  # noqa: E402
 
 
 def _server_with_calculator() -> FastMCP:

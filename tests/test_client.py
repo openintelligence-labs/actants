@@ -4,13 +4,13 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from agentic_kit.llm.base import (
+from actants.llm.base import (
     BaseLLMProvider,
     ChatMessage,
     CompletionResult,
     TokenUsage,
 )
-from agentic_kit.llm.client import LLM, LLMSettings
+from actants.llm.client import LLM, LLMSettings
 
 
 class FakeProvider(BaseLLMProvider):
@@ -81,8 +81,8 @@ async def test_stream_passthrough():
 
 
 def test_settings_env_prefix(monkeypatch):
-    monkeypatch.setenv("AGENTIC_KIT_MODEL", "custom-model")
-    monkeypatch.setenv("AGENTIC_KIT_TEMPERATURE", "0.2")
+    monkeypatch.setenv("ACTANTS_MODEL", "custom-model")
+    monkeypatch.setenv("ACTANTS_TEMPERATURE", "0.2")
     s = LLMSettings()
     assert s.model == "custom-model"
     assert s.temperature == 0.2

@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agentic-kit"
+name = "actants"
 version = "0.5.0"
 description = "Local-first AI app framework: LLM gateway, agents, embeddings, storage, CLI helpers, observability. Build agents with one import. Ollama-default, async, typed."
 readme = "README.md"
@@ -77,17 +77,17 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/openintelligence-labs/agentic-kit"
-Repository = "https://github.com/openintelligence-labs/agentic-kit"
-Issues = "https://github.com/openintelligence-labs/agentic-kit/issues"
-Documentation = "https://agentic-kit.openintelligence-labs.org"
-Changelog = "https://github.com/openintelligence-labs/agentic-kit/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/openintelligence-labs/actants"
+Repository = "https://github.com/openintelligence-labs/actants"
+Issues = "https://github.com/openintelligence-labs/actants/issues"
+Documentation = "https://actants.openintelligence-labs.org"
+Changelog = "https://github.com/openintelligence-labs/actants/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-agentic_kit = ["py.typed"]
+actants = ["py.typed"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

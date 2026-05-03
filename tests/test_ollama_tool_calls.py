@@ -3,8 +3,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from agentic_kit.llm.base import ChatMessage, ToolSpec
-from agentic_kit.llm.ollama import OllamaProvider
+from actants.llm.base import ChatMessage, ToolSpec
+from actants.llm.ollama import OllamaProvider
 
 
 @pytest.mark.asyncio
@@ -76,7 +76,7 @@ async def test_ollama_serializes_assistant_tool_calls_in_followup():
             },
         )
 
-    from agentic_kit.llm.base import ToolCall
+    from actants.llm.base import ToolCall
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         p = OllamaProvider(client=client)

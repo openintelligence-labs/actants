@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import asyncio
 
-from agentic_kit import LLM, Agent
-from agentic_kit.agents import (
+from actants import LLM, Agent
+from actants.agents import (
     AgentRunCompleted,
     AgentTextDelta,
     AgentToolCallCompleted,

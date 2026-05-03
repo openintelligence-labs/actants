@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 
-from agentic_kit import LLM
+from actants import LLM
 
 
 async def main() -> None:

@@ -6,22 +6,22 @@ The release that delivers the wedge: **local-first, zero-telemetry, async-only, 
 
 ### Added — interop
 
-- **`agentic_kit.mcp`** — native Model Context Protocol integration in both directions:
+- **`actants.mcp`** — native Model Context Protocol integration in both directions:
   - `MCPClient({...})` — connect to N MCP servers (stdio + Streamable HTTP), expose their tools to your agent. Config shape mirrors Claude Desktop's `mcpServers`.
-  - `MCPClient.tools()` returns a flat list of agentic-kit `Tool` objects, name-prefixed by server (`git__status`).
+  - `MCPClient.tools()` returns a flat list of actants `Tool` objects, name-prefixed by server (`git__status`).
   - `serve(agent)` / `build_server(agent)` — expose your agent's tools as an MCP server in two lines.
   - Uses the official `mcp` Python SDK; under `[mcp]` extra.
-- **`agentic_kit.a2a`** — native Agent2Agent protocol (Linux Foundation v1.0):
+- **`actants.a2a`** — native Agent2Agent protocol (Linux Foundation v1.0):
   - `serve(agent, port=9000)` — expose your agent over A2A. Auto-mounts `/.well-known/agent-card.json` + JSON-RPC. AgentCard auto-generated from your tool registry (one skill per tool). Streaming via SSE.
   - `RemoteAgent(url)` — call a remote A2A agent as a local tool. Lazy card resolution.
   - Uses the official `a2a-sdk` Python SDK; under `[a2a]` extra.
 
 ### Added — observability
 
-- **`agentic_kit.tracing.genai`** — OpenTelemetry GenAI semantic-conventions-conformant spans (semconv v1.40.0+):
+- **`actants.tracing.genai`** — OpenTelemetry GenAI semantic-conventions-conformant spans (semconv v1.40.0+):
   - `chat_span(...)`, `execute_tool_span(...)`, `invoke_agent_span(...)`, `embeddings_span(...)`, `record_response(...)`.
   - All `gen_ai.*` attribute names match the spec exactly (`gen_ai.operation.name`, `gen_ai.provider.name`, `gen_ai.usage.input_tokens`, etc.).
-  - Cost is namespaced under `agentic_kit.cost.usd` (the spec doesn't define cost).
+  - Cost is namespaced under `actants.cost.usd` (the spec doesn't define cost).
   - `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental` opt-in for newer experimental attributes.
   - Compatible with Phoenix, Langfuse, Logfire, Datadog, any OTel backend.
 
@@ -36,14 +36,14 @@ The release that delivers the wedge: **local-first, zero-telemetry, async-only, 
 
 ### Added — tooling
 
-- **`agentic_kit.bench`** — competitor benchmark harness:
-  - `python -m agentic_kit.bench` outputs Markdown comparison table
+- **`actants.bench`** — competitor benchmark harness:
+  - `python -m actants.bench` outputs Markdown comparison table
   - Measures bare `import`, first-use import, and `Agent()` instantiation across LangChain, LlamaIndex, Pydantic AI, CrewAI, smolagents, Agno, AutoGen.
   - All numbers reproducible — fresh subprocess per sample.
 
 ### Changed — performance
 
-- **`agentic_kit/__init__.py` is now PEP 562 lazy** — bare `import agentic_kit` is ~1 ms median (down from ~140 ms in 0.4.x). Public API is unchanged; symbols load on first attribute access.
+- **`actants/__init__.py` is now PEP 562 lazy** — bare `import actants` is ~1 ms median (down from ~140 ms in 0.4.x). Public API is unchanged; symbols load on first attribute access.
 - **CI gate**: `tests/test_cold_import.py` enforces bare-import < 50 ms median. Anyone introducing an eager top-level import fails CI immediately.
 
 ### Documentation
@@ -57,13 +57,13 @@ The release that delivers the wedge: **local-first, zero-telemetry, async-only, 
 - A2A push notification webhook emission (clients support; servers don't emit).
 - Signed Agent Card key management UX (we generate and verify; key rotation is manual).
 - MCP resources/prompts/sampling primitives (only tools today).
-- Unified `agentic_kit.serve(agent, mcp=True, a2a=True)` one-liner.
+- Unified `actants.serve(agent, mcp=True, a2a=True)` one-liner.
 
 ## [0.4.0] - unreleased
 
 ### Added — framework expansion
 
-agentic-kit graduates from "LLM gateway" to "local-first AI app framework". Pure additions; no breaking changes from 0.3.
+actants graduates from "LLM gateway" to "local-first AI app framework". Pure additions; no breaking changes from 0.3.
 
 - **`Agent`** — stateful tool-calling agent with `ConversationMemory` and `AgentHooks` (before_step, after_step, on_tool_call, on_error). Wraps `LLM.run_agent` with state and lifecycle.
 - **`AppSettings`** — base class for app-level pydantic settings with `.env` loading and per-app env-prefix.
@@ -73,7 +73,7 @@ agentic-kit graduates from "LLM gateway" to "local-first AI app framework". Pure
 - **`open_sqlite`** — context manager: SQLite with WAL, foreign keys, safe defaults.
 - **`JsonlAppender`, `read_jsonl`** — append-only JSONL primitives.
 - **`Embeddings`, `OllamaEmbeddingProvider`** — local-first embedding client with cosine helper. Default: `nomic-embed-text` via Ollama.
-- **`agentic_kit.testing`** — `FakeLLMProvider`, `FakeEmbeddingProvider`, `fake_completion`, `fake_tool_call_completion` for app tests with no network.
+- **`actants.testing`** — `FakeLLMProvider`, `FakeEmbeddingProvider`, `fake_completion`, `fake_tool_call_completion` for app tests with no network.
 
 ### Added — packaging
 - `[cli]` extra (`click`, `rich`).
@@ -102,7 +102,7 @@ agentic-kit graduates from "LLM gateway" to "local-first AI app framework". Pure
 - `OllamaEmbedder` — local embeddings via Ollama's `/api/embeddings`.
 - `RetryPolicy` + `retry_async` — exponential backoff with jitter.
 - `FallbackProvider` — chain providers for local-first-with-cloud-fallback resilience.
-- `ToolCall`, `ToolSpec` — provider-agnostic tool descriptions in `agentic_kit.llm.base`.
+- `ToolCall`, `ToolSpec` — provider-agnostic tool descriptions in `actants.llm.base`.
 - `ToolRegistry.as_specs()` — convert registered tools to provider-agnostic specs.
 - Cache, cost tracker, tracing, and retry are now wired into `LLM.complete()` as optional layers.
 - Pricing refreshed for Claude 4.7 / Haiku 4.5 / GPT-4.1 / o3.

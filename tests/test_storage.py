@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from agentic_kit.storage import JsonlAppender, open_sqlite, read_jsonl
+from actants.storage import JsonlAppender, open_sqlite, read_jsonl
 
 
 def test_open_sqlite_creates_with_wal_and_commits(tmp_path):

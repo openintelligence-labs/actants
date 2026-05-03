@@ -9,11 +9,11 @@ starlette = pytest.importorskip("starlette")
 
 from starlette.testclient import TestClient  # noqa: E402
 
-from agentic_kit.a2a import build_app  # noqa: E402
-from agentic_kit.agents import Agent  # noqa: E402
-from agentic_kit.llm.client import LLM  # noqa: E402
-from agentic_kit.testing import FakeLLMProvider, fake_completion  # noqa: E402
-from agentic_kit.tools.registry import ToolRegistry  # noqa: E402
+from actants.a2a import build_app  # noqa: E402
+from actants.agents import Agent  # noqa: E402
+from actants.llm.client import LLM  # noqa: E402
+from actants.testing import FakeLLMProvider, fake_completion  # noqa: E402
+from actants.tools.registry import ToolRegistry  # noqa: E402
 
 
 def _build_agent() -> Agent:

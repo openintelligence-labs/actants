@@ -4,13 +4,13 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from agentic_kit.llm.base import (
+from actants.llm.base import (
     BaseLLMProvider,
     ChatMessage,
     CompletionResult,
     TokenUsage,
 )
-from agentic_kit.policies.fallback import AllProvidersFailedError, FallbackProvider
+from actants.policies.fallback import AllProvidersFailedError, FallbackProvider
 
 
 class FailingProvider(BaseLLMProvider):

@@ -17,9 +17,9 @@ from __future__ import annotations
 import asyncio
 import sys
 
-from agentic_kit import LLM, Agent
-from agentic_kit.a2a import RemoteAgent, serve
-from agentic_kit.tools.registry import ToolRegistry
+from actants import LLM, Agent
+from actants.a2a import RemoteAgent, serve
+from actants.tools.registry import ToolRegistry
 
 
 def build_math_agent() -> Agent:

@@ -1,12 +1,12 @@
-# Contributing to agentic-kit
+# Contributing to actants
 
 Thanks for your interest! This package is the shared backbone of the Open Intelligence Labs ecosystem, so changes here affect every downstream project.
 
 ## Dev setup
 
 ```bash
-git clone https://github.com/openintelligence-labs/agentic-kit
-cd agentic-kit
+git clone https://github.com/openintelligence-labs/actants
+cd actants
 python -m venv .venv && source .venv/bin/activate
 pip install -e '.[dev,openai,anthropic,cache]'
 pytest tests/

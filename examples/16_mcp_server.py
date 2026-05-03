@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import sys
 
-from agentic_kit.mcp import serve
-from agentic_kit.tools.registry import ToolRegistry
+from actants.mcp import serve
+from actants.tools.registry import ToolRegistry
 
 
 def build_tools() -> ToolRegistry:
@@ -52,4 +52,4 @@ def build_tools() -> ToolRegistry:
 
 if __name__ == "__main__":
     transport = "streamable-http" if "--http" in sys.argv else "stdio"
-    serve(build_tools(), transport=transport, name="agentic-kit-demo")
+    serve(build_tools(), transport=transport, name="actants-demo")

@@ -8,7 +8,7 @@ from __future__ import annotations
 import asyncio
 import json
 
-from agentic_kit import LLM, CostTracker
+from actants import LLM, CostTracker
 
 
 async def main() -> None:

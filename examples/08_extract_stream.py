@@ -9,7 +9,7 @@ import asyncio
 
 from pydantic import BaseModel
 
-from agentic_kit import LLM
+from actants import LLM
 
 
 class TripPlan(BaseModel):

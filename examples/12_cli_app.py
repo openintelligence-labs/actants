@@ -1,4 +1,4 @@
-"""Build a CLI app in <30 lines using agentic_kit.cli helpers.
+"""Build a CLI app in <30 lines using actants.cli helpers.
 
 Run::
 
@@ -11,10 +11,10 @@ from __future__ import annotations
 
 import click
 
-from agentic_kit.cli import common_options, console, make_app, success
-from agentic_kit.cli.app import emit_json
+from actants.cli import common_options, console, make_app, success
+from actants.cli.app import emit_json
 
-app = make_app("greeter", help="Demo CLI built on agentic-kit")
+app = make_app("greeter", help="Demo CLI built on actants")
 
 
 @app.command()

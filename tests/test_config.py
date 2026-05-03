@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 
-from agentic_kit.config import AppSettings, app_cache_dir, app_config_dir, app_data_dir
+from actants.config import AppSettings, app_cache_dir, app_config_dir, app_data_dir
 
 
 def test_app_config_dir_creates(tmp_path, monkeypatch):
@@ -13,7 +13,7 @@ def test_app_config_dir_creates(tmp_path, monkeypatch):
         assert d.exists()
     else:
         # On macOS / Windows just confirm path is under the right base and gets created.
-        d = app_config_dir("agentic-kit-test-myapp")
+        d = app_config_dir("actants-test-myapp")
         try:
             assert d.exists()
         finally:
@@ -22,13 +22,13 @@ def test_app_config_dir_creates(tmp_path, monkeypatch):
 
 
 def test_app_data_dir_returns_path():
-    d = app_data_dir("agentic-kit-test-data", create=False)
-    assert d.name == "agentic-kit-test-data"
+    d = app_data_dir("actants-test-data", create=False)
+    assert d.name == "actants-test-data"
 
 
 def test_app_cache_dir_returns_path():
-    d = app_cache_dir("agentic-kit-test-cache", create=False)
-    assert d.name == "agentic-kit-test-cache"
+    d = app_cache_dir("actants-test-cache", create=False)
+    assert d.name == "actants-test-cache"
 
 
 class _MyAppSettings(AppSettings):

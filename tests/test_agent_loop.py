@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from agentic_kit.llm.base import (
+from actants.llm.base import (
     BaseLLMProvider,
     ChatMessage,
     CompletionResult,
@@ -12,8 +12,8 @@ from agentic_kit.llm.base import (
     ToolCall,
     ToolSpec,
 )
-from agentic_kit.llm.client import LLM
-from agentic_kit.tools.registry import ToolRegistry
+from actants.llm.client import LLM
+from actants.tools.registry import ToolRegistry
 
 
 class ScriptedProvider(BaseLLMProvider):

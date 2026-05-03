@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from click.testing import CliRunner
 
-from agentic_kit.cli import common_options, make_app
+from actants.cli import common_options, make_app
 
 
 def test_make_app_creates_group():
@@ -10,7 +10,7 @@ def test_make_app_creates_group():
 
     @app.command()
     def hello():
-        from agentic_kit.cli import success
+        from actants.cli import success
 
         success("ok")
 

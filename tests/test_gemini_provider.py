@@ -3,8 +3,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from agentic_kit.llm.base import ChatMessage, ToolSpec
-from agentic_kit.llm.gemini_provider import GeminiProvider
+from actants.llm.base import ChatMessage, ToolSpec
+from actants.llm.gemini_provider import GeminiProvider
 
 
 @pytest.mark.asyncio
@@ -102,9 +102,9 @@ def test_gemini_requires_api_key(monkeypatch):
 
 
 def test_groq_and_mistral_subclass_openai():
-    from agentic_kit.llm.groq_provider import GroqProvider
-    from agentic_kit.llm.mistral_provider import MistralProvider
-    from agentic_kit.llm.openai_provider import OpenAIProvider
+    from actants.llm.groq_provider import GroqProvider
+    from actants.llm.mistral_provider import MistralProvider
+    from actants.llm.openai_provider import OpenAIProvider
 
     g = GroqProvider(api_key="fake")
     m = MistralProvider(api_key="fake")

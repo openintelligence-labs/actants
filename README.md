@@ -46,10 +46,10 @@ ollama pull llama3.2
 
 ```python
 import asyncio
-from actants import Agent
+from actants import Agent, LLM
 
 async def main():
-    agent = Agent()                              # Ollama, llama3.2 by default
+    agent = Agent(llm=LLM())                     # Ollama, llama3.2 by default
     result = await agent.run("Say hello.")
     print(result.content)
 
@@ -113,13 +113,17 @@ async for event in agent.stream("explain transformers in one paragraph"):
 ## Switching providers
 
 ```python
-from actants import Agent, LLM
+from actants import Agent, LLM, LLMSettings
 
-Agent(llm=LLM())                                                    # Ollama (default)
-Agent(llm=LLM(provider="openai", model="gpt-4o"))                   # OPENAI_API_KEY
-Agent(llm=LLM(provider="anthropic", model="claude-3-5-sonnet"))     # ANTHROPIC_API_KEY
-Agent(llm=LLM(provider="groq", model="llama-3.3-70b-versatile"))    # GROQ_API_KEY
+Agent(llm=LLM())                                                                          # Ollama (default)
+Agent(llm=LLM(settings=LLMSettings(provider="openai", model="gpt-4o")))                   # OPENAI_API_KEY
+Agent(llm=LLM(settings=LLMSettings(provider="anthropic", model="claude-3-5-sonnet")))     # ANTHROPIC_API_KEY
+Agent(llm=LLM(settings=LLMSettings(provider="groq", model="llama-3.3-70b-versatile")))    # GROQ_API_KEY
 ```
+
+Provider and model can also be set via `ACTANTS_PROVIDER` / `ACTANTS_MODEL`
+environment variables, or by passing a provider instance as the first
+positional argument to `LLM`.
 
 See [Configuration](https://github.com/openintelligence-labs/actants/blob/main/docs_site/configuration.md)
 for the full list of environment variables.
@@ -137,13 +141,17 @@ serve(agent, transport="streamable-http", port=8000)      # HTTP
 Consume tools from one or more MCP servers:
 
 ```python
+from actants import Agent, LLM, ToolRegistry
 from actants.mcp import MCPClient
 
 async with MCPClient({
     "git": {"command": "uvx", "args": ["mcp-server-git"]},
     "fs":  {"command": "uvx", "args": ["mcp-server-filesystem", "/tmp"]},
 }) as mcp:
-    agent = Agent(llm=LLM(), tools=mcp.tools())
+    registry = ToolRegistry()
+    for tool in mcp.tools():
+        registry.register(tool)
+    agent = Agent(llm=LLM(), tools=registry)
 ```
 
 The config shape matches Claude Desktop's `mcpServers`. Requires the
@@ -162,10 +170,12 @@ serve(agent, host="0.0.0.0", port=9000)
 Call a remote A2A agent as a tool:
 
 ```python
+from actants import Agent, LLM, ToolRegistry
 from actants.a2a import RemoteAgent
 
-remote = RemoteAgent("https://example.com")
-agent = Agent(llm=LLM(), tools=[remote])
+registry = ToolRegistry()
+registry.register(RemoteAgent("https://example.com"))
+agent = Agent(llm=LLM(), tools=registry)
 ```
 
 The Agent Card is auto-generated from the agent's tool registry. Streaming

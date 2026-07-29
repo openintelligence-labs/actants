@@ -48,10 +48,12 @@ ollama pull llama3.2
 import asyncio
 from actants import Agent, LLM
 
+
 async def main():
-    agent = Agent(llm=LLM())                     # Ollama, llama3.2 by default
+    agent = Agent(llm=LLM())  # Ollama, llama3.2 by default
     result = await agent.run("Say hello.")
     print(result.content)
+
 
 asyncio.run(main())
 ```
@@ -65,8 +67,10 @@ from actants import Agent, LLM, ToolRegistry
 
 tools = ToolRegistry()
 
+
 async def add(a: int, b: int) -> int:
     return a + b
+
 
 tools.register_function(
     "add",
@@ -115,10 +119,14 @@ async for event in agent.stream("explain transformers in one paragraph"):
 ```python
 from actants import Agent, LLM, LLMSettings
 
-Agent(llm=LLM())                                                                          # Ollama (default)
-Agent(llm=LLM(settings=LLMSettings(provider="openai", model="gpt-4o")))                   # OPENAI_API_KEY
-Agent(llm=LLM(settings=LLMSettings(provider="anthropic", model="claude-3-5-sonnet")))     # ANTHROPIC_API_KEY
-Agent(llm=LLM(settings=LLMSettings(provider="groq", model="llama-3.3-70b-versatile")))    # GROQ_API_KEY
+Agent(llm=LLM())  # Ollama (default)
+Agent(llm=LLM(settings=LLMSettings(provider="openai", model="gpt-4o")))  # OPENAI_API_KEY
+Agent(
+    llm=LLM(settings=LLMSettings(provider="anthropic", model="claude-3-5-sonnet"))
+)  # ANTHROPIC_API_KEY
+Agent(
+    llm=LLM(settings=LLMSettings(provider="groq", model="llama-3.3-70b-versatile"))
+)  # GROQ_API_KEY
 ```
 
 Provider and model can also be set via `ACTANTS_PROVIDER` / `ACTANTS_MODEL`
@@ -135,8 +143,9 @@ Expose an agent's tools over the Model Context Protocol:
 
 ```python
 from actants.mcp import serve
-serve(agent)                                              # stdio
-serve(agent, transport="streamable-http", port=8000)      # HTTP
+
+serve(agent)  # stdio
+serve(agent, transport="streamable-http", port=8000)  # HTTP
 ```
 
 Consume tools from one or more MCP servers:
@@ -145,10 +154,12 @@ Consume tools from one or more MCP servers:
 from actants import Agent, LLM, ToolRegistry
 from actants.mcp import MCPClient
 
-async with MCPClient({
-    "git": {"command": "uvx", "args": ["mcp-server-git"]},
-    "fs":  {"command": "uvx", "args": ["mcp-server-filesystem", "/tmp"]},
-}) as mcp:
+async with MCPClient(
+    {
+        "git": {"command": "uvx", "args": ["mcp-server-git"]},
+        "fs": {"command": "uvx", "args": ["mcp-server-filesystem", "/tmp"]},
+    }
+) as mcp:
     registry = ToolRegistry()
     for tool in mcp.tools():
         registry.register(tool)
@@ -164,6 +175,7 @@ Run an agent as an A2A server:
 
 ```python
 from actants.a2a import serve
+
 serve(agent, host="0.0.0.0", port=9000)
 # /.well-known/agent-card.json + JSON-RPC at /
 ```

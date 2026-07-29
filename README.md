@@ -123,7 +123,8 @@ Agent(llm=LLM(settings=LLMSettings(provider="groq", model="llama-3.3-70b-versati
 
 Provider and model can also be set via `ACTANTS_PROVIDER` / `ACTANTS_MODEL`
 environment variables, or by passing a provider instance as the first
-positional argument to `LLM`.
+positional argument to `LLM`. Since 0.5.3, the provider name alone also
+works: `LLM(provider="openai", model="gpt-4o")`.
 
 See [Configuration](https://github.com/openintelligence-labs/actants/blob/main/docs_site/configuration.md)
 for the full list of environment variables.

@@ -86,3 +86,28 @@ def test_settings_env_prefix(monkeypatch):
     s = LLMSettings()
     assert s.model == "custom-model"
     assert s.temperature == 0.2
+
+
+def test_provider_accepts_name_string():
+    from actants.llm.ollama import OllamaProvider
+
+    llm = LLM(provider="ollama", model="gemma4:latest")
+    assert isinstance(llm.provider, OllamaProvider)
+    assert llm.settings.provider == "ollama"
+    assert llm.settings.model == "gemma4:latest"
+
+
+def test_provider_unknown_name_raises_value_error():
+    with pytest.raises(ValueError, match="Unknown provider: not-a-provider"):
+        LLM(provider="not-a-provider")
+
+
+def test_provider_wrong_type_raises_type_error():
+    with pytest.raises(TypeError, match="provider name string"):
+        LLM(provider=42)  # type: ignore[arg-type]
+
+
+def test_provider_instance_still_accepted():
+    fake = FakeProvider()
+    llm = LLM(provider=fake)
+    assert llm.provider is fake

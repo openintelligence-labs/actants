@@ -82,7 +82,7 @@ class LLM:
 
     def __init__(
         self,
-        provider: BaseLLMProvider | None = None,
+        provider: BaseLLMProvider | str | None = None,
         *,
         model: str | None = None,
         settings: LLMSettings | None = None,
@@ -94,6 +94,15 @@ class LLM:
         self.settings = settings or LLMSettings()
         if model is not None:
             self.settings.model = model
+        if isinstance(provider, str):
+            # Provider name ("ollama", "openai", ...) — build the matching provider.
+            self.settings.provider = provider
+            provider = _make_provider(self.settings)
+        elif provider is not None and not isinstance(provider, BaseLLMProvider):
+            raise TypeError(
+                "provider must be a BaseLLMProvider instance or a provider name string "
+                f"(e.g. 'ollama', 'openai'), got {type(provider).__name__!r}"
+            )
         self.provider = provider or _make_provider(self.settings)
         self.cache = cache
         self.cost_tracker = cost_tracker

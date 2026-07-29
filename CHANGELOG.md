@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.5.3] - 2026-07-29
+
+### Fixed
+
+- Pinned `mcp>=1.0,<2` in the `mcp`, `all`, and `dev` extras. The MCP Python
+  SDK 2.0.0 removed `mcp.server.fastmcp` (used by `actants.mcp.serve` /
+  `build_server`) and `mcp.shared.memory.create_connected_server_and_client_session`,
+  breaking `actants.mcp` at first use. The pin stays until `actants.mcp` is
+  ported to the 2.x API.
+- `LLM(provider="openai")` used to silently store the string as the provider
+  and crash later at call time (`'str' object has no attribute 'name'`).
+  Provider name strings (`"ollama"`, `"openai"`, ...) are now coerced to the
+  matching provider at construction; any other non-`BaseLLMProvider` value
+  raises a clear `TypeError` immediately.
+
+### Notes
+
+- This release is not on PyPI yet (publishing is blocked on credentials);
+  PyPI still carries 0.5.2. Install 0.5.3 from the GitHub release artifacts.
+
 ## [0.5.2] - 2026-05-03
 
 ### Documentation

@@ -51,6 +51,12 @@ class MCPClient:
     """
 
     def __init__(self, servers: dict[str, MCPServerConfig | dict[str, Any]]) -> None:
+        if not isinstance(servers, dict):
+            raise TypeError(
+                "MCPClient expects a dict mapping server name -> config, got "
+                f"{type(servers).__name__!r}. Example:\n"
+                '    MCPClient({"git": {"command": "uvx", "args": ["mcp-server-git"]}})'
+            )
         self._configs = dict(servers)
         self._stack: AsyncExitStack | None = None
         self._toolsets: dict[str, MCPToolset] = {}

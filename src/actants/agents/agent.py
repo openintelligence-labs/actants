@@ -59,8 +59,11 @@ class Agent:
     Wraps :class:`LLM` with conversation memory, tool registry, and lifecycle hooks.
     For one-shot tool loops without state, use ``LLM.run_agent`` directly.
 
+    ``llm`` defaults to ``LLM()``, i.e. Ollama on localhost.
+
     Example::
 
+        agent = Agent()  # local Ollama, no tools
         agent = Agent(llm=LLM(), tools=registry, system="You are a helpful assistant")
         result = await agent.run("what's the weather?")
         result2 = await agent.run("and tomorrow?")  # remembers context
@@ -69,13 +72,55 @@ class Agent:
     def __init__(
         self,
         *,
-        llm: LLM,
+        llm: LLM | None = None,
         tools: ToolRegistry | None = None,
         system: str | None = None,
         memory: ConversationMemory | None = None,
         hooks: AgentHooks | None = None,
         max_steps: int = 6,
     ) -> None:
+        if llm is None:
+            llm = LLM()
+        if not isinstance(llm, LLM):
+            raise TypeError(
+                f"llm must be an LLM instance, got {type(llm).__name__!r}. "
+                "Pass Agent(llm=LLM()) for the local Ollama default, or "
+                "Agent(llm=LLM(provider='openai', model='gpt-4o')) for a hosted provider."
+            )
+        if tools is not None and not isinstance(tools, ToolRegistry):
+            raise TypeError(
+                f"tools must be a ToolRegistry, got {type(tools).__name__!r}. "
+                "Build one with:\n"
+                "    registry = ToolRegistry()\n"
+                "    registry.register_function('add', 'Add two integers', add)\n"
+                "    Agent(llm=LLM(), tools=registry)"
+            )
+        if system is not None and not isinstance(system, str):
+            raise TypeError(
+                f"system must be a string, got {type(system).__name__!r}. "
+                "Example: Agent(llm=LLM(), system='You are a helpful assistant')."
+            )
+        if memory is not None and not isinstance(memory, ConversationMemory):
+            raise TypeError(
+                f"memory must be a ConversationMemory, got {type(memory).__name__!r}. "
+                "Example: Agent(llm=LLM(), memory=ConversationMemory(max_messages=20))."
+            )
+        if hooks is not None and not isinstance(hooks, AgentHooks):
+            raise TypeError(
+                f"hooks must be an AgentHooks, got {type(hooks).__name__!r}. "
+                "Example: Agent(llm=LLM(), hooks=AgentHooks(on_tool_call=my_callback))."
+            )
+        if not isinstance(max_steps, int) or isinstance(max_steps, bool) or max_steps < 1:
+            raise ValueError(
+                f"max_steps must be an integer >= 1, got {max_steps!r}. "
+                "It caps how many LLM round-trips one run() may take."
+            )
+        if memory is not None and system is not None:
+            raise ValueError(
+                "Pass either system= or memory=, not both — a ConversationMemory already "
+                "carries its own system prompt. Use "
+                "ConversationMemory(system='...') and pass it as memory=."
+            )
         self.llm = llm
         self.tools = tools
         self.memory = memory or ConversationMemory(system=system)

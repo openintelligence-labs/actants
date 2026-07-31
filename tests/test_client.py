@@ -98,7 +98,7 @@ def test_provider_accepts_name_string():
 
 
 def test_provider_unknown_name_raises_value_error():
-    with pytest.raises(ValueError, match="Unknown provider: not-a-provider"):
+    with pytest.raises(ValueError, match="Unknown provider 'not-a-provider'"):
         LLM(provider="not-a-provider")
 
 

@@ -96,48 +96,58 @@ def __dir__() -> list[str]:
 
 if TYPE_CHECKING:
     # Type-checker only; re-exported at runtime via __getattr__ above.
-    from actants.agents.agent import Agent, AgentResult, AgentStep  # noqa: F401
-    from actants.agents.hooks import AgentHooks  # noqa: F401
-    from actants.agents.memory import ConversationMemory  # noqa: F401
-    from actants.cache.memory import InMemoryCache  # noqa: F401
-    from actants.cache.protocol import CacheBackend  # noqa: F401
-    from actants.config.paths import (  # noqa: F401
-        app_cache_dir,
-        app_config_dir,
-        app_data_dir,
-    )
-    from actants.config.settings import AppSettings  # noqa: F401
-    from actants.cost.pricing import PRICING, estimate_cost  # noqa: F401
-    from actants.cost.tracker import CostTracker  # noqa: F401
-    from actants.embeddings.base import (  # noqa: F401
-        BaseEmbeddingProvider,
-        EmbeddingResult,
-    )
-    from actants.embeddings.client import Embeddings, EmbeddingSettings  # noqa: F401
-    from actants.embeddings.ollama import OllamaEmbeddingProvider  # noqa: F401
-    from actants.llm.base import (  # noqa: F401
-        BaseLLMProvider,
-        ChatMessage,
-        CompletionResult,
-        FinishDelta,
-        StreamEvent,
-        TextDelta,
-        TokenUsage,
-        ToolCall,
-        ToolCallDelta,
-        ToolSpec,
-        UsageDelta,
-    )
-    from actants.llm.client import LLM, LLMSettings  # noqa: F401
-    from actants.llm.ollama import OllamaProvider  # noqa: F401
-    from actants.observability.logging import get_logger, setup_logging  # noqa: F401
-    from actants.policies.fallback import (  # noqa: F401
-        AllProvidersFailedError,
-        FallbackProvider,
-    )
-    from actants.policies.retry import RetryPolicy, retry_async  # noqa: F401
-    from actants.storage.jsonl import JsonlAppender, read_jsonl  # noqa: F401
-    from actants.storage.sqlite import open_sqlite  # noqa: F401
-    from actants.tools.base import Tool, ToolError, ToolResult  # noqa: F401
-    from actants.tools.registry import ToolRegistry  # noqa: F401
-    from actants.tracing.otel import get_tracer, instrument_llm, llm_span  # noqa: F401
+    #
+    # The redundant-looking `X as X` form is deliberate: it marks each name as an
+    # explicit re-export (PEP 484). Without it, `__all__` being built dynamically
+    # from `_LAZY` leaves type checkers unable to see these as public, and every
+    # `from actants import LLM` fails under `mypy --strict` with
+    # "does not explicitly export attribute".
+    from actants.agents.agent import Agent as Agent
+    from actants.agents.agent import AgentResult as AgentResult
+    from actants.agents.agent import AgentStep as AgentStep
+    from actants.agents.hooks import AgentHooks as AgentHooks
+    from actants.agents.memory import ConversationMemory as ConversationMemory
+    from actants.cache.memory import InMemoryCache as InMemoryCache
+    from actants.cache.protocol import CacheBackend as CacheBackend
+    from actants.config.paths import app_cache_dir as app_cache_dir
+    from actants.config.paths import app_config_dir as app_config_dir
+    from actants.config.paths import app_data_dir as app_data_dir
+    from actants.config.settings import AppSettings as AppSettings
+    from actants.cost.pricing import PRICING as PRICING
+    from actants.cost.pricing import estimate_cost as estimate_cost
+    from actants.cost.tracker import CostTracker as CostTracker
+    from actants.embeddings.base import BaseEmbeddingProvider as BaseEmbeddingProvider
+    from actants.embeddings.base import EmbeddingResult as EmbeddingResult
+    from actants.embeddings.client import Embeddings as Embeddings
+    from actants.embeddings.client import EmbeddingSettings as EmbeddingSettings
+    from actants.embeddings.ollama import OllamaEmbeddingProvider as OllamaEmbeddingProvider
+    from actants.llm.base import BaseLLMProvider as BaseLLMProvider
+    from actants.llm.base import ChatMessage as ChatMessage
+    from actants.llm.base import CompletionResult as CompletionResult
+    from actants.llm.base import FinishDelta as FinishDelta
+    from actants.llm.base import StreamEvent as StreamEvent
+    from actants.llm.base import TextDelta as TextDelta
+    from actants.llm.base import TokenUsage as TokenUsage
+    from actants.llm.base import ToolCall as ToolCall
+    from actants.llm.base import ToolCallDelta as ToolCallDelta
+    from actants.llm.base import ToolSpec as ToolSpec
+    from actants.llm.base import UsageDelta as UsageDelta
+    from actants.llm.client import LLM as LLM
+    from actants.llm.client import LLMSettings as LLMSettings
+    from actants.llm.ollama import OllamaProvider as OllamaProvider
+    from actants.observability.logging import get_logger as get_logger
+    from actants.observability.logging import setup_logging as setup_logging
+    from actants.policies.fallback import AllProvidersFailedError as AllProvidersFailedError
+    from actants.policies.fallback import FallbackProvider as FallbackProvider
+    from actants.policies.retry import RetryPolicy as RetryPolicy
+    from actants.policies.retry import retry_async as retry_async
+    from actants.storage.jsonl import JsonlAppender as JsonlAppender
+    from actants.storage.jsonl import read_jsonl as read_jsonl
+    from actants.storage.sqlite import open_sqlite as open_sqlite
+    from actants.tools.base import Tool as Tool
+    from actants.tools.base import ToolError as ToolError
+    from actants.tools.base import ToolResult as ToolResult
+    from actants.tools.registry import ToolRegistry as ToolRegistry
+    from actants.tracing.otel import get_tracer as get_tracer
+    from actants.tracing.otel import instrument_llm as instrument_llm
+    from actants.tracing.otel import llm_span as llm_span

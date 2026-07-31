@@ -21,6 +21,7 @@ from actants.llm.base import (
     ToolSpec,
     UsageDelta,
 )
+from actants.llm.errors import raise_for_ollama_error
 
 log = structlog.get_logger(__name__)
 
@@ -67,8 +68,14 @@ class OllamaProvider(BaseLLMProvider):
             messages, model, temperature, max_tokens, stream=False, tools=tools, **kwargs
         )
         start = time.perf_counter()
-        r = await self._client.post(f"{self.base_url}/api/chat", json=payload)
-        r.raise_for_status()
+        try:
+            r = await self._client.post(f"{self.base_url}/api/chat", json=payload)
+            r.raise_for_status()
+        except Exception as exc:
+            await raise_for_ollama_error(
+                exc, client=self._client, base_url=self.base_url, model=model
+            )
+            raise
         latency_ms = (time.perf_counter() - start) * 1000
         data = r.json()
 
@@ -138,32 +145,42 @@ class OllamaProvider(BaseLLMProvider):
         total_prompt = 0
         total_completion = 0
         finish_reason: str | None = None
-        async with self._client.stream("POST", f"{self.base_url}/api/chat", json=payload) as r:
-            r.raise_for_status()
-            async for line in r.aiter_lines():
-                if not line:
-                    continue
-                try:
-                    chunk = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                message = chunk.get("message", {}) or {}
-                content = message.get("content")
-                if content:
-                    yield TextDelta(text=content)
-                for tc in message.get("tool_calls", []) or []:
-                    fn = tc.get("function", {}) or {}
-                    yield ToolCallDelta(
-                        tool_call=ToolCall(
-                            id=tc.get("id") or f"call_{uuid.uuid4().hex[:8]}",
-                            name=fn.get("name", ""),
-                            arguments=fn.get("arguments", {}) or {},
+        try:
+            async with self._client.stream("POST", f"{self.base_url}/api/chat", json=payload) as r:
+                if r.status_code >= 400:
+                    # Body is needed to tell "model not pulled" from other 404s, and
+                    # the stream is being abandoned anyway.
+                    await r.aread()
+                    r.raise_for_status()
+                async for line in r.aiter_lines():
+                    if not line:
+                        continue
+                    try:
+                        chunk = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    message = chunk.get("message", {}) or {}
+                    content = message.get("content")
+                    if content:
+                        yield TextDelta(text=content)
+                    for tc in message.get("tool_calls", []) or []:
+                        fn = tc.get("function", {}) or {}
+                        yield ToolCallDelta(
+                            tool_call=ToolCall(
+                                id=tc.get("id") or f"call_{uuid.uuid4().hex[:8]}",
+                                name=fn.get("name", ""),
+                                arguments=fn.get("arguments", {}) or {},
+                            )
                         )
-                    )
-                if chunk.get("done"):
-                    total_prompt = int(chunk.get("prompt_eval_count", 0) or 0)
-                    total_completion = int(chunk.get("eval_count", 0) or 0)
-                    finish_reason = chunk.get("done_reason")
+                    if chunk.get("done"):
+                        total_prompt = int(chunk.get("prompt_eval_count", 0) or 0)
+                        total_completion = int(chunk.get("eval_count", 0) or 0)
+                        finish_reason = chunk.get("done_reason")
+        except Exception as exc:
+            await raise_for_ollama_error(
+                exc, client=self._client, base_url=self.base_url, model=model
+            )
+            raise
         yield UsageDelta(
             usage=TokenUsage(
                 prompt_tokens=total_prompt,

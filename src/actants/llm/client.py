@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 from collections.abc import AsyncIterator
+from difflib import get_close_matches
 from functools import partial
 from typing import TYPE_CHECKING, TypeVar
 
@@ -19,6 +21,11 @@ from actants.llm.base import (
     TextDelta,
     ToolCallDelta,
     ToolSpec,
+)
+from actants.llm.errors import (
+    MissingAPIKeyError,
+    ProviderNotInstalledError,
+    UnknownProviderError,
 )
 from actants.llm.ollama import OllamaProvider
 from actants.llm.partial_json import parse_partial_json
@@ -42,31 +49,120 @@ class LLMSettings(BaseSettings):
     temperature: float = 0.7
 
 
+#: provider name -> (env var holding its API key, extra that installs it)
+_PROVIDER_REQUIREMENTS: dict[str, tuple[str | None, str]] = {
+    "ollama": (None, "ollama"),
+    "openai": ("OPENAI_API_KEY", "openai"),
+    "anthropic": ("ANTHROPIC_API_KEY", "anthropic"),
+    "gemini": ("GEMINI_API_KEY", "gemini"),
+    "groq": ("GROQ_API_KEY", "groq"),
+    "mistral": ("MISTRAL_API_KEY", "mistral"),
+}
+
+KNOWN_PROVIDERS: tuple[str, ...] = tuple(_PROVIDER_REQUIREMENTS)
+
+
+def _resolve_api_key(provider: str, settings: LLMSettings) -> str | None:
+    """Return the API key for ``provider``, raising an actionable error if absent."""
+    env_var, extra = _PROVIDER_REQUIREMENTS[provider]
+    if env_var is None:
+        return None
+    key = settings.api_key or os.environ.get(env_var)
+    if not key:
+        raise MissingAPIKeyError(
+            f"Provider {provider!r} requires an API key and none was found. "
+            f"Set the {env_var} environment variable, or pass it explicitly: "
+            f"LLM(settings=LLMSettings(provider={provider!r}, api_key='...')). "
+            "To run locally with no API key, use the default Ollama provider: LLM()."
+        )
+    return key
+
+
 def _make_provider(settings: LLMSettings) -> BaseLLMProvider:
     provider = settings.provider.lower()
-    if provider == "ollama":
-        return OllamaProvider(base_url=settings.base_url)
-    if provider == "openai":
-        from actants.llm.openai_provider import OpenAIProvider
+    if provider not in _PROVIDER_REQUIREMENTS:
+        suggestion = get_close_matches(provider, KNOWN_PROVIDERS, n=1, cutoff=0.6)
+        did_you_mean = f" Did you mean {suggestion[0]!r}?" if suggestion else ""
+        raise UnknownProviderError(
+            f"Unknown provider {settings.provider!r}.{did_you_mean} "
+            f"Known providers: {', '.join(KNOWN_PROVIDERS)}."
+        )
 
-        return OpenAIProvider(api_key=settings.api_key)
-    if provider == "anthropic":
-        from actants.llm.anthropic_provider import AnthropicProvider
+    api_key = _resolve_api_key(provider, settings)
+    _, extra = _PROVIDER_REQUIREMENTS[provider]
 
-        return AnthropicProvider(api_key=settings.api_key)
-    if provider == "gemini":
-        from actants.llm.gemini_provider import GeminiProvider
+    try:
+        if provider == "ollama":
+            return OllamaProvider(base_url=settings.base_url)
+        if provider == "openai":
+            from actants.llm.openai_provider import OpenAIProvider
 
-        return GeminiProvider(api_key=settings.api_key)
-    if provider == "groq":
-        from actants.llm.groq_provider import GroqProvider
+            return OpenAIProvider(api_key=api_key)
+        if provider == "anthropic":
+            from actants.llm.anthropic_provider import AnthropicProvider
 
-        return GroqProvider(api_key=settings.api_key)
-    if provider == "mistral":
+            return AnthropicProvider(api_key=api_key)
+        if provider == "gemini":
+            from actants.llm.gemini_provider import GeminiProvider
+
+            return GeminiProvider(api_key=api_key)
+        if provider == "groq":
+            from actants.llm.groq_provider import GroqProvider
+
+            return GroqProvider(api_key=api_key)
         from actants.llm.mistral_provider import MistralProvider
 
-        return MistralProvider(api_key=settings.api_key)
-    raise ValueError(f"Unknown provider: {settings.provider}")
+        return MistralProvider(api_key=api_key)
+    except ImportError as exc:
+        raise ProviderNotInstalledError(
+            f"Provider {provider!r} needs an optional dependency that is not installed. "
+            f"Install it with `pip install 'actants[{extra}]'`. "
+            f"(underlying error: {exc})"
+        ) from exc
+
+
+def _require_registry(tools: object) -> None:
+    if tools is None:
+        raise TypeError(
+            "tools is required and must be a ToolRegistry. "
+            "For a plain completion with no tools use llm.complete(prompt) instead."
+        )
+    if not hasattr(tools, "as_specs"):
+        raise TypeError(
+            f"tools must be a ToolRegistry, got {type(tools).__name__!r}. "
+            "Build one with:\n"
+            "    registry = ToolRegistry()\n"
+            "    registry.register_function('add', 'Add two integers', add)"
+        )
+
+
+def _require_tool_specs(tools: object) -> None:
+    if tools is None:
+        return
+    if not isinstance(tools, list):
+        raise TypeError(
+            f"tools must be a list of ToolSpec, got {type(tools).__name__!r}. "
+            "To use a ToolRegistry, pass registry.as_specs() — or call "
+            "llm.run_agent(prompt, registry), which does it for you."
+        )
+    for i, spec in enumerate(tools):
+        if not isinstance(spec, ToolSpec):
+            raise TypeError(
+                f"tools[{i}] must be a ToolSpec, got {type(spec).__name__!r}. "
+                "Build them with ToolRegistry(...).as_specs(), or construct one directly: "
+                "ToolSpec(name='add', description='Add two integers', parameters={...})."
+            )
+
+
+def _require_pydantic_model(schema: object) -> None:
+    if not (isinstance(schema, type) and issubclass(schema, BaseModel)):
+        raise TypeError(
+            f"schema must be a pydantic BaseModel subclass, got {schema!r}. "
+            "Define one with:\n"
+            "    class Person(BaseModel):\n"
+            "        name: str\n"
+            "        age: int"
+        )
 
 
 class LLM:
@@ -92,8 +188,20 @@ class LLM:
         retry_policy: RetryPolicy | None = None,
         tracing: bool = True,
     ) -> None:
+        if settings is not None and not isinstance(settings, LLMSettings):
+            raise TypeError(
+                "settings must be an LLMSettings instance, got "
+                f"{type(settings).__name__!r}. Build one with "
+                "LLMSettings(provider='ollama', model='llama3.2'), or pass the common "
+                "options directly: LLM(provider=..., model=...)."
+            )
         self.settings = settings or LLMSettings()
         if model is not None:
+            if not isinstance(model, str):
+                raise TypeError(
+                    f"model must be a string, got {type(model).__name__!r}. "
+                    "Example: LLM(model='llama3.2')."
+                )
             self.settings.model = model
         if isinstance(provider, str):
             self.settings.provider = provider
@@ -126,6 +234,7 @@ class LLM:
         Passes through ``cache``, ``cost_tracker``, retry, and tracing layers set on the client.
         ``tag`` is recorded on the CostTracker for grouped reporting.
         """
+        _require_tool_specs(tools)
         messages = self._normalize(prompt, system=system)
         effective_model = model or self.settings.model
         effective_temp = temperature if temperature is not None else self.settings.temperature
@@ -195,6 +304,7 @@ class LLM:
         holds the final answer; earlier tool calls are flushed into the message history).
         Raises RuntimeError if the loop exceeds ``max_steps`` without a final answer.
         """
+        _require_registry(tools)
         messages = self._normalize(prompt, system=system)
         specs = tools.as_specs()
 
@@ -235,6 +345,7 @@ class LLM:
         to the conversation so the model can self-correct. Works across all providers
         since it asks for JSON via prompt rather than provider-specific JSON modes.
         """
+        _require_pydantic_model(schema)
         schema_json = json.dumps(schema.model_json_schema(), indent=2)
         guide = (
             "Respond with ONLY valid JSON matching this JSON Schema. No prose, no code fences.\n"
@@ -284,6 +395,7 @@ class LLM:
         Emits a new instance only when the parsed output has changed. The final
         yield is the fully-parsed and validated ``schema`` instance.
         """
+        _require_pydantic_model(schema)
         schema_json = json.dumps(schema.model_json_schema(), indent=2)
         guide = (
             "Respond with ONLY valid JSON matching this JSON Schema. No prose, no code fences.\n"
@@ -376,6 +488,7 @@ class LLM:
     ) -> AsyncIterator[StreamEvent]:
         """Streaming agent loop. Yields text deltas while the model is thinking,
         dispatches tool calls as they complete, and loops until a final text answer."""
+        _require_registry(tools)
         messages = self._normalize(prompt, system=system)
         specs = tools.as_specs()
         effective_model = model or self.settings.model
@@ -443,8 +556,30 @@ class LLM:
             messages.append(ChatMessage(role="system", content=system))
         if isinstance(prompt, str):
             messages.append(ChatMessage(role="user", content=prompt))
-        else:
-            messages.extend(prompt)
+            return messages
+        if not isinstance(prompt, list):
+            raise TypeError(
+                f"prompt must be a string or a list of ChatMessage, got {type(prompt).__name__!r}. "
+                "Example: await llm.complete('hello') or "
+                "await llm.complete([ChatMessage(role='user', content='hello')])."
+            )
+        for i, item in enumerate(prompt):
+            if isinstance(item, ChatMessage):
+                messages.append(item)
+            elif isinstance(item, dict):
+                # Accept the OpenAI-style dict shape, but validate it properly.
+                try:
+                    messages.append(ChatMessage.model_validate(item))
+                except Exception as exc:
+                    raise TypeError(
+                        f"prompt[{i}] is a dict that is not a valid ChatMessage: {exc}"
+                    ) from exc
+            else:
+                raise TypeError(
+                    f"prompt[{i}] must be a ChatMessage (or a dict with 'role' and 'content'), "
+                    f"got {type(item).__name__!r}. "
+                    "Wrap plain strings: ChatMessage(role='user', content=...)."
+                )
         return messages
 
 

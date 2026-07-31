@@ -27,8 +27,13 @@ jobs:
         run: ruff check .
       - name: Format check
         run: ruff format --check .
+      # Runs the docs-snippet suite (tests/test_docs_snippets.py), which compiles and
+      # resolves every Python block in README.md and docs_site/, and the public-API
+      # typing suite (tests/test_public_api_typing.py).
       - name: Test
         run: pytest tests/ -q
+      - name: Type-check public API surface
+        run: mypy --strict --no-incremental src/actants/__init__.py
 
   build:
     runs-on: ubuntu-latest

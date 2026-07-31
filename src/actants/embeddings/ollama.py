@@ -3,6 +3,7 @@ from __future__ import annotations
 import httpx
 
 from actants.embeddings.base import BaseEmbeddingProvider, EmbeddingResult
+from actants.llm.errors import raise_for_ollama_error
 
 
 class OllamaEmbeddingProvider(BaseEmbeddingProvider):
@@ -21,11 +22,17 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
         if not texts:
             return EmbeddingResult(vectors=[], model=model, provider=self.name, dimensions=0)
         async with httpx.AsyncClient(timeout=self._timeout) as client:
-            resp = await client.post(
-                f"{self.base_url}/api/embed",
-                json={"model": model, "input": texts},
-            )
-            resp.raise_for_status()
+            try:
+                resp = await client.post(
+                    f"{self.base_url}/api/embed",
+                    json={"model": model, "input": texts},
+                )
+                resp.raise_for_status()
+            except Exception as exc:
+                await raise_for_ollama_error(
+                    exc, client=client, base_url=self.base_url, model=model
+                )
+                raise
             data = resp.json()
         vectors = data.get("embeddings") or []
         dim = len(vectors[0]) if vectors else 0

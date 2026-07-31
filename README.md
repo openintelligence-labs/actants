@@ -36,11 +36,16 @@ pip install 'actants[openai,anthropic,mcp,a2a]'
 ```
 
 For the default Ollama provider, also install
-[Ollama](https://ollama.com) and pull a model:
+[Ollama](https://ollama.com), start it, and pull the default model:
 
 ```bash
+ollama serve      # if it isn't already running
 ollama pull llama3.2
 ```
+
+`llama3.2` is what `LLM()` asks for unless you say otherwise. To use a model
+you have already pulled, pass it explicitly — `LLM(model="qwen2.5:7b")` — or
+set `ACTANTS_MODEL`.
 
 ## Quickstart
 
@@ -58,6 +63,9 @@ async def main():
 asyncio.run(main())
 ```
 
+If the model isn't on your Ollama server, actants tells you which models are
+and what to run to fix it.
+
 ## Tools
 
 Register async functions as tools and pass them to an `Agent`:
@@ -72,20 +80,15 @@ async def add(a: int, b: int) -> int:
     return a + b
 
 
-tools.register_function(
-    "add",
-    "Add two integers",
-    add,
-    input_schema={
-        "type": "object",
-        "properties": {"a": {"type": "integer"}, "b": {"type": "integer"}},
-        "required": ["a", "b"],
-    },
-)
+tools.register_function("add", "Add two integers", add)
 
 agent = Agent(llm=LLM(model="llama3.2"), tools=tools)
 result = await agent.run("What is 17 + 25?")
 ```
+
+The JSON Schema the model sees is derived from `add`'s type annotations, so
+every tool parameter must be annotated. Pass `input_schema=` explicitly for
+anything annotations cannot express.
 
 The model decides when to call the tool; `Agent` dispatches it and feeds
 the result back through the tool-calling loop.

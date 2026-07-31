@@ -1,5 +1,8 @@
-# architecture docs (uncooked — kept local until polished)
-docs/
+# architecture docs (uncooked — kept local until polished).
+# Use docs/* rather than docs/ so individual files can be carved back in:
+# git cannot re-include a path under an excluded *directory*.
+docs/*
+!docs/BENCHMARK.md
 
 # mkdocs site (not yet ready to commit)
 docs_site/

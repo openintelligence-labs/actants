@@ -1,0 +1,589 @@
+{
+  "generated_at": "2026-07-31T01:08:55-0500",
+  "model": "qwen2.5:7b",
+  "ollama_version": "0.32.4",
+  "machine": {
+    "platform": "macOS-15.7.3-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "processor": "arm",
+    "python": "3.13.5",
+    "cpu": "Apple M4 Pro",
+    "memory_bytes": "51539607552"
+  },
+  "config": {
+    "runs": 7,
+    "rounds": 7,
+    "import_runs": 5,
+    "seed": 20260730
+  },
+  "versions": {
+    "actants": {
+      "actants": "0.5.3",
+      "annotated-types": "0.8.0",
+      "anyio": "4.14.2",
+      "certifi": "2026.7.22",
+      "h11": "0.16.0",
+      "httpcore": "1.0.9",
+      "httpx": "0.28.1",
+      "idna": "3.18",
+      "opentelemetry-api": "1.44.0",
+      "opentelemetry-sdk": "1.44.0",
+      "opentelemetry-semantic-conventions": "0.65b0",
+      "pydantic": "2.13.4",
+      "pydantic-core": "2.46.4",
+      "pydantic-settings": "2.14.2",
+      "python-dotenv": "1.2.2",
+      "structlog": "26.1.0",
+      "typing-extensions": "4.16.0",
+      "typing-inspection": "0.4.2"
+    },
+    "langchain": {
+      "annotated-types": "0.8.0",
+      "anyio": "4.14.2",
+      "certifi": "2026.7.22",
+      "charset-normalizer": "3.4.9",
+      "distro": "1.9.0",
+      "h11": "0.16.0",
+      "httpcore": "1.0.9",
+      "httpx": "0.28.1",
+      "idna": "3.18",
+      "jsonpatch": "1.33",
+      "jsonpointer": "3.1.1",
+      "langchain": "1.3.14",
+      "langchain-core": "1.5.3",
+      "langchain-ollama": "1.1.0",
+      "langchain-protocol": "0.0.18",
+      "langgraph": "1.2.10",
+      "langgraph-checkpoint": "4.1.1",
+      "langgraph-prebuilt": "1.1.0",
+      "langgraph-sdk": "0.4.2",
+      "langsmith": "0.10.14",
+      "ollama": "0.6.2",
+      "orjson": "3.11.9",
+      "ormsgpack": "1.12.2",
+      "packaging": "26.2",
+      "pydantic": "2.13.4",
+      "pydantic-core": "2.46.4",
+      "pyyaml": "6.0.3",
+      "requests": "2.34.2",
+      "requests-toolbelt": "1.0.0",
+      "sniffio": "1.3.1",
+      "tenacity": "9.1.4",
+      "typing-extensions": "4.16.0",
+      "typing-inspection": "0.4.2",
+      "urllib3": "2.7.0",
+      "uuid-utils": "0.17.0",
+      "websockets": "15.0.1",
+      "xxhash": "3.8.1",
+      "zstandard": "0.25.0"
+    },
+    "pydantic_ai": {
+      "aiofile": "3.11.1",
+      "annotated-types": "0.8.0",
+      "anthropic": "0.120.2",
+      "anyio": "4.14.2",
+      "argcomplete": "3.7.0",
+      "attrs": "26.1.0",
+      "authlib": "1.7.2",
+      "beartype": "0.22.9",
+      "cachetools": "7.1.6",
+      "caio": "0.9.25",
+      "certifi": "2026.7.22",
+      "cffi": "2.1.0",
+      "charset-normalizer": "3.4.9",
+      "click": "8.4.2",
+      "cryptography": "49.0.0",
+      "distro": "1.9.0",
+      "dnspython": "2.8.0",
+      "docstring-parser": "0.18.0",
+      "email-validator": "2.3.0",
+      "exceptiongroup": "1.3.1",
+      "executing": "2.2.1",
+      "fastmcp-slim": "3.4.5",
+      "genai-prices": "0.1.0",
+      "google-auth": "2.56.2",
+      "google-genai": "2.16.0",
+      "googleapis-common-protos": "1.75.0",
+      "griffelib": "2.1.0",
+      "h11": "0.16.0",
+      "httpcore": "1.0.9",
+      "httpcore2": "2.9.1",
+      "httpx": "0.28.1",
+      "httpx-sse": "0.4.3",
+      "httpx2": "2.9.1",
+      "idna": "3.18",
+      "jaraco-classes": "3.4.0",
+      "jaraco-context": "6.1.2",
+      "jaraco-functools": "4.6.0",
+      "jiter": "0.16.0",
+      "joserfc": "1.7.4",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "keyring": "25.7.0",
+      "logfire": "4.39.0",
+      "logfire-api": "4.39.0",
+      "markdown-it-py": "4.2.0",
+      "mcp": "1.29.0",
+      "mdurl": "0.1.2",
+      "more-itertools": "11.1.0",
+      "openai": "2.51.0",
+      "opentelemetry-api": "1.44.0",
+      "opentelemetry-exporter-otlp-proto-common": "1.44.0",
+      "opentelemetry-exporter-otlp-proto-http": "1.44.0",
+      "opentelemetry-instrumentation": "0.65b0",
+      "opentelemetry-instrumentation-httpx": "0.65b0",
+      "opentelemetry-proto": "1.44.0",
+      "opentelemetry-sdk": "1.44.0",
+      "opentelemetry-semantic-conventions": "0.65b0",
+      "opentelemetry-util-http": "0.65b0",
+      "packaging": "26.2",
+      "platformdirs": "4.11.0",
+      "prompt-toolkit": "3.0.53",
+      "protobuf": "7.35.1",
+      "py-key-value-aio": "0.4.5",
+      "pyasn1": "0.6.4",
+      "pyasn1-modules": "0.4.2",
+      "pycparser": "3.0",
+      "pydantic": "2.13.4",
+      "pydantic-ai": "2.21.0",
+      "pydantic-ai-slim": "2.21.0",
+      "pydantic-core": "2.46.4",
+      "pydantic-evals": "2.21.0",
+      "pydantic-graph": "2.21.0",
+      "pydantic-settings": "2.14.2",
+      "pygments": "2.20.0",
+      "pyjwt": "2.13.0",
+      "pyperclip": "1.11.0",
+      "python-dotenv": "1.2.2",
+      "python-multipart": "0.0.32",
+      "pyyaml": "6.0.3",
+      "referencing": "0.37.0",
+      "regex": "2026.7.19",
+      "requests": "2.34.2",
+      "rich": "15.0.0",
+      "rpds-py": "2026.6.3",
+      "sniffio": "1.3.1",
+      "sse-starlette": "3.4.6",
+      "starlette": "1.3.1",
+      "tenacity": "9.1.4",
+      "tiktoken": "0.13.0",
+      "tqdm": "4.70.0",
+      "truststore": "0.10.4",
+      "typing-extensions": "4.16.0",
+      "typing-inspection": "0.4.2",
+      "urllib3": "2.7.0",
+      "uvicorn": "0.52.0",
+      "wcwidth": "0.8.2",
+      "websockets": "16.1.1",
+      "wrapt": "2.3.0"
+    },
+    "llama_index": {
+      "aiohappyeyeballs": "2.7.1",
+      "aiohttp": "3.14.3",
+      "aiosignal": "1.4.0",
+      "aiosqlite": "0.22.1",
+      "annotated-types": "0.8.0",
+      "anyio": "4.14.2",
+      "attrs": "26.1.0",
+      "banks": "2.4.5",
+      "certifi": "2026.7.22",
+      "charset-normalizer": "3.4.9",
+      "click": "8.4.2",
+      "colorama": "0.4.6",
+      "dataclasses-json": "0.6.7",
+      "defusedxml": "0.7.1",
+      "deprecated": "1.3.1",
+      "dirtyjson": "1.0.8",
+      "filetype": "1.2.0",
+      "frozenlist": "1.8.0",
+      "fsspec": "2026.7.0",
+      "greenlet": "3.5.4",
+      "griffe": "2.1.0",
+      "griffecli": "2.1.0",
+      "griffelib": "2.1.0",
+      "h11": "0.16.0",
+      "httpcore": "1.0.9",
+      "httpx": "0.28.1",
+      "idna": "3.18",
+      "jinja2": "3.1.6",
+      "joblib": "1.5.3",
+      "llama-index-core": "0.14.23",
+      "llama-index-instrumentation": "0.5.0",
+      "llama-index-llms-ollama": "0.10.1",
+      "llama-index-workflows": "2.22.2",
+      "markupsafe": "3.0.3",
+      "marshmallow": "3.26.2",
+      "multidict": "6.7.1",
+      "mypy-extensions": "1.1.0",
+      "nest-asyncio": "1.6.0",
+      "networkx": "3.6.1",
+      "nltk": "3.10.0",
+      "numpy": "2.5.1",
+      "ollama": "0.6.2",
+      "packaging": "26.2",
+      "pillow": "12.3.0",
+      "platformdirs": "4.11.0",
+      "propcache": "0.5.2",
+      "pydantic": "2.13.4",
+      "pydantic-core": "2.46.4",
+      "pyyaml": "6.0.3",
+      "regex": "2026.7.19",
+      "requests": "2.34.2",
+      "setuptools": "83.0.0",
+      "sqlalchemy": "2.0.51",
+      "tenacity": "9.1.4",
+      "tiktoken": "0.13.0",
+      "tinytag": "2.3.0",
+      "tqdm": "4.70.0",
+      "typing-extensions": "4.16.0",
+      "typing-inspect": "0.9.0",
+      "typing-inspection": "0.4.2",
+      "urllib3": "2.7.0",
+      "wrapt": "2.3.0",
+      "yarl": "1.24.5"
+    },
+    "raw": {
+      "annotated-types": "0.8.0",
+      "anyio": "4.14.2",
+      "certifi": "2026.7.22",
+      "h11": "0.16.0",
+      "httpcore": "1.0.9",
+      "httpx": "0.28.1",
+      "idna": "3.18",
+      "ollama": "0.6.2",
+      "pydantic": "2.13.4",
+      "pydantic-core": "2.46.4",
+      "typing-extensions": "4.16.0",
+      "typing-inspection": "0.4.2"
+    }
+  },
+  "footprint": {
+    "actants": {
+      "packages": 18,
+      "site_packages_bytes": 14093662
+    },
+    "langchain": {
+      "packages": 38,
+      "site_packages_bytes": 35852698
+    },
+    "pydantic_ai": {
+      "packages": 98,
+      "site_packages_bytes": 105663114
+    },
+    "llama_index": {
+      "packages": 63,
+      "site_packages_bytes": 126738775
+    },
+    "raw": {
+      "packages": 12,
+      "site_packages_bytes": 11307405
+    }
+  },
+  "imports": {
+    "actants": {
+      "statement": "from actants import LLM, LLMSettings, ToolRegistry",
+      "import_seconds_best": 0.09687129204394296,
+      "import_seconds_p50": 0.09912241698475555,
+      "rss_bytes_median": 42647552,
+      "modules_loaded": 396,
+      "samples": [
+        0.14943925000261515,
+        0.0970672499970533,
+        0.09687129204394296,
+        0.09997616603504866,
+        0.09912241698475555
+      ]
+    },
+    "langchain": {
+      "statement": "from langchain_ollama import ChatOllama\nfrom langchain.agents import create_agent\nfrom langchain_core.tools import tool",
+      "import_seconds_best": 0.3431623340002261,
+      "import_seconds_p50": 0.34892008296446875,
+      "rss_bytes_median": 82640896,
+      "modules_loaded": 1058,
+      "samples": [
+        0.47983875003410503,
+        0.3431623340002261,
+        0.41289958299603313,
+        0.34892008296446875,
+        0.34698941599344835
+      ]
+    },
+    "pydantic_ai": {
+      "statement": "from pydantic_ai import Agent, NativeOutput\nfrom pydantic_ai.models.openai import OpenAIChatModel\nfrom pydantic_ai.providers.ollama import OllamaProvider",
+      "import_seconds_best": 0.7424657919909805,
+      "import_seconds_p50": 0.8300428330549039,
+      "rss_bytes_median": 123879424,
+      "modules_loaded": 2493,
+      "samples": [
+        1.0598392499960028,
+        1.3190565000404604,
+        0.7647690000012517,
+        0.7424657919909805,
+        0.8300428330549039
+      ]
+    },
+    "llama_index": {
+      "statement": "from llama_index.llms.ollama import Ollama\nfrom llama_index.core.agent.workflow import FunctionAgent\nfrom llama_index.core.tools import FunctionTool",
+      "import_seconds_best": 0.5656943339854479,
+      "import_seconds_p50": 0.6164511669776402,
+      "rss_bytes_median": 115982336,
+      "modules_loaded": 1441,
+      "samples": [
+        0.8421360409702174,
+        0.6164511669776402,
+        0.5656943339854479,
+        0.6066441250150092,
+        0.712860833038576
+      ]
+    },
+    "raw": {
+      "statement": "from ollama import AsyncClient",
+      "import_seconds_best": 0.11682545900112018,
+      "import_seconds_p50": 0.12384879100136459,
+      "rss_bytes_median": 45727744,
+      "modules_loaded": 356,
+      "samples": [
+        0.18186250003054738,
+        0.1319902500254102,
+        0.12384879100136459,
+        0.11736479197861627,
+        0.11682545900112018
+      ]
+    }
+  },
+  "latency": {
+    "actants": {
+      "task_completion": {
+        "n": 7,
+        "wall_p50": 0.14516804099548608,
+        "wall_p95": 0.15746999997645617,
+        "overhead_p50": 0.0060284159844741225,
+        "overhead_p95": 0.007739956956356764,
+        "wire_p50": 0.13881191599648446,
+        "requests_median": 1,
+        "eval_count_median": 2
+      },
+      "task_tool_agent": {
+        "n": 7,
+        "wall_p50": 1.160266208986286,
+        "wall_p95": 1.389349666016642,
+        "overhead_p50": 0.007584083010442555,
+        "overhead_p95": 0.016676334955263883,
+        "wire_p50": 1.1435898740310222,
+        "requests_median": 2,
+        "eval_count_median": 36
+      },
+      "task_structured": {
+        "n": 7,
+        "wall_p50": 0.7530550409574062,
+        "wall_p95": 0.9081522920168936,
+        "overhead_p50": 0.006212665990460664,
+        "overhead_p95": 0.008026374969631433,
+        "wire_p50": 0.7468423749669455,
+        "requests_median": 1,
+        "eval_count_median": 28
+      }
+    },
+    "langchain": {
+      "task_completion": {
+        "n": 7,
+        "wall_p50": 0.1519434590009041,
+        "wall_p95": 0.28946666698902845,
+        "overhead_p50": 0.010401958017610013,
+        "overhead_p95": 0.011339875985868275,
+        "wire_p50": 0.14080533402739093,
+        "requests_median": 1,
+        "eval_count_median": 2
+      },
+      "task_tool_agent": {
+        "n": 7,
+        "wall_p50": 1.2674034170340747,
+        "wall_p95": 1.3301547499722801,
+        "overhead_p50": 0.017325832915958017,
+        "overhead_p95": 0.04543404304422438,
+        "wire_p50": 1.2219693739898503,
+        "requests_median": 2,
+        "eval_count_median": 38
+      },
+      "task_structured": {
+        "n": 7,
+        "wall_p50": 0.7567681669606827,
+        "wall_p95": 0.8702061250223778,
+        "overhead_p50": 0.012030458019580692,
+        "overhead_p95": 0.014128957991488278,
+        "wire_p50": 0.7454070000094362,
+        "requests_median": 1,
+        "eval_count_median": 25
+      }
+    },
+    "pydantic_ai": {
+      "task_completion": {
+        "n": 7,
+        "wall_p50": 0.15327291697030887,
+        "wall_p95": 0.1890309999580495,
+        "overhead_p50": 0.010366209025960416,
+        "overhead_p95": 0.013067874999251217,
+        "wire_p50": 0.14349158300319687,
+        "requests_median": 1,
+        "eval_count_median": 0
+      },
+      "task_tool_agent": {
+        "n": 7,
+        "wall_p50": 1.0824617500184104,
+        "wall_p95": 1.2119416660279967,
+        "overhead_p50": 0.012875040993094444,
+        "overhead_p95": 0.01914724998641759,
+        "wire_p50": 1.0696387910284102,
+        "requests_median": 2,
+        "eval_count_median": 0
+      },
+      "task_structured": {
+        "n": 7,
+        "wall_p50": 0.7742614169837907,
+        "wall_p95": 0.9121312079951167,
+        "overhead_p50": 0.010462042002473027,
+        "overhead_p95": 0.021709707973059267,
+        "wire_p50": 0.7648254999658093,
+        "requests_median": 1,
+        "eval_count_median": 0
+      }
+    },
+    "llama_index": {
+      "task_completion": {
+        "n": 7,
+        "wall_p50": 0.15574933402240276,
+        "wall_p95": 0.21860758302500471,
+        "overhead_p50": 0.011804624984506518,
+        "overhead_p95": 0.03319391602417454,
+        "wire_p50": 0.14394470903789625,
+        "requests_median": 2,
+        "eval_count_median": 2
+      },
+      "task_tool_agent": {
+        "n": 7,
+        "wall_p50": 2.0952276249881834,
+        "wall_p95": 2.2150242920033634,
+        "overhead_p50": 0.9513160830247216,
+        "overhead_p95": 0.9973927920800634,
+        "wire_p50": 1.1197671660338528,
+        "requests_median": 3,
+        "eval_count_median": 36
+      },
+      "task_structured": {
+        "n": 7,
+        "wall_p50": 0.7545616659917869,
+        "wall_p95": 0.8687392080319114,
+        "overhead_p50": 0.012400165956933051,
+        "overhead_p95": 0.022461040993221104,
+        "wire_p50": 0.7428563740104437,
+        "requests_median": 2,
+        "eval_count_median": 28
+      }
+    },
+    "raw": {
+      "task_completion": {
+        "n": 7,
+        "wall_p50": 0.15151983295800164,
+        "wall_p95": 0.25148174999048933,
+        "overhead_p50": 0.0055769989266991615,
+        "overhead_p95": 0.014527917024679482,
+        "wire_p50": 0.14594283403130248,
+        "requests_median": 1,
+        "eval_count_median": 2
+      },
+      "task_tool_agent": {
+        "n": 7,
+        "wall_p50": 1.1705257080029696,
+        "wall_p95": 1.6117025000276044,
+        "overhead_p50": 0.007622958044521511,
+        "overhead_p95": 0.011817082937341183,
+        "wire_p50": 1.1629027499584481,
+        "requests_median": 2,
+        "eval_count_median": 35
+      },
+      "task_structured": {
+        "n": 7,
+        "wall_p50": 0.7584786250372417,
+        "wall_p95": 0.919360542029608,
+        "overhead_p50": 0.006205999990925193,
+        "overhead_p95": 0.008174583956133574,
+        "wire_p50": 0.7523302920162678,
+        "requests_median": 1,
+        "eval_count_median": 28
+      }
+    }
+  },
+  "latency_errors": {},
+  "loc": {
+    "actants": {
+      "A": {
+        "loc": 5,
+        "imports": 1
+      },
+      "B": {
+        "loc": 20,
+        "imports": 1
+      },
+      "C": {
+        "loc": 8,
+        "imports": 1
+      }
+    },
+    "langchain": {
+      "A": {
+        "loc": 5,
+        "imports": 1
+      },
+      "B": {
+        "loc": 10,
+        "imports": 2
+      },
+      "C": {
+        "loc": 8,
+        "imports": 1
+      }
+    },
+    "llama_index": {
+      "A": {
+        "loc": 5,
+        "imports": 1
+      },
+      "B": {
+        "loc": 11,
+        "imports": 2
+      },
+      "C": {
+        "loc": 9,
+        "imports": 2
+      }
+    },
+    "pydantic_ai": {
+      "A": {
+        "loc": 10,
+        "imports": 3
+      },
+      "B": {
+        "loc": 10,
+        "imports": 0
+      },
+      "C": {
+        "loc": 12,
+        "imports": 2
+      }
+    },
+    "raw": {
+      "A": {
+        "loc": 5,
+        "imports": 1
+      },
+      "B": {
+        "loc": 32,
+        "imports": 1
+      },
+      "C": {
+        "loc": 12,
+        "imports": 1
+      }
+    }
+  }
+}

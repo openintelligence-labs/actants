@@ -206,6 +206,39 @@ under `actants.cost.usd` because the OTel GenAI spec does not yet define a
 cost attribute. Spans are forwarded to whichever OTLP collector you
 configure; `actants` itself sends nothing.
 
+## Benchmark
+
+Measured against LangChain 1.3.14, Pydantic AI 2.21.0, LlamaIndex 0.14.23,
+and the raw `ollama` client, on one machine (Apple M4 Pro, Python 3.13.5,
+Ollama 0.32.4, `qwen2.5:7b`). Framework overhead is isolated from model time
+with a recording proxy; latency is p50 over 7 samples with framework order
+shuffled between rounds.
+
+| | actants | LangChain | Pydantic AI | LlamaIndex | raw |
+|---|---|---|---|---|---|
+| Install (packages) | **18** | 38 | 98 | 63 | 12 |
+| Install (site-packages) | **14.1 MB** | 35.9 MB | 105.7 MB | 126.7 MB | 11.3 MB |
+| Cold import | **96.9 ms** | 343.2 ms | 742.5 ms | 565.7 ms | 116.8 ms |
+| Overhead, completion | **6.03 ms** | 10.40 ms | 10.37 ms | 11.80 ms | 5.58 ms |
+| Overhead, tool agent | **7.58 ms** | 17.33 ms | 12.88 ms | 951.32 ms | 7.62 ms |
+| Overhead, structured | **6.21 ms** | 12.03 ms | 10.46 ms | 12.40 ms | 6.21 ms |
+| LOC, three tasks | 33 | **23** | 32 | 25 | 49 |
+
+`actants` has the smallest install and the lowest per-call overhead of the
+frameworks tested — statistically tied with hand-written raw HTTP — and
+**loses on tool ergonomics**: registering one tool takes 20 lines against
+LangChain's 10, because released 0.5.3 requires a hand-written JSON Schema.
+(Annotation-based schema inference has since landed on `main`; the table
+measures the released package and will be regenerated when it ships.)
+
+Model time dominates all wall-clock differences; these overheads are ~5 ms on
+top of a ~150 ms model call. Single machine, small samples, no retrieval or
+concurrency measured.
+
+Full methodology, caveats, per-task snippets, and reproduction commands:
+[docs/BENCHMARK.md](docs/BENCHMARK.md). Run it yourself with
+`python benchmarks/run_benchmarks.py --runs 7`.
+
 ## Project layout
 
 ```

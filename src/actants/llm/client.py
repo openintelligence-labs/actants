@@ -23,6 +23,7 @@ from actants.llm.base import (
 from actants.llm.ollama import OllamaProvider
 from actants.llm.partial_json import parse_partial_json
 from actants.policies.retry import RetryPolicy, retry_async
+from actants.tools.base import serialize_tool_result
 from actants.tracing.otel import llm_span
 
 if TYPE_CHECKING:
@@ -142,7 +143,14 @@ class LLM:
         elif self.cache is not None and use_cache and not tools:
             from actants.cache.memory import make_key
 
-            cache_key = make_key(messages, effective_model, effective_temp)
+            cache_key = make_key(
+                messages,
+                effective_model,
+                effective_temp,
+                provider=self.provider.name,
+                max_tokens=max_tokens,
+                tools=tools,
+            )
             cached = await self.cache.get(cache_key)
             if cached is not None:
                 return cached
@@ -207,11 +215,7 @@ class LLM:
             )
             for call in last.tool_calls:
                 result = await tools.call(call.name, **call.arguments)
-                payload = (
-                    json.dumps(result.value, default=str)
-                    if result.ok
-                    else json.dumps({"error": result.error})
-                )
+                payload = serialize_tool_result(result)
                 messages.append(ChatMessage(role="tool", content=payload, tool_call_id=call.id))
         raise RuntimeError(f"Agent loop exceeded max_steps={max_steps} without a final answer")
 
@@ -409,11 +413,7 @@ class LLM:
             )
             for call in step_tool_calls:
                 result = await tools.call(call.name, **call.arguments)
-                payload = (
-                    json.dumps(result.value, default=str)
-                    if result.ok
-                    else json.dumps({"error": result.error})
-                )
+                payload = serialize_tool_result(result)
                 messages.append(ChatMessage(role="tool", content=payload, tool_call_id=call.id))
         raise RuntimeError(f"Agent stream exceeded max_steps={max_steps}")
 

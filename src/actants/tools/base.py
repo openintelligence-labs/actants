@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Awaitable, Callable
 from typing import Any
 
@@ -14,6 +15,29 @@ class ToolResult(BaseModel):
     ok: bool = True
     value: Any = None
     error: str | None = None
+
+
+def serialize_tool_result(result: ToolResult) -> str:
+    """Render a ToolResult as the JSON string fed back to the model.
+
+    Tool handlers are user code and may return anything — objects whose ``__str__``
+    raises, or structures containing reference cycles. Serialization must never be able
+    to abort the agent loop, so an unrenderable value degrades to a JSON error payload
+    the model can actually read and react to.
+    """
+    if not result.ok:
+        return json.dumps({"error": result.error})
+    try:
+        return json.dumps(result.value, default=str)
+    except (TypeError, ValueError, RecursionError) as exc:
+        return json.dumps(
+            {
+                "error": (
+                    f"Tool returned a value that could not be serialized to JSON: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+            }
+        )
 
 
 class Tool(BaseModel):

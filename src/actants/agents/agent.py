@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 
@@ -23,6 +22,7 @@ from actants.llm.base import (
     UsageDelta,
 )
 from actants.llm.client import LLM
+from actants.tools.base import serialize_tool_result
 from actants.tools.registry import ToolRegistry
 
 AgentEvent = (
@@ -135,11 +135,7 @@ class Agent:
                     )
                 for call in completion.tool_calls:
                     result = await self.tools.call(call.name, **call.arguments)
-                    payload = (
-                        json.dumps(result.value, default=str)
-                        if result.ok
-                        else json.dumps({"error": result.error})
-                    )
+                    payload = serialize_tool_result(result)
                     step.tool_results.append(payload)
                     if self.hooks.on_tool_call is not None:
                         await self.hooks.on_tool_call(call, result.value if result.ok else None)
@@ -187,6 +183,7 @@ class Agent:
                 step_text: list[str] = []
                 step_tool_calls: list[ToolCall] = []
                 last_usage = TokenUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+                last_cost = 0.0
 
                 async for event in provider.stream_events(
                     messages=msgs,
@@ -202,12 +199,16 @@ class Agent:
                         step_tool_calls.append(event.tool_call)
                     elif isinstance(event, UsageDelta):
                         last_usage = event.usage
+                        # Providers price the request themselves; dropping this field
+                        # made every streamed run report $0.00.
+                        last_cost = event.cost_usd
 
                 completion = CompletionResult(
                     content="".join(step_text),
                     model=model,
                     provider=provider.name,
                     usage=last_usage,
+                    cost_usd=last_cost,
                     tool_calls=step_tool_calls,
                 )
                 if cost_tracker is not None:
@@ -236,11 +237,7 @@ class Agent:
                 for call in step_tool_calls:
                     yield AgentToolCallStarted(call=call, step=step_idx)
                     result = await self.tools.call(call.name, **call.arguments)
-                    payload = (
-                        json.dumps(result.value, default=str)
-                        if result.ok
-                        else json.dumps({"error": result.error})
-                    )
+                    payload = serialize_tool_result(result)
                     yield AgentToolCallCompleted(
                         call=call,
                         value=result.value if result.ok else result.error,

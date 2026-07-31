@@ -31,11 +31,20 @@ async def test_duplicate_registration_raises():
         registry.register_function("add", "d", add)
 
 
-@pytest.mark.asyncio
-async def test_unknown_tool_raises():
+def test_unknown_tool_raises_from_get():
+    """get() is the programmatic lookup, so an unknown name is a real error there."""
     registry = ToolRegistry()
     with pytest.raises(ToolError):
-        await registry.call("ghost")
+        registry.get("ghost")
+
+
+@pytest.mark.asyncio
+async def test_unknown_tool_from_call_is_reported_not_raised():
+    """call() takes model-supplied names, so a hallucinated tool is a ToolResult."""
+    registry = ToolRegistry()
+    result = await registry.call("ghost")
+    assert not result.ok
+    assert "ghost" in (result.error or "")
 
 
 @pytest.mark.asyncio

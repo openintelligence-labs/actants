@@ -61,7 +61,18 @@ class ToolRegistry:
         ]
 
     async def call(self, name: str, **kwargs: Any) -> ToolResult:
-        tool = self.get(name)
+        """Dispatch a tool call, returning failures as a ToolResult rather than raising.
+
+        The tool name and arguments come from the model, so a hallucinated name or a
+        bogus argument list is normal model behaviour — not a programming error. Both
+        are reported back as ok=False so the agent loop can feed the error to the
+        model and let it correct itself. Use :meth: when you want an unknown tool
+        to raise.
+        """
+        try:
+            tool = self.get(name)
+        except ToolError as exc:
+            return ToolResult(ok=False, error=str(exc))
         if tool.requires_permission and self._permission_check is not None:
             allowed = await self._permission_check(name, kwargs)
             if not allowed:

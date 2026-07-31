@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import json
 from typing import TYPE_CHECKING, Any, Literal
 
+from actants.tools.base import serialize_tool_result
 from actants.tools.registry import ToolRegistry
 
 if TYPE_CHECKING:
@@ -130,11 +130,9 @@ def _register_tool(
         # Drop unset optional params so registry handlers see only what was supplied.
         kwargs = {k: v for k, v in kwargs.items() if k in properties}
         result = await registry.call(name, **kwargs)
-        if not result.ok:
-            return json.dumps({"error": result.error})
-        if isinstance(result.value, str):
+        if result.ok and isinstance(result.value, str):
             return result.value
-        return json.dumps(result.value, default=str)
+        return serialize_tool_result(result)
 
     handler.__name__ = name
     handler.__doc__ = description

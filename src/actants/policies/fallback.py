@@ -9,6 +9,8 @@ from actants.llm.base import (
     BaseLLMProvider,
     ChatMessage,
     CompletionResult,
+    StreamEvent,
+    ToolSpec,
 )
 
 log = structlog.get_logger(__name__)
@@ -40,6 +42,10 @@ class FallbackProvider(BaseLLMProvider):
         if not chain:
             raise ValueError("FallbackProvider requires at least one provider")
         self._chain = chain
+        # A chain is only as capable as its weakest link: any provider may end up
+        # serving the request, so a capability holds only if all of them support it.
+        self.supports_tool_calls = all(p.supports_tool_calls for p, _ in chain)
+        self.supports_streaming_tools = all(p.supports_streaming_tools for p, _ in chain)
 
     async def health(self) -> bool:
         for provider, _ in self._chain:
@@ -84,6 +90,7 @@ class FallbackProvider(BaseLLMProvider):
     ) -> AsyncIterator[str]:
         errors: list[tuple[str, BaseException]] = []
         for provider, pmodel in self._chain:
+            emitted = False
             try:
                 agen = provider.stream(
                     messages=messages,
@@ -93,9 +100,58 @@ class FallbackProvider(BaseLLMProvider):
                     **kwargs,
                 )
                 async for chunk in agen:
+                    emitted = True
                     yield chunk
                 return
             except Exception as exc:
+                if emitted:
+                    # Bytes already reached the consumer. Restarting on another provider
+                    # would splice two different completions into one response, so the
+                    # failure has to surface instead.
+                    raise
+                log.warning(
+                    "fallback_stream_failed",
+                    provider=provider.name,
+                    error=str(exc),
+                )
+                errors.append((provider.name, exc))
+        raise AllProvidersFailedError(errors)
+
+    async def stream_events(
+        self,
+        messages: list[ChatMessage],
+        model: str,
+        temperature: float = 0.7,
+        max_tokens: int | None = None,
+        *,
+        tools: list[ToolSpec] | None = None,
+        **kwargs: Any,
+    ) -> AsyncIterator[StreamEvent]:
+        """Fall back across providers while preserving typed events.
+
+        Without this override the base-class implementation would wrap each provider's
+        ``stream`` (text only), silently dropping tool-call and usage events for every
+        provider in the chain.
+        """
+        errors: list[tuple[str, BaseException]] = []
+        for provider, pmodel in self._chain:
+            emitted = False
+            try:
+                agen = provider.stream_events(
+                    messages=messages,
+                    model=pmodel or model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    tools=tools,
+                    **kwargs,
+                )
+                async for event in agen:
+                    emitted = True
+                    yield event
+                return
+            except Exception as exc:
+                if emitted:
+                    raise
                 log.warning(
                     "fallback_stream_failed",
                     provider=provider.name,

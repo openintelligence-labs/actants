@@ -76,9 +76,27 @@ SNIPPETS = _collect()
 CHECKED = [s for s in SNIPPETS if not s.has("skip")]
 
 
-def test_documentation_snippets_were_found():
-    """Guard against the fence regex silently matching nothing."""
-    assert len(SNIPPETS) > 40, f"only found {len(SNIPPETS)} snippets — is the regex broken?"
+def test_readme_snippets_were_found():
+    """Guard against the fence regex silently matching nothing.
+
+    README.md is always present; ``docs_site/`` is gitignored and therefore
+    absent in CI, so it gets its own conditional guard below.
+    """
+    readme = [s for s in SNIPPETS if s.path.name == "README.md"]
+    assert len(readme) >= 5, (
+        f"only found {len(readme)} snippets in README.md — is the fence regex broken?"
+    )
+
+
+@pytest.mark.skipif(
+    not (REPO_ROOT / "docs_site").is_dir(),
+    reason="docs_site/ is gitignored and not present in this checkout",
+)
+def test_docs_site_snippets_were_found():
+    site = [s for s in SNIPPETS if "docs_site" in s.path.parts]
+    assert len(site) > 40, (
+        f"only found {len(site)} snippets under docs_site/ — is the fence regex broken?"
+    )
 
 
 #: Compile flag that permits top-level ``await`` / ``async for`` / ``async with``,

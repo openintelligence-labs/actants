@@ -11,10 +11,7 @@ from typing import TYPE_CHECKING, Any
 
 __version__ = "0.5.3"
 
-# Map of public-attribute name → (module path, source attribute name).
-# When user accesses ``actants.Agent`` for the first time, we import that
-# module and bind the attribute on the package, so subsequent accesses are
-# zero-overhead.
+# Public-attribute name → (module path, source attribute name).
 _LAZY: dict[str, tuple[str, str]] = {
     # Agents
     "Agent": ("actants.agents.agent", "Agent"),
@@ -22,8 +19,7 @@ _LAZY: dict[str, tuple[str, str]] = {
     "AgentStep": ("actants.agents.agent", "AgentStep"),
     "AgentHooks": ("actants.agents.hooks", "AgentHooks"),
     "ConversationMemory": ("actants.agents.memory", "ConversationMemory"),
-    # LLM core (kept eager-ish since most apps need it; lives behind lazy
-    # access too so importing only ``actants.storage`` doesn't pay for it).
+    # LLM core
     "LLM": ("actants.llm.client", "LLM"),
     "LLMSettings": ("actants.llm.client", "LLMSettings"),
     "BaseLLMProvider": ("actants.llm.base", "BaseLLMProvider"),
@@ -99,8 +95,7 @@ def __dir__() -> list[str]:
 
 
 if TYPE_CHECKING:
-    # Imports for static type-checkers only — never executed at runtime.
-    # Re-exported via __getattr__ above.
+    # Type-checker only; re-exported at runtime via __getattr__ above.
     from actants.agents.agent import Agent, AgentResult, AgentStep  # noqa: F401
     from actants.agents.hooks import AgentHooks  # noqa: F401
     from actants.agents.memory import ConversationMemory  # noqa: F401

@@ -22,8 +22,7 @@ async def test_agent_returns_final_answer_with_no_tools():
     assert result.content == "Hello there!"
     assert len(result.steps) == 1
     assert result.steps[0].tool_calls == []
-    # User + assistant in memory
-    assert len(agent.memory) == 2
+    assert len(agent.memory) == 2  # user + assistant
 
 
 @pytest.mark.asyncio

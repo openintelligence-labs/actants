@@ -71,7 +71,6 @@ def test_agent_instantiation_after_warm_import_is_fast():
     from actants.llm.client import LLM
     from actants.testing import FakeLLMProvider
 
-    # Warm up
     provider = FakeLLMProvider()
     llm = LLM(provider=provider, model="fake")
     Agent(llm=llm)

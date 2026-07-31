@@ -29,7 +29,6 @@ def parse_partial_json(text: str) -> object | None:
 def _strip_prose(text: str) -> str:
     s = text.strip()
     if s.startswith("```"):
-        # drop opening fence (optional language tag)
         s = s.split("\n", 1)[1] if "\n" in s else s[3:]
         if s.endswith("```"):
             s = s[:-3]
@@ -73,19 +72,17 @@ def _close_open_structures(s: str) -> str:
 
     repaired = s
     if in_string:
-        # trim back to the last field boundary — a dangling string would break a number too
+        # Trim back to the last field boundary; a dangling string can also truncate
+        # an adjacent number, so cutting at the string alone is not enough.
         cut = _rfind_safe_cut(repaired)
         repaired = repaired[:cut]
-        # recompute stack on trimmed string
         return _close_open_structures(repaired)
 
-    # trim trailing trailing commas / partial literals
+    # Drop trailing commas and key-without-value patterns like `"key":`.
     trimmed = repaired.rstrip()
     while trimmed.endswith((",", ":")):
         trimmed = trimmed[:-1].rstrip()
-    # drop incomplete key-without-value patterns like `"key":`
     repaired = trimmed
-    # recompute unclosed brackets on the trimmed string
     stack2: list[str] = []
     in_string2 = False
     escape2 = False

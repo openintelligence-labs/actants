@@ -32,7 +32,6 @@ def test_parse_strips_code_fences():
 
 
 def test_parse_closes_open_object():
-    # missing closing brace
     result = parse_partial_json('{"title": "x", "severity": "low"')
     assert result == {"title": "x", "severity": "low"}
 
@@ -43,9 +42,9 @@ def test_parse_closes_open_array():
 
 
 def test_parse_handles_incomplete_string():
-    # string was cut mid-way — parser should trim back to the prior boundary
     result = parse_partial_json('{"title": "inc')
-    # Either empty object or nothing — tolerate both, just ensure no raise
+    # Trimming back to the prior boundary may leave an empty object or nothing;
+    # both are acceptable, the contract is only that it must not raise.
     assert result is None or isinstance(result, dict)
 
 

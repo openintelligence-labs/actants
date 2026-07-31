@@ -95,7 +95,6 @@ class LLM:
         if model is not None:
             self.settings.model = model
         if isinstance(provider, str):
-            # Provider name ("ollama", "openai", ...) — build the matching provider.
             self.settings.provider = provider
             provider = _make_provider(self.settings)
         elif provider is not None and not isinstance(provider, BaseLLMProvider):

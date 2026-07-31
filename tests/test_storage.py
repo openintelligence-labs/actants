@@ -12,7 +12,6 @@ def test_open_sqlite_creates_with_wal_and_commits(tmp_path):
         conn.execute("INSERT INTO t (name) VALUES ('a')")
         conn.execute("INSERT INTO t (name) VALUES ('b')")
 
-    # Reopen, confirm rows persisted
     with open_sqlite(db) as conn:
         rows = list(conn.execute("SELECT name FROM t ORDER BY id"))
         assert [r["name"] for r in rows] == ["a", "b"]

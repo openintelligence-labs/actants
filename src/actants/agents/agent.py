@@ -217,13 +217,11 @@ class Agent:
                     await self.hooks.after_step(step_idx, completion)
                 yield AgentStepCompleted(step=step_idx, completion=completion)
 
-                # Terminal: no tool calls means the model is done.
                 if not step_tool_calls:
                     self.memory.add_assistant(completion.content)
                     yield AgentRunCompleted(content=completion.content, final=completion)
                     return
 
-                # Otherwise: record the assistant turn with tool calls, dispatch each.
                 self.memory.add(
                     ChatMessage(
                         role="assistant",

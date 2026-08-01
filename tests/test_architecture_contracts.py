@@ -6,12 +6,21 @@ Every test here fails before its fix.
 
 from __future__ import annotations
 
+import asyncio
 import sqlite3
 from collections.abc import AsyncIterator
 from typing import Any
 
 import pytest
 
+from actants.agents.agent import Agent
+from actants.agents.events import (
+    AgentRunCompleted,
+    AgentTextDelta,
+    AgentToolCallCompleted,
+    AgentToolCallStarted,
+)
+from actants.agents.memory import ConversationMemory
 from actants.cache.memory import InMemoryCache, make_key
 from actants.cache.request import KEY_VERSION, CacheRequest
 from actants.llm.base import (
@@ -23,11 +32,12 @@ from actants.llm.base import (
     TextDelta,
     TokenUsage,
     ToolSpec,
+    UsageDelta,
 )
 from actants.llm.client import LLM
 from actants.llm.errors import ToolCallsNotSupportedError
 from actants.policies.retry import RetryPolicy
-from actants.testing import FakeLLMProvider
+from actants.testing import FakeLLMProvider, fake_completion, fake_tool_call_completion
 from actants.tools.registry import ToolRegistry
 
 
@@ -663,3 +673,299 @@ async def test_stream_text_also_goes_through_the_layer() -> None:
     chunks = [c async for c in llm.stream("hi")]
     assert "".join(chunks) == "recovered"
     assert provider.attempts == 2
+
+
+# ---------------------------------------------------------------------------
+# 2. Agent concurrency
+# ---------------------------------------------------------------------------
+
+
+class SlowProvider(BaseLLMProvider):
+    """Yields to the event loop mid-call so concurrent runs genuinely interleave.
+
+    Echoes back which prompt it saw, so a test can prove a run's history was not
+    contaminated by another run's messages.
+    """
+
+    name = "slow"
+    supports_tool_calls = True
+    supports_streaming_tools = True
+
+    def __init__(self, delay: float = 0.01) -> None:
+        self.delay = delay
+        self.seen: list[list[ChatMessage]] = []
+
+    async def complete(self, messages, model, temperature=0.7, max_tokens=None, **kw):
+        self.seen.append(list(messages))
+        await asyncio.sleep(self.delay)
+        user = [m.content for m in messages if m.role == "user"]
+        return _result(f"answer-to-{user[-1]}")
+
+    async def stream(self, messages, model, **kw) -> AsyncIterator[str]:
+        result = await self.complete(messages, model)
+        yield result.content
+
+    async def stream_events(self, messages, model, **kw) -> AsyncIterator[StreamEvent]:
+        result = await self.complete(messages, model)
+        for ch in result.content:
+            yield TextDelta(text=ch)
+            await asyncio.sleep(0)
+        yield UsageDelta(usage=result.usage, cost_usd=0.0)
+        yield FinishDelta(reason="stop")
+
+    async def health(self) -> bool:
+        return True
+
+
+@pytest.mark.asyncio
+async def test_concurrent_runs_do_not_interleave_history() -> None:
+    """Three genuinely concurrent runs; none may see another's user message.
+
+    Before the fix all three appended to one ConversationMemory, so each step sent the
+    merged history and the answers were computed from a conversation no caller asked for.
+    """
+    provider = SlowProvider()
+    agent = Agent(llm=LLM(provider=provider, model="m", tracing=False))
+
+    results = await asyncio.gather(
+        agent.run("alpha"),
+        agent.run("beta"),
+        agent.run("gamma"),
+    )
+
+    assert [r.content for r in results] == [
+        "answer-to-alpha",
+        "answer-to-beta",
+        "answer-to-gamma",
+    ]
+
+    # Each request the provider saw must contain exactly one user message.
+    for messages in provider.seen:
+        users = [m.content for m in messages if m.role == "user"]
+        assert len(users) == 1, f"run saw a contaminated history: {users}"
+
+
+@pytest.mark.asyncio
+async def test_concurrent_runs_all_commit_their_turn() -> None:
+    """Isolation must not lose turns: every run's messages land in the agent's memory."""
+    provider = SlowProvider()
+    agent = Agent(llm=LLM(provider=provider, model="m", tracing=False))
+
+    await asyncio.gather(agent.run("alpha"), agent.run("beta"), agent.run("gamma"))
+
+    contents = [m.content for m in agent.memory.messages()]
+    assert sorted(c for c in contents if not c.startswith("answer-")) == [
+        "alpha",
+        "beta",
+        "gamma",
+    ]
+    assert len([c for c in contents if c.startswith("answer-to-")]) == 3
+
+
+@pytest.mark.asyncio
+async def test_each_turn_is_committed_contiguously() -> None:
+    """No run may observe, or leave behind, a half-written turn."""
+    provider = SlowProvider()
+    agent = Agent(llm=LLM(provider=provider, model="m", tracing=False))
+    await asyncio.gather(agent.run("alpha"), agent.run("beta"))
+
+    messages = agent.memory.messages()
+    # Every user message is immediately followed by its own answer.
+    for i, m in enumerate(messages):
+        if m.role == "user":
+            assert messages[i + 1].role == "assistant"
+            assert messages[i + 1].content == f"answer-to-{m.content}"
+
+
+@pytest.mark.asyncio
+async def test_sequential_runs_still_remember_context() -> None:
+    """Isolation is per-run, not per-call: turn 2 must still see turn 1."""
+    provider = SlowProvider()
+    agent = Agent(llm=LLM(provider=provider, model="m", tracing=False))
+
+    await agent.run("first")
+    await agent.run("second")
+
+    last_request = provider.seen[-1]
+    contents = [m.content for m in last_request]
+    assert "first" in contents
+    assert "answer-to-first" in contents
+    assert "second" in contents
+
+
+@pytest.mark.asyncio
+async def test_failed_run_commits_nothing() -> None:
+    """A run that raises must not strand its user message in the conversation."""
+
+    class BoomProvider(SlowProvider):
+        async def complete(self, messages, model, temperature=0.7, max_tokens=None, **kw):
+            raise RuntimeError("provider exploded")
+
+    agent = Agent(llm=LLM(provider=BoomProvider(), model="m", tracing=False))
+    with pytest.raises(RuntimeError, match="provider exploded"):
+        await agent.run("doomed")
+    assert agent.memory.messages() == []
+
+
+@pytest.mark.asyncio
+async def test_serialized_mode_makes_each_run_see_the_previous_one() -> None:
+    """The other contract must be reachable deliberately, and must actually serialize."""
+    provider = SlowProvider()
+    agent = Agent(
+        llm=LLM(provider=provider, model="m", tracing=False),
+        concurrency="serialized",
+    )
+
+    await asyncio.gather(agent.run("alpha"), agent.run("beta"), agent.run("gamma"))
+
+    # Runs queued, so the last one saw all three user messages.
+    user_counts = sorted(len([m for m in seen if m.role == "user"]) for seen in provider.seen)
+    assert user_counts == [1, 2, 3]
+
+
+@pytest.mark.asyncio
+async def test_serialized_mode_preserves_total_order() -> None:
+    provider = SlowProvider()
+    agent = Agent(
+        llm=LLM(provider=provider, model="m", tracing=False),
+        concurrency="serialized",
+    )
+    await asyncio.gather(agent.run("alpha"), agent.run("beta"))
+    roles = [m.role for m in agent.memory.messages()]
+    assert roles == ["user", "assistant", "user", "assistant"]
+
+
+def test_unknown_concurrency_mode_is_rejected_with_the_alternatives() -> None:
+    with pytest.raises(ValueError) as exc:
+        Agent(llm=LLM(provider=FakeLLMProvider(), model="m"), concurrency="yolo")
+    message = str(exc.value)
+    assert "isolated" in message and "serialized" in message
+
+
+@pytest.mark.asyncio
+async def test_concurrent_streams_do_not_interleave_history() -> None:
+    """stream() carries the same guarantee as run()."""
+    provider = SlowProvider()
+    agent = Agent(llm=LLM(provider=provider, model="m", tracing=False))
+
+    async def drain(prompt: str) -> str:
+        parts = []
+        async for event in agent.stream(prompt):
+            if hasattr(event, "text"):
+                parts.append(event.text)
+        return "".join(parts)
+
+    out = await asyncio.gather(drain("alpha"), drain("beta"), drain("gamma"))
+    assert sorted(out) == ["answer-to-alpha", "answer-to-beta", "answer-to-gamma"]
+    for messages in provider.seen:
+        assert len([m for m in messages if m.role == "user"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_abandoned_stream_commits_nothing() -> None:
+    """Consumer stops iterating part-way: the agent's memory must be untouched."""
+    provider = SlowProvider()
+    agent = Agent(llm=LLM(provider=provider, model="m", tracing=False))
+
+    stream = agent.stream("partial")
+    await stream.__anext__()
+    await stream.aclose()
+
+    assert agent.memory.messages() == []
+
+
+@pytest.mark.asyncio
+async def test_agent_memory_is_the_seed_for_isolated_runs() -> None:
+    """A run must inherit whatever was in memory when it started."""
+    provider = SlowProvider()
+    memory = ConversationMemory(system="be terse")
+    agent = Agent(llm=LLM(provider=provider, model="m", tracing=False), memory=memory)
+
+    await agent.run("hello")
+    assert provider.seen[0][0].role == "system"
+    assert provider.seen[0][0].content == "be terse"
+
+
+@pytest.mark.asyncio
+async def test_agent_stream_uses_the_llm_layer_not_the_provider() -> None:
+    """The defect: ``Agent.stream`` called ``provider.stream_events`` directly.
+
+    Proven by making the LLM layer observable — a run whose stream never touches the
+    layer would not increment this counter.
+    """
+    provider = FakeLLMProvider([fake_completion("hello")])
+    llm = LLM(provider=provider, model="m", tracing=False)
+
+    calls = 0
+    original = llm.stream_events
+
+    def counting(*args: Any, **kwargs: Any):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    llm.stream_events = counting  # type: ignore[method-assign]
+    agent = Agent(llm=llm)
+    async for _ in agent.stream("hi"):
+        pass
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_agent_stream_inherits_retry_from_the_llm() -> None:
+    """Before the fix a streamed run had no retry at all, while run() did."""
+    provider = FlakyStreamProvider(fail_times=1)
+    agent = Agent(
+        llm=LLM(
+            provider=provider,
+            model="m",
+            tracing=False,
+            retry_policy=RetryPolicy(max_attempts=3, initial_delay=0.0, jitter=0.0),
+        )
+    )
+    texts = [e.text async for e in agent.stream("hi") if isinstance(e, TextDelta | AgentTextDelta)]
+    assert provider.attempts == 2
+    assert "".join(texts) == "recovered"
+
+
+@pytest.mark.asyncio
+async def test_agent_stream_and_run_agree_on_final_content() -> None:
+    """A streamed run and a non-streamed run must not behave differently."""
+    streamed = Agent(
+        llm=LLM(
+            provider=FakeLLMProvider([fake_completion("same answer")]), model="m", tracing=False
+        )
+    )
+    plain = Agent(
+        llm=LLM(
+            provider=FakeLLMProvider([fake_completion("same answer")]), model="m", tracing=False
+        )
+    )
+
+    events = [e async for e in streamed.stream("hi")]
+    completed = [e for e in events if isinstance(e, AgentRunCompleted)]
+    result = await plain.run("hi")
+
+    assert completed[0].content == result.content == "same answer"
+    assert [m.content for m in streamed.memory.messages()] == [
+        m.content for m in plain.memory.messages()
+    ]
+
+
+@pytest.mark.asyncio
+async def test_agent_stream_still_dispatches_tools() -> None:
+    """Routing through the LLM layer must not break the tool loop."""
+    provider = FakeLLMProvider(
+        [
+            fake_tool_call_completion("add", {"a": 2, "b": 3}, call_id="t1"),
+            fake_completion("Result is 5"),
+        ]
+    )
+    agent = Agent(llm=LLM(provider=provider, model="m", tracing=False), tools=_registry())
+    events = [e async for e in agent.stream("2 + 3?")]
+
+    started = [e for e in events if isinstance(e, AgentToolCallStarted)]
+    completed = [e for e in events if isinstance(e, AgentToolCallCompleted)]
+    assert len(started) == 1 and started[0].call.name == "add"
+    assert len(completed) == 1 and completed[0].ok
+    assert completed[0].value == 5

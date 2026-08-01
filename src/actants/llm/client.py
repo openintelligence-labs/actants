@@ -27,6 +27,7 @@ from actants.llm.errors import (
     MissingAPIKeyError,
     ProviderNotInstalledError,
     UnknownProviderError,
+    tool_calls_not_supported,
 )
 from actants.llm.ollama import OllamaProvider
 from actants.llm.partial_json import parse_partial_json
@@ -236,6 +237,7 @@ class LLM:
         ``tag`` is recorded on the CostTracker for grouped reporting.
         """
         _require_tool_specs(tools)
+        self._require_tool_support(tools)
         messages = self._normalize(prompt, system=system)
         effective_model = model or self.settings.model
         effective_temp = temperature if temperature is not None else self.settings.temperature
@@ -302,6 +304,7 @@ class LLM:
         _require_registry(tools)
         messages = self._normalize(prompt, system=system)
         specs = tools.as_specs()
+        self._require_tool_support(specs)
 
         last: CompletionResult | None = None
         for _ in range(max_steps):
@@ -461,6 +464,8 @@ class LLM:
         tools: list[ToolSpec] | None = None,
     ) -> AsyncIterator[StreamEvent]:
         """Yield typed StreamEvents (text, tool_call, usage, finish)."""
+        _require_tool_specs(tools)
+        self._require_tool_support(tools, streaming=True)
         messages = self._normalize(prompt, system=system)
         async for event in self.provider.stream_events(
             messages=messages,
@@ -486,6 +491,7 @@ class LLM:
         _require_registry(tools)
         messages = self._normalize(prompt, system=system)
         specs = tools.as_specs()
+        self._require_tool_support(specs, streaming=True)
         effective_model = model or self.settings.model
         effective_temp = temperature if temperature is not None else self.settings.temperature
 
@@ -527,6 +533,31 @@ class LLM:
 
     async def health(self) -> bool:
         return await self.provider.health()
+
+    def _require_tool_support(
+        self, tools: list[ToolSpec] | None, *, streaming: bool = False
+    ) -> None:
+        """Fail fast when tools are passed to a provider that cannot call them.
+
+        Providers declare this with ``supports_tool_calls`` /
+        ``supports_streaming_tools``. Without the check the specs are dropped somewhere
+        in the provider's request builder and the model answers as though no tools were
+        offered — a silent wrong answer rather than an error.
+        """
+        if not tools:
+            return
+        capable = (
+            self.provider.supports_streaming_tools
+            if streaming
+            else self.provider.supports_tool_calls
+        )
+        if capable:
+            return
+        raise tool_calls_not_supported(
+            self.provider.name,
+            [t.name for t in tools],
+            streaming=streaming,
+        )
 
     async def _run(self, coro_fn, *, op: str, model: str) -> CompletionResult:
         call = coro_fn

@@ -59,6 +59,9 @@ class FakeLLMProvider(BaseLLMProvider):
 
     name = "fake"
     supports_tool_calls = True
+    # ``stream_events`` below really does emit ToolCallDelta, so this must be declared:
+    # LLM refuses to pass tools to a provider whose flags say it cannot use them.
+    supports_streaming_tools = True
 
     def __init__(self, responses: list[CompletionResult] | None = None) -> None:
         self._responses: list[CompletionResult] = list(responses or [])

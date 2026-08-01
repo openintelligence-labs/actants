@@ -17,9 +17,17 @@ __all__ = [
     "ModelNotFoundError",
     "ProviderError",
     "ProviderNotInstalledError",
+    "ToolCallsNotSupportedError",
     "UnknownProviderError",
     "raise_for_ollama_error",
+    "tool_calls_not_supported",
 ]
+
+#: Built-in providers that declare ``supports_tool_calls``. Every provider actants ships
+#: does, so this is offered as the fix when a *custom* provider does not. Kept here
+#: rather than imported from the client to avoid a cycle (``llm.client`` imports this
+#: module).
+_TOOL_CAPABLE_PROVIDERS = ("ollama", "openai", "anthropic", "gemini", "groq", "mistral")
 
 
 class ActantsError(Exception):
@@ -44,6 +52,40 @@ class MissingAPIKeyError(ProviderError, ValueError):
 
 class ModelNotFoundError(ProviderError, ValueError):
     """The server is reachable but does not have the requested model."""
+
+
+class ToolCallsNotSupportedError(ProviderError, TypeError):
+    """Tools were passed to a provider that declares it cannot call them."""
+
+
+def tool_calls_not_supported(
+    provider_name: str,
+    tool_names: list[str],
+    *,
+    streaming: bool = False,
+) -> ToolCallsNotSupportedError:
+    """Build the error raised when tools reach a provider that cannot use them.
+
+    Without this check the tools are simply dropped on the way to the wire, and the
+    model answers as if no tools existed — so the failure surfaces much later as "the
+    agent never calls my tool", or as a parse error deep inside the provider.
+    """
+    shown = ", ".join(repr(n) for n in tool_names[:3])
+    if len(tool_names) > 3:
+        shown += f", ... ({len(tool_names)} total)"
+    flag = "supports_streaming_tools" if streaming else "supports_tool_calls"
+    what = "streaming tool calls" if streaming else "tool calls"
+    alternatives = ", ".join(repr(p) for p in _TOOL_CAPABLE_PROVIDERS)
+    return ToolCallsNotSupportedError(
+        f"Provider {provider_name!r} does not support {what}, but {len(tool_names)} tool(s) "
+        f"were passed: {shown}. The tools would be silently ignored and the model would "
+        "answer as if they did not exist.\n"
+        f"Fix: use a provider that supports them — every built-in provider does "
+        f"({alternatives}) — e.g. LLM(provider='ollama', model='llama3.2'). "
+        f"If {provider_name!r} is your own BaseLLMProvider subclass and it does handle "
+        f"{what}, set `{flag} = True` on the class. "
+        "To run without tools, omit the tools argument."
+    )
 
 
 def _ollama_not_running(base_url: str, exc: Exception) -> ProviderError:

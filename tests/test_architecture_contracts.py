@@ -22,7 +22,9 @@ from actants.llm.base import (
     ToolSpec,
 )
 from actants.llm.client import LLM
+from actants.llm.errors import ToolCallsNotSupportedError
 from actants.testing import FakeLLMProvider
+from actants.tools.registry import ToolRegistry
 
 
 def _result(text: str = "hi", model: str = "m") -> CompletionResult:
@@ -433,3 +435,109 @@ async def test_llm_prefers_request_protocol_but_still_supports_key_backends() ->
 
     await llm.complete("hello", max_tokens=4096)
     assert len(cache) == 2, "max_tokens must reach the exact-match key too"
+
+
+# ---------------------------------------------------------------------------
+# 3. supports_tool_calls is enforced
+# ---------------------------------------------------------------------------
+
+
+class NoToolsProvider(BaseLLMProvider):
+    """A provider that honestly declares it cannot call tools."""
+
+    name = "no-tools"
+    supports_tool_calls = False
+    supports_streaming_tools = False
+
+    async def complete(self, messages, model, temperature=0.7, max_tokens=None, **kw):
+        return _result("ignored your tools")
+
+    async def stream(self, messages, model, **kw) -> AsyncIterator[str]:
+        yield "ignored"
+
+    async def health(self) -> bool:
+        return True
+
+
+def _registry() -> ToolRegistry:
+    registry = ToolRegistry()
+
+    async def add(a: int, b: int) -> int:
+        return a + b
+
+    registry.register_function("add", "Add two integers", add)
+    return registry
+
+
+@pytest.mark.asyncio
+async def test_complete_rejects_tools_on_a_provider_that_cannot_use_them() -> None:
+    llm = LLM(provider=NoToolsProvider(), model="m", tracing=False)
+    spec = ToolSpec(name="add", description="Add", parameters={"type": "object"})
+    with pytest.raises(ToolCallsNotSupportedError) as exc:
+        await llm.complete("2+2?", tools=[spec])
+
+    message = str(exc.value)
+    # Names the problem...
+    assert "'no-tools'" in message
+    assert "'add'" in message
+    # ...and names the fix.
+    assert "supports_tool_calls = True" in message
+    assert "ollama" in message
+
+
+@pytest.mark.asyncio
+async def test_run_agent_rejects_tools_before_burning_a_call() -> None:
+    provider = NoToolsProvider()
+    llm = LLM(provider=provider, model="m", tracing=False)
+    with pytest.raises(ToolCallsNotSupportedError):
+        await llm.run_agent("2+2?", _registry())
+
+
+@pytest.mark.asyncio
+async def test_stream_events_rejects_tools_and_names_the_streaming_flag() -> None:
+    class TextOnlyStreamer(NoToolsProvider):
+        supports_tool_calls = True  # can call tools, but not while streaming
+        supports_streaming_tools = False
+
+    llm = LLM(provider=TextOnlyStreamer(), model="m", tracing=False)
+    spec = ToolSpec(name="add", description="Add", parameters={"type": "object"})
+    with pytest.raises(ToolCallsNotSupportedError) as exc:
+        async for _ in llm.stream_events("hi", tools=[spec]):
+            pass
+    message = str(exc.value)
+    assert "supports_streaming_tools = True" in message
+    assert "streaming tool calls" in message
+
+
+@pytest.mark.asyncio
+async def test_error_lists_the_tools_and_truncates_long_lists() -> None:
+    llm = LLM(provider=NoToolsProvider(), model="m", tracing=False)
+    specs = [
+        ToolSpec(name=f"tool_{i}", description="d", parameters={"type": "object"}) for i in range(5)
+    ]
+    with pytest.raises(ToolCallsNotSupportedError) as exc:
+        await llm.complete("hi", tools=specs)
+    message = str(exc.value)
+    assert "(5 total)" in message
+    assert "5 tool(s)" in message
+
+
+@pytest.mark.asyncio
+async def test_no_tools_means_no_error() -> None:
+    """A tool-less provider must stay perfectly usable for plain completions."""
+    llm = LLM(provider=NoToolsProvider(), model="m", tracing=False)
+    result = await llm.complete("hi")
+    assert result.content == "ignored your tools"
+
+
+@pytest.mark.asyncio
+async def test_empty_tool_list_is_not_an_error() -> None:
+    llm = LLM(provider=NoToolsProvider(), model="m", tracing=False)
+    assert (await llm.complete("hi", tools=[])).content == "ignored your tools"
+
+
+@pytest.mark.asyncio
+async def test_capable_provider_is_unaffected() -> None:
+    llm = LLM(provider=FakeLLMProvider([_result("ok")]), model="m", tracing=False)
+    spec = ToolSpec(name="add", description="Add", parameters={"type": "object"})
+    assert (await llm.complete("hi", tools=[spec])).content == "ok"

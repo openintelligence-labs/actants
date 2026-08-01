@@ -4,11 +4,6 @@
 docs/*
 !docs/BENCHMARK.md
 
-# mkdocs site (not yet ready to commit)
-docs_site/
-mkdocs.yml
-.github/workflows/docs.yml
-
 # Claude Code config (local-only)
 .claude/
 

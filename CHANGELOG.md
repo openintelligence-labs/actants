@@ -1,5 +1,66 @@
 # Changelog
 
+## [Unreleased]
+
+Four architectural defects found by adversarial review. Each changes an API or a
+protocol, so each lands before the 1.0 freeze rather than after.
+
+### Changed (breaking)
+
+- **Cache backends are now keyed by a `CacheRequest`.** The semantic-cache protocol
+  (`get_by_messages` / `set_by_messages`) only ever received messages, model, and
+  temperature, so `SqliteVecCache` collided across requests that differed in
+  `max_tokens`, provider, tool definitions, or response format — a 4096-token answer
+  could be served to a request capped at 16. Both cache kinds now take one
+  `CacheRequest` carrying every field that changes the answer. Exact-match backends
+  implement `CacheBackend` and receive `CacheRequest.key()`; semantic backends implement
+  the new `RequestCacheBackend` and receive the whole request, matching message content
+  by embedding distance and everything else exactly (`CacheRequest.scope_hash()`).
+  `make_key()` keeps its signature and now delegates to `CacheRequest`.
+
+  Custom cache backends implementing `get_by_messages` / `set_by_messages` must rename
+  them to `get_request` / `set_request` and read the fields off the request.
+
+- **`SqliteVecCache` on-disk schema is versioned.** The database records its schema in
+  `PRAGMA user_version`, tied to the cache key version. Opening a file written by an
+  incompatible version discards it and starts empty rather than serving entries keyed on
+  fewer fields; pass `on_schema_mismatch="error"` to raise `CacheSchemaMismatch` instead.
+
+- **`Agent` defines its concurrency semantics.** Concurrent `run()` calls previously
+  appended to one shared `ConversationMemory` and produced merged history. Each run now
+  works against a private copy seeded from the agent's memory and commits its turn back
+  atomically, so concurrent runs never observe each other's partial state, and a run that
+  raises commits nothing. `Agent(concurrency="serialized")` selects the other contract:
+  runs queue on a lock and each sees every turn committed before it.
+
+### Fixed
+
+- `LLM` now checks `supports_tool_calls` / `supports_streaming_tools` before sending
+  tools to a provider. Tools passed to a provider that cannot use them were silently
+  dropped, so the model answered as if no tools existed. Raises
+  `ToolCallsNotSupportedError` naming the provider, the tools, and the fix.
+- `Agent.stream()` called `provider.stream_events` directly, bypassing retry, tracing,
+  and per-call model/temperature overrides — a streamed run behaved differently from a
+  non-streamed one. All streaming (`LLM.stream`, `LLM.stream_events`,
+  `LLM.extract_stream`, `LLM.run_agent_stream`, `Agent.stream`) now goes through one
+  layered path. Stream retry applies only before the first event reaches the consumer,
+  since restarting mid-stream would splice two completions together.
+- `SqliteVecCache` scoped its lookup as a post-filter on a KNN query. Because
+  `MATCH ... AND k = 1` selects the nearest vectors *before* the rest of the `WHERE`
+  clause applies, a nearer entry in another scope displaced the correct one and the
+  lookup returned a spurious miss. Scope is now a `vec0` partition key, pruned before
+  the search.
+- `import actants.cache.semantic` (or `.protocol`) as the first actants import raised
+  `ImportError` from a circular import via `actants.llm.__init__`. The protocol module's
+  imports are now annotation-only.
+
+### Documentation
+
+- `docs_site/` is now committed rather than gitignored, so the published documentation
+  lives in the repository and is covered by CI. The docs-snippet suite checks every
+  Python block in `docs_site/` as well as `README.md`, plus a guard that every page is
+  reachable from the mkdocs nav.
+
 ## [0.5.3] - 2026-07-29
 
 ### Fixed

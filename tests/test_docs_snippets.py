@@ -77,26 +77,46 @@ CHECKED = [s for s in SNIPPETS if not s.has("skip")]
 
 
 def test_readme_snippets_were_found():
-    """Guard against the fence regex silently matching nothing.
-
-    README.md is always present; ``docs_site/`` is gitignored and therefore
-    absent in CI, so it gets its own conditional guard below.
-    """
+    """Guard against the fence regex silently matching nothing."""
     readme = [s for s in SNIPPETS if s.path.name == "README.md"]
     assert len(readme) >= 5, (
         f"only found {len(readme)} snippets in README.md — is the fence regex broken?"
     )
 
 
-@pytest.mark.skipif(
-    not (REPO_ROOT / "docs_site").is_dir(),
-    reason="docs_site/ is gitignored and not present in this checkout",
-)
+def test_docs_site_is_committed():
+    """``docs_site/`` is tracked, so CI must actually be checking it.
+
+    It used to be gitignored, which meant the published documentation existed only in a
+    working tree and the snippet suite below silently checked nothing in CI. If this
+    fails, either the directory was removed or it slipped back into .gitignore.
+    """
+    assert (REPO_ROOT / "docs_site").is_dir(), (
+        "docs_site/ is missing. It is committed documentation, not a build artifact — "
+        "check that it has not been re-added to .gitignore."
+    )
+
+
 def test_docs_site_snippets_were_found():
     site = [s for s in SNIPPETS if "docs_site" in s.path.parts]
     assert len(site) > 40, (
         f"only found {len(site)} snippets under docs_site/ — is the fence regex broken?"
     )
+
+
+def test_every_docs_site_page_is_reachable_from_the_nav():
+    """A page absent from mkdocs.yml is a page nobody reads and nobody maintains.
+
+    ``mkdocs build --strict`` catches broken links but not orphaned files, so this is
+    the guard that keeps docs_site/ and the nav in step.
+    """
+    nav = (REPO_ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+    orphans = [
+        path.relative_to(REPO_ROOT / "docs_site").as_posix()
+        for path in sorted((REPO_ROOT / "docs_site").rglob("*.md"))
+        if path.relative_to(REPO_ROOT / "docs_site").as_posix() not in nav
+    ]
+    assert not orphans, f"docs_site pages missing from the mkdocs.yml nav: {orphans}"
 
 
 #: Compile flag that permits top-level ``await`` / ``async for`` / ``async with``,

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import json
 import os
 from collections.abc import AsyncIterator
@@ -20,8 +22,10 @@ from actants.llm.base import (
     FinishDelta,
     StreamEvent,
     TextDelta,
+    TokenUsage,
     ToolCallDelta,
     ToolSpec,
+    UsageDelta,
 )
 from actants.llm.errors import (
     MissingAPIKeyError,
@@ -404,12 +408,13 @@ class LLM:
 
         buf = ""
         last_serialized: str | None = None
-        async for event in self.provider.stream_events(
-            messages=messages,
-            model=model or self.settings.model,
-            temperature=temperature if temperature is not None else self.settings.temperature,
+        async for event in self._stream_layered(
+            messages,
+            model=model,
+            temperature=temperature,
             max_tokens=None,
             tools=None,
+            op="extract_stream",
         ):
             if isinstance(event, TextDelta):
                 buf += event.text
@@ -444,14 +449,18 @@ class LLM:
         max_tokens: int | None = None,
         system: str | None = None,
     ) -> AsyncIterator[str]:
+        """Stream plain text chunks, with the client's retry and tracing applied."""
         messages = self._normalize(prompt, system=system)
-        async for chunk in self.provider.stream(
-            messages=messages,
-            model=model or self.settings.model,
-            temperature=temperature if temperature is not None else self.settings.temperature,
+        async for event in self._stream_layered(
+            messages,
+            model=model,
+            temperature=temperature,
             max_tokens=max_tokens,
+            tools=None,
+            op="stream",
         ):
-            yield chunk
+            if isinstance(event, TextDelta):
+                yield event.text
 
     async def stream_events(
         self,
@@ -463,18 +472,95 @@ class LLM:
         system: str | None = None,
         tools: list[ToolSpec] | None = None,
     ) -> AsyncIterator[StreamEvent]:
-        """Yield typed StreamEvents (text, tool_call, usage, finish)."""
+        """Yield typed StreamEvents (text, tool_call, usage, finish).
+
+        Applies the same retry and tracing layers as :meth:`complete`, and honours the
+        same per-call ``model`` / ``temperature`` overrides.
+        """
         _require_tool_specs(tools)
         self._require_tool_support(tools, streaming=True)
         messages = self._normalize(prompt, system=system)
-        async for event in self.provider.stream_events(
-            messages=messages,
-            model=model or self.settings.model,
-            temperature=temperature if temperature is not None else self.settings.temperature,
+        async for event in self._stream_layered(
+            messages,
+            model=model,
+            temperature=temperature,
             max_tokens=max_tokens,
             tools=tools,
+            op="stream_events",
         ):
             yield event
+
+    async def _stream_layered(
+        self,
+        messages: list[ChatMessage],
+        *,
+        model: str | None,
+        temperature: float | None,
+        max_tokens: int | None,
+        tools: list[ToolSpec] | None,
+        op: str,
+    ) -> AsyncIterator[StreamEvent]:
+        """The single path every stream in actants goes through.
+
+        Applies per-call model/temperature overrides, tracing, and retry, so a streamed
+        run behaves like a non-streamed one. Retry is deliberately limited to failures
+        that happen *before the first event reaches the consumer*: restarting after
+        chunks have been yielded would splice two completions into one response, the
+        same defect that was fixed in ``FallbackProvider.stream``.
+        """
+        effective_model = model or self.settings.model
+        effective_temp = temperature if temperature is not None else self.settings.temperature
+
+        policy = self.retry_policy
+        attempts = policy.max_attempts if policy is not None else 1
+
+        async def _open() -> AsyncIterator[StreamEvent]:
+            return self.provider.stream_events(
+                messages=messages,
+                model=effective_model,
+                temperature=effective_temp,
+                max_tokens=max_tokens,
+                tools=tools,
+            )
+
+        span_cm = (
+            llm_span(f"llm.{op}", provider=self.provider.name, model=effective_model)
+            if self.tracing
+            else contextlib.nullcontext(None)
+        )
+        async with span_cm as span:
+            emitted = 0
+            usage: TokenUsage | None = None
+            cost_usd = 0.0
+            for attempt in range(1, attempts + 1):
+                try:
+                    stream = await _open()
+                    async for event in stream:
+                        emitted += 1
+                        if isinstance(event, UsageDelta):
+                            usage = event.usage
+                            cost_usd = event.cost_usd
+                        yield event
+                    break
+                except Exception as exc:
+                    retryable = (
+                        policy is not None
+                        and emitted == 0
+                        and attempt < attempts
+                        and isinstance(exc, policy.retry_on)
+                    )
+                    if not retryable:
+                        raise
+                    delay = policy.delay_for(attempt + 1)
+                    if delay > 0:
+                        await asyncio.sleep(delay)
+
+            if span is not None:
+                span.set_attribute("llm.stream_events", emitted)
+                if usage is not None:
+                    span.set_attribute("llm.prompt_tokens", usage.prompt_tokens)
+                    span.set_attribute("llm.completion_tokens", usage.completion_tokens)
+                span.set_attribute("llm.cost_usd", cost_usd)
 
     async def run_agent_stream(
         self,
@@ -498,12 +584,13 @@ class LLM:
         for _ in range(max_steps):
             step_tool_calls = []
             step_text_parts: list[str] = []
-            async for event in self.provider.stream_events(
-                messages=messages,
+            async for event in self._stream_layered(
+                messages,
                 model=effective_model,
                 temperature=effective_temp,
                 max_tokens=None,
                 tools=specs,
+                op="run_agent_stream",
             ):
                 if isinstance(event, TextDelta):
                     step_text_parts.append(event.text)

@@ -18,11 +18,15 @@ from actants.llm.base import (
     BaseLLMProvider,
     ChatMessage,
     CompletionResult,
+    FinishDelta,
+    StreamEvent,
+    TextDelta,
     TokenUsage,
     ToolSpec,
 )
 from actants.llm.client import LLM
 from actants.llm.errors import ToolCallsNotSupportedError
+from actants.policies.retry import RetryPolicy
 from actants.testing import FakeLLMProvider
 from actants.tools.registry import ToolRegistry
 
@@ -541,3 +545,121 @@ async def test_capable_provider_is_unaffected() -> None:
     llm = LLM(provider=FakeLLMProvider([_result("ok")]), model="m", tracing=False)
     spec = ToolSpec(name="add", description="Add", parameters={"type": "object"})
     assert (await llm.complete("hi", tools=[spec])).content == "ok"
+
+
+# ---------------------------------------------------------------------------
+# 4. Streaming goes through the LLM layer
+# ---------------------------------------------------------------------------
+
+
+class FlakyStreamProvider(BaseLLMProvider):
+    """Fails the first ``fail_times`` stream attempts before any event is emitted."""
+
+    name = "flaky"
+    supports_tool_calls = True
+    supports_streaming_tools = True
+
+    def __init__(self, fail_times: int = 1) -> None:
+        self.fail_times = fail_times
+        self.attempts = 0
+        self.models_seen: list[str] = []
+        self.temps_seen: list[float] = []
+
+    async def complete(self, messages, model, temperature=0.7, max_tokens=None, **kw):
+        return _result("complete")
+
+    async def stream(self, messages, model, **kw) -> AsyncIterator[str]:
+        yield "x"
+
+    async def stream_events(
+        self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kw
+    ) -> AsyncIterator[StreamEvent]:
+        self.attempts += 1
+        self.models_seen.append(model)
+        self.temps_seen.append(temperature)
+        if self.attempts <= self.fail_times:
+            raise ConnectionError("stream failed to open")
+        yield TextDelta(text="recovered")
+        yield FinishDelta(reason="stop")
+
+    async def health(self) -> bool:
+        return True
+
+
+@pytest.mark.asyncio
+async def test_stream_events_retries_a_failure_before_the_first_event() -> None:
+    """Streaming now gets the client's retry policy, exactly like ``complete``."""
+    provider = FlakyStreamProvider(fail_times=1)
+    llm = LLM(
+        provider=provider,
+        model="m",
+        tracing=False,
+        retry_policy=RetryPolicy(max_attempts=3, initial_delay=0.0, jitter=0.0),
+    )
+    events = [e async for e in llm.stream_events("hi")]
+    assert provider.attempts == 2
+    assert any(isinstance(e, TextDelta) and e.text == "recovered" for e in events)
+
+
+@pytest.mark.asyncio
+async def test_stream_events_does_not_retry_after_emitting() -> None:
+    """Restarting mid-stream would splice two completions into one response."""
+
+    class FailsMidStream(FlakyStreamProvider):
+        async def stream_events(self, messages, model, **kw) -> AsyncIterator[StreamEvent]:
+            self.attempts += 1
+            yield TextDelta(text="partial")
+            raise ConnectionError("died mid-stream")
+
+    provider = FailsMidStream()
+    llm = LLM(
+        provider=provider,
+        model="m",
+        tracing=False,
+        retry_policy=RetryPolicy(max_attempts=3, initial_delay=0.0, jitter=0.0),
+    )
+    seen = []
+    with pytest.raises(ConnectionError):
+        async for event in llm.stream_events("hi"):
+            seen.append(event)
+    assert provider.attempts == 1, "retried after the consumer already saw output"
+    assert len(seen) == 1
+
+
+@pytest.mark.asyncio
+async def test_stream_events_gives_up_after_max_attempts() -> None:
+    provider = FlakyStreamProvider(fail_times=99)
+    llm = LLM(
+        provider=provider,
+        model="m",
+        tracing=False,
+        retry_policy=RetryPolicy(max_attempts=2, initial_delay=0.0, jitter=0.0),
+    )
+    with pytest.raises(ConnectionError):
+        async for _ in llm.stream_events("hi"):
+            pass
+    assert provider.attempts == 2
+
+
+@pytest.mark.asyncio
+async def test_stream_events_honours_per_call_model_and_temperature() -> None:
+    provider = FlakyStreamProvider(fail_times=0)
+    llm = LLM(provider=provider, model="default-model", tracing=False)
+    async for _ in llm.stream_events("hi", model="override-model", temperature=0.123):
+        pass
+    assert provider.models_seen == ["override-model"]
+    assert provider.temps_seen == [0.123]
+
+
+@pytest.mark.asyncio
+async def test_stream_text_also_goes_through_the_layer() -> None:
+    provider = FlakyStreamProvider(fail_times=1)
+    llm = LLM(
+        provider=provider,
+        model="m",
+        tracing=False,
+        retry_policy=RetryPolicy(max_attempts=3, initial_delay=0.0, jitter=0.0),
+    )
+    chunks = [c async for c in llm.stream("hi")]
+    assert "".join(chunks) == "recovered"
+    assert provider.attempts == 2

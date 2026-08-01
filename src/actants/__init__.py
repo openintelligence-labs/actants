@@ -42,6 +42,8 @@ _LAZY: dict[str, tuple[str, str]] = {
     # Cache
     "InMemoryCache": ("actants.cache.memory", "InMemoryCache"),
     "CacheBackend": ("actants.cache.protocol", "CacheBackend"),
+    "RequestCacheBackend": ("actants.cache.protocol", "RequestCacheBackend"),
+    "CacheRequest": ("actants.cache.request", "CacheRequest"),
     # Cost
     "CostTracker": ("actants.cost.tracker", "CostTracker"),
     "PRICING": ("actants.cost.pricing", "PRICING"),
@@ -109,6 +111,8 @@ if TYPE_CHECKING:
     from actants.agents.memory import ConversationMemory as ConversationMemory
     from actants.cache.memory import InMemoryCache as InMemoryCache
     from actants.cache.protocol import CacheBackend as CacheBackend
+    from actants.cache.protocol import RequestCacheBackend as RequestCacheBackend
+    from actants.cache.request import CacheRequest as CacheRequest
     from actants.config.paths import app_cache_dir as app_cache_dir
     from actants.config.paths import app_config_dir as app_config_dir
     from actants.config.paths import app_data_dir as app_data_dir

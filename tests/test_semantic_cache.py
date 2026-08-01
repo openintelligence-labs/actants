@@ -6,6 +6,7 @@ import pytest
 
 pytest.importorskip("sqlite_vec")
 
+from actants.cache.request import CacheRequest  # noqa: E402
 from actants.cache.semantic import SqliteVecCache  # noqa: E402
 from actants.llm.base import ChatMessage, CompletionResult, TokenUsage  # noqa: E402
 
@@ -19,6 +20,10 @@ class StubEmbedder:
             buckets[i % 8] += ord(ch)
         norm = math.sqrt(sum(b * b for b in buckets)) or 1.0
         return [b / norm for b in buckets]
+
+
+def _req(messages, model="llama3.2", temperature=0.7, **kw) -> CacheRequest:
+    return CacheRequest(messages=messages, model=model, temperature=temperature, **kw)
 
 
 def _result(text: str = "hi") -> CompletionResult:
@@ -39,9 +44,9 @@ async def test_sqlite_vec_cache_roundtrip(tmp_path):
         default_ttl=None,
     )
     msgs = [ChatMessage(role="user", content="what is the capital of france")]
-    await cache.set_by_messages(msgs, "llama3.2", 0.7, _result("Paris"))
+    await cache.set_request(_req(msgs), _result("Paris"))
 
-    hit = await cache.get_by_messages(msgs, "llama3.2", 0.7)
+    hit = await cache.get_request(_req(msgs))
     assert hit is not None
     assert hit.content == "Paris"
     cache.close()
@@ -56,8 +61,8 @@ async def test_sqlite_vec_cache_different_model_misses(tmp_path):
         default_ttl=None,
     )
     msgs = [ChatMessage(role="user", content="hello")]
-    await cache.set_by_messages(msgs, "model-a", 0.7, _result())
-    miss = await cache.get_by_messages(msgs, "model-b", 0.7)
+    await cache.set_request(_req(msgs, model="model-a"), _result())
+    miss = await cache.get_request(_req(msgs, model="model-b"))
     assert miss is None
     cache.close()
 
@@ -70,17 +75,13 @@ async def test_sqlite_vec_cache_threshold_rejects_dissimilar(tmp_path):
         similarity_threshold=0.0001,  # extremely strict
         default_ttl=None,
     )
-    await cache.set_by_messages(
-        [ChatMessage(role="user", content="hello world")],
-        "m",
-        0.7,
+    await cache.set_request(
+        _req([ChatMessage(role="user", content="hello world")], model="m"),
         _result(),
     )
     # Very different query shouldn't be returned under strict threshold
-    miss = await cache.get_by_messages(
-        [ChatMessage(role="user", content="completely unrelated text xyzzy")],
-        "m",
-        0.7,
+    miss = await cache.get_request(
+        _req([ChatMessage(role="user", content="completely unrelated text xyzzy")], model="m"),
     )
     assert miss is None
     cache.close()
@@ -135,7 +136,7 @@ async def test_sqlite_vec_cache_clear(tmp_path):
         similarity_threshold=1.0,
         default_ttl=None,
     )
-    await cache.set_by_messages([ChatMessage(role="user", content="a")], "m", 0.7, _result())
+    await cache.set_request(_req([ChatMessage(role="user", content="a")], model="m"), _result())
     assert len(cache) == 1
     await cache.clear()
     assert len(cache) == 0

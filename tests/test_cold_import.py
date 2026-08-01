@@ -10,6 +10,8 @@ import subprocess
 import sys
 import time
 
+import pytest
+
 COLD_IMPORT_BUDGET_MS = 200.0
 HOT_INSTANTIATE_BUDGET_MS = 5.0
 
@@ -63,6 +65,44 @@ def test_no_attribute_access_keeps_import_minimal():
     median = samples[1]
     # 50ms covers all reasonable platforms; a few stdlib imports + PEP 562.
     assert median < 50.0, f"Bare import too slow: {median:.1f} ms (samples: {samples})"
+
+
+#: Submodules a user may legitimately import first, before anything else in actants.
+#: Each one must stand on its own — no import-order-dependent success.
+SUBMODULES = [
+    "actants.cache",
+    "actants.cache.memory",
+    "actants.cache.protocol",
+    "actants.cache.request",
+    "actants.cache.semantic",
+    "actants.agents.agent",
+    "actants.llm.client",
+    "actants.llm.base",
+    "actants.tools.registry",
+    "actants.cost.tracker",
+    "actants.policies.retry",
+    "actants.policies.fallback",
+]
+
+
+@pytest.mark.parametrize("module", SUBMODULES)
+def test_submodule_imports_first_without_a_cycle(module: str):
+    """Importing any submodule *first* must not hit a partially-initialized module.
+
+    ``actants.cache.protocol`` annotated with a runtime import of ``actants.llm.base``,
+    which pulls in ``actants.llm.__init__`` -> ``actants.llm.client``, which imports
+    ``actants.cache.protocol`` back. ``import actants.cache.semantic`` as the first
+    actants import therefore raised ImportError, while the same import after
+    ``import actants`` worked — so the whole test suite missed it.
+    """
+    result = subprocess.run(
+        [sys.executable, "-c", f"import {module}"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, (
+        f"`import {module}` as the first actants import failed:\n{result.stderr}"
+    )
 
 
 def test_agent_instantiation_after_warm_import_is_fast():

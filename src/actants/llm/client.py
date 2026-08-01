@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from actants.cache.protocol import CacheBackend
+from actants.cache.request import CacheRequest
 from actants.cost.tracker import CostTracker
 from actants.llm.base import (
     BaseLLMProvider,
@@ -239,28 +240,24 @@ class LLM:
         effective_model = model or self.settings.model
         effective_temp = temperature if temperature is not None else self.settings.temperature
 
-        cache_key: str | None = None
-        semantic_cache = (
-            getattr(self.cache, "get_by_messages", None) if self.cache is not None else None
+        # One description of the request, shared by every cache backend. Both the
+        # exact-match key and the semantic scope hash derive from it, so the two kinds of
+        # backend can never disagree about what makes a request unique.
+        cache_request = CacheRequest(
+            messages=messages,
+            model=effective_model,
+            temperature=effective_temp,
+            provider=self.provider.name,
+            max_tokens=max_tokens,
+            tools=tools,
         )
-        if semantic_cache is not None and use_cache and not tools:
-            cached = await self.cache.get_by_messages(  # type: ignore[union-attr]
-                messages, effective_model, effective_temp
-            )
-            if cached is not None:
-                return cached
-        elif self.cache is not None and use_cache and not tools:
-            from actants.cache.memory import make_key
-
-            cache_key = make_key(
-                messages,
-                effective_model,
-                effective_temp,
-                provider=self.provider.name,
-                max_tokens=max_tokens,
-                tools=tools,
-            )
-            cached = await self.cache.get(cache_key)
+        request_cache = getattr(self.cache, "get_request", None) if self.cache is not None else None
+        caching = self.cache is not None and use_cache and not tools
+        if caching:
+            if request_cache is not None:
+                cached = await self.cache.get_request(cache_request)  # type: ignore[union-attr]
+            else:
+                cached = await self.cache.get(cache_request.key())  # type: ignore[union-attr]
             if cached is not None:
                 return cached
 
@@ -277,13 +274,11 @@ class LLM:
 
         if self.cost_tracker is not None:
             self.cost_tracker.record(result, tag=tag)
-        if self.cache is not None and use_cache and not tools:
-            if semantic_cache is not None:
-                await self.cache.set_by_messages(  # type: ignore[union-attr]
-                    messages, effective_model, effective_temp, result
-                )
-            elif cache_key is not None:
-                await self.cache.set(cache_key, result)
+        if caching:
+            if request_cache is not None:
+                await self.cache.set_request(cache_request, result)  # type: ignore[union-attr]
+            else:
+                await self.cache.set(cache_request.key(), result)  # type: ignore[union-attr]
         return result
 
     async def run_agent(

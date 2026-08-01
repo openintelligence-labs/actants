@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-import hashlib
-import json
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from actants.cache.request import KEY_VERSION as _KEY_VERSION  # noqa: F401 — re-export
+from actants.cache.request import CacheRequest
 
 if TYPE_CHECKING:
     from actants.llm.base import ChatMessage, CompletionResult, ToolSpec
-
-#: Bump when the key layout changes so old entries can never be misread as new ones.
-_KEY_VERSION = 2
 
 
 def make_key(
@@ -20,43 +18,23 @@ def make_key(
     provider: str | None = None,
     max_tokens: int | None = None,
     tools: list[ToolSpec] | None = None,
+    response_format: dict[str, Any] | None = None,
 ) -> str:
     """Hash every request parameter that can change the answer.
 
-    The key covers provider, model, temperature, ``max_tokens``, the tool definitions,
-    and the full message list (including tool-call structure). Anything omitted here
-    becomes a cache collision — two different requests silently sharing one answer.
-
-    The payload is serialized as canonical JSON rather than concatenated bytes so that
-    message content can never forge a field boundary.
+    Thin wrapper over :meth:`CacheRequest.key`; kept because it is the documented way to
+    build a key by hand. New code should build a :class:`CacheRequest` and call
+    ``.key()`` on it, which is also what the cache protocol passes to backends.
     """
-    payload = {
-        "v": _KEY_VERSION,
-        "provider": provider,
-        "model": model,
-        # Round to the precision providers actually honour, but keep enough digits that
-        # distinct temperatures stay distinct.
-        "temperature": round(float(temperature), 6),
-        "max_tokens": max_tokens,
-        "tools": [
-            {"name": t.name, "description": t.description, "parameters": t.parameters}
-            for t in (tools or [])
-        ],
-        "messages": [
-            {
-                "role": m.role,
-                "content": m.content,
-                "name": m.name,
-                "tool_call_id": m.tool_call_id,
-                "tool_calls": [
-                    {"id": tc.id, "name": tc.name, "arguments": tc.arguments} for tc in m.tool_calls
-                ],
-            }
-            for m in messages
-        ],
-    }
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
-    return hashlib.sha256(encoded.encode()).hexdigest()
+    return CacheRequest(
+        messages=messages,
+        model=model,
+        temperature=temperature,
+        provider=provider,
+        max_tokens=max_tokens,
+        tools=tools,
+        response_format=response_format,
+    ).key()
 
 
 class InMemoryCache:

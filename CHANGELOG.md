@@ -2,10 +2,70 @@
 
 ## [Unreleased]
 
-Four architectural defects found by adversarial review. Each changes an API or a
-protocol, so each lands before the 1.0 freeze rather than after.
+Architectural defects found by adversarial review, plus the API-surface questions
+left open for the 1.0 freeze. Each changes an API or a protocol, so each lands
+before the freeze rather than after.
 
 ### Changed (breaking)
+
+- **`stream_events` is the single streaming primitive a provider implements.**
+  `LLM.stream()` filters `stream_events` rather than calling `provider.stream()`, so a
+  third-party provider that overrode only `stream()` was silently never called — it
+  appeared to stream nothing. `stream` is now a concrete helper the base class derives
+  from `stream_events`, and `BaseLLMProvider.__init_subclass__` rejects a subclass that
+  overrides `stream` without `stream_events`, naming the rename. `stream_events` is
+  deliberately not abstract, so a completion-only provider needs no streaming stub;
+  the default raises `NotImplementedError` only if something tries to stream.
+
+  Custom providers overriding `stream()` must rename it to `stream_events()` and yield
+  `TextDelta` / `FinishDelta` instead of plain strings. Every built-in provider's
+  `stream()` was identical boilerplate and has been removed in favour of the helper.
+
+- **The exception hierarchy moved to `actants.errors` and is exported at top level.**
+  `from actants import ActantsError, ModelNotFoundError, ToolCallsNotSupportedError`
+  now works; the classes were previously reachable only via `actants.llm.errors`.
+  `ToolError`, `AllProvidersFailedError`, `CacheSchemaMismatch`, and
+  `MCPConnectionError` now inherit `ActantsError` too, so `except ActantsError` is an
+  exhaustive catch for actants' own failures — it previously missed all four. Every
+  class keeps its builtin base (`UnknownProviderError` is still a `ValueError`,
+  `ToolCallsNotSupportedError` still a `TypeError`), and `actants.llm.errors`
+  re-exports the identical class objects, so existing imports and `except` clauses are
+  unaffected.
+
+### Added
+
+- **Provider-specific parameters pass through and reach the cache key.** `complete`,
+  `stream`, and `stream_events` accept arbitrary keyword arguments — `seed`, `top_p`,
+  `stop` — forward them verbatim to the provider, and fold them into
+  `CacheRequest.extra` so a `seed=1` answer is never served to a `seed=2` request.
+  `extra` was documented and hashed but populated by nobody, which armed the collision
+  for whenever passthrough was added.
+
+  The providers needed fixing too: all of them already accepted `**kwargs` and
+  discarded it, so `provider.complete(..., seed=42)` type-checked, looked like it
+  worked, and never set a seed. Ollama and Gemini now route passthrough into `options`
+  / `generationConfig` with their genuinely top-level fields handled separately;
+  OpenAI and Anthropic forward it flat.
+
+- `Agent(concurrency=...)` and `SqliteVecCache(on_schema_mismatch=...)` are typed
+  `Literal` (`ConcurrencyMode`, `SchemaMismatchAction`) rather than bare `str`, so a
+  typo is caught by the type checker at the call site instead of at construction.
+  Matches how the rest of the API spells a closed string set (`Role`, `LogFormat`,
+  `LogLevel`). The runtime check remains for callers without a type checker, and both
+  messages now name the valid values.
+
+- `docs_site/api/errors.md` documents the exception hierarchy and how to handle it —
+  the errors had no documentation at all.
+
+### Fixed
+
+- **`FallbackProvider` capability flags are derived from the chain on every access.**
+  `supports_tool_calls` / `supports_streaming_tools` were computed once in `__init__`,
+  so a provider that set its flag afterwards was invisible: a stale `False` refused
+  tools the chain could serve, and a stale `True` handed tools to a provider that
+  dropped them. Both are now read-only properties; assigning to them raises and points
+  at the member provider to set instead. `FallbackProvider.stream` is gone — the base
+  class derives it from `stream_events`, which already implements the same fail-over.
 
 - **Cache backends are now keyed by a `CacheRequest`.** The semantic-cache protocol
   (`get_by_messages` / `set_by_messages`) only ever received messages, model, and

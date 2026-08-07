@@ -2533,7 +2533,7 @@ def search(query: str): ...
 
 
 <a href="#actants.cli.app.common_options" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">common_options</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">common_options</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2541,6 +2541,9 @@ def search(query: str): ...
         <p>Apply standard --debug, --quiet, --json, --log-format flags to a Click command.</p>
 <p>Reads them, configures logging, and pops them from kwargs before calling the wrapped
 function. The function still receives a <code>json_output: bool</code> kwarg if it asks for it.</p>
+<p>Returns <code>Callable[..., Any]</code> rather than a signature-preserving type because the
+Click option decorators below rewrite the parameter list: the returned command takes
+the flags declared here, which the input signature does not mention.</p>
 
 
     </div>

@@ -2706,8 +2706,11 @@ for how to report a vulnerability.</p>
 <ul>
 <li><code>actants.__all__</code> and its type-checker re-exports are pinned by tests, so a public name
   cannot be added or dropped unnoticed.</li>
-<li><code>mypy --strict</code> runs against the package's public entry point in CI, so the types
-  downstream consumers see are the types they actually get.</li>
+<li><code>mypy --strict</code> runs against the whole of <code>src/</code> in CI, not just the public entry
+  point, so the types downstream consumers see are the types they actually get. The one
+  exception is the <code>sqlite_vec</code> import in the semantic cache: that package ships no
+  <code>py.typed</code> marker and has no stub package, so its import alone is excused by a scoped
+  override in <code>pyproject.toml</code>. The module importing it is still fully checked.</li>
 <li>Every code block in this documentation and in the README is executed as a test, so a
   documented call that stops working fails the build.</li>
 <li>Provider mappings, cost attribution, and cache-key scoping each have dedicated

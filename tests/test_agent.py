@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from actants.agents import Agent, AgentHooks, ConversationMemory
+from actants.agents import Agent, AgentHooks, AgentResult, ConversationMemory
 from actants.llm.client import LLM
 from actants.testing import (
     FakeLLMProvider,
@@ -47,6 +47,41 @@ async def test_agent_dispatches_tool_then_finalizes():
     assert len(result.steps) == 2
     assert result.steps[0].tool_calls[0].name == "add"
     assert result.steps[0].tool_results == ["5"]
+
+
+@pytest.mark.asyncio
+async def test_agent_run_returns_an_agent_result_after_dispatching_tools():
+    """Regression: the tool loop reused the name holding this run's AgentResult.
+
+    `run()` accumulated its return value in `result`, and the tool-dispatch loop
+    assigned each `ToolResult` to that same name. The `assert result is not None`
+    before the return was documented as "the loop either sets it or raises", but
+    the tool loop also set it -- with the wrong type. Nothing escaped today only
+    because the `for/else` raises on exhaustion, so the last write always came
+    from the final-answer branch. Any early exit added to that loop would have
+    returned a ToolResult from a function annotated `-> AgentResult`.
+    """
+    provider = FakeLLMProvider(
+        [
+            fake_tool_call_completion("noop", {}, call_id="t1"),
+            fake_completion("done"),
+        ]
+    )
+    registry = ToolRegistry()
+
+    async def noop() -> str:
+        return "ok"
+
+    registry.register_function("noop", "Does nothing", noop)
+
+    agent = Agent(llm=LLM(provider=provider, model="fake"), tools=registry)
+    result = await agent.run("go")
+
+    assert isinstance(result, AgentResult)
+    # A ToolResult has `.ok`/`.value` and no `.steps`; assert the AgentResult shape.
+    assert result.content == "done"
+    assert len(result.steps) == 2
+    assert not hasattr(result, "ok")
 
 
 @pytest.mark.asyncio

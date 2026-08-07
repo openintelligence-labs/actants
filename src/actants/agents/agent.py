@@ -294,11 +294,15 @@ class Agent:
                             "Model requested tool calls but no ToolRegistry was provided"
                         )
                     for call in completion.tool_calls:
-                        result = await self.tools.call(call.name, **call.arguments)
-                        payload = serialize_tool_result(result)
+                        # Deliberately not named `result`: that name holds this run's
+                        # AgentResult, which is what the return below reads.
+                        tool_result = await self.tools.call(call.name, **call.arguments)
+                        payload = serialize_tool_result(tool_result)
                         step.tool_results.append(payload)
                         if self.hooks.on_tool_call is not None:
-                            await self.hooks.on_tool_call(call, result.value if result.ok else None)
+                            await self.hooks.on_tool_call(
+                                call, tool_result.value if tool_result.ok else None
+                            )
                         turn.add(ChatMessage(role="tool", content=payload, tool_call_id=call.id))
                 else:
                     raise RuntimeError(

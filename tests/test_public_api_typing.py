@@ -133,3 +133,72 @@ def test_consumer_script_passes_mypy_strict(tmp_path: Path):
     assert proc.returncode == 0, (
         f"mypy --strict failed on a consumer of the public API:\n{proc.stdout}\n{proc.stderr}"
     )
+
+
+SUBPACKAGE_CONSUMER = textwrap.dedent(
+    """
+    from __future__ import annotations
+
+    from actants.cache import CacheRequest, InMemoryCache, RequestCacheBackend, SqliteVecCache
+    from actants.llm import AnthropicProvider, OllamaProvider, OpenAIProvider
+
+
+    def names() -> list[str]:
+        return [
+            InMemoryCache.__name__,
+            SqliteVecCache.__name__,
+            CacheRequest.__name__,
+            RequestCacheBackend.__name__,
+            OllamaProvider.__name__,
+            OpenAIProvider.__name__,
+            AnthropicProvider.__name__,
+        ]
+    """
+)
+
+
+@pytest.mark.skipif(shutil.which("mypy") is None, reason="mypy not installed")
+def test_subpackage_imports_pass_mypy_strict(tmp_path: Path):
+    """Subpackage imports must type-check too, not just the top-level ones.
+
+    `actants.cache` and `actants.llm` resolve some names through a module-level
+    `__getattr__`. Without a matching `TYPE_CHECKING` re-export block, every
+    `from actants.cache import SqliteVecCache` failed strict checking with
+    "does not explicitly export attribute" — while `InMemoryCache`, imported
+    normally in the same module, worked. That asymmetry is the bug.
+    """
+    script = tmp_path / "sub_consumer.py"
+    script.write_text(SUBPACKAGE_CONSUMER, encoding="utf-8")
+    proc = subprocess.run(
+        [
+            "mypy",
+            "--strict",
+            "--no-incremental",
+            "--cache-dir",
+            str(tmp_path / ".mypy"),
+            str(script),
+        ],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    if proc.returncode == 2 and "INTERNAL ERROR" in proc.stderr:
+        pytest.skip(f"mypy crashed internally (not an actants failure): {proc.stderr[-300:]}")
+    assert proc.returncode == 0, (
+        f"mypy --strict failed on subpackage imports:\n{proc.stdout}\n{proc.stderr}"
+    )
+
+
+def test_lazy_subpackage_all_entries_resolve():
+    """Every name in a lazy subpackage's __all__ must actually resolve."""
+    import importlib
+
+    for mod_name in ("actants.cache", "actants.llm"):
+        module = importlib.import_module(mod_name)
+        unresolvable = []
+        for name in module.__all__:
+            try:
+                getattr(module, name)
+            except Exception as exc:  # noqa: BLE001 - report all at once
+                unresolvable.append(f"{mod_name}.{name} ({type(exc).__name__}: {exc})")
+        assert not unresolvable, f"__all__ names that do not resolve: {unresolvable}"

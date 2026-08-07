@@ -40,12 +40,54 @@ class FallbackProvider(BaseLLMProvider):
         chain: list[tuple[BaseLLMProvider, str | None]],
     ) -> None:
         if not chain:
-            raise ValueError("FallbackProvider requires at least one provider")
+            raise ValueError(
+                "FallbackProvider requires at least one provider, got an empty chain. "
+                "Pass a list of (provider, model) pairs: "
+                "FallbackProvider([(OllamaProvider(), 'llama3.2'), (openai, 'gpt-4o')])."
+            )
         self._chain = chain
-        # A chain is only as capable as its weakest link: any provider may end up
-        # serving the request, so a capability holds only if all of them support it.
-        self.supports_tool_calls = all(p.supports_tool_calls for p, _ in chain)
-        self.supports_streaming_tools = all(p.supports_streaming_tools for p, _ in chain)
+
+    @property
+    def supports_tool_calls(self) -> bool:
+        """True only if *every* provider in the chain supports tool calls.
+
+        A chain is only as capable as its weakest link: any provider may end up serving
+        the request, so a capability holds only if all of them support it.
+
+        Derived on access rather than snapshotted in ``__init__`` because a provider's
+        flag is an ordinary attribute that callers legitimately set after construction —
+        a provider that learns its capabilities from a handshake, or a test that flips
+        the flag. A construction-time snapshot silently kept the old answer, so tools
+        were either refused by a chain that could serve them or passed to one that
+        could not.
+        """
+        return all(p.supports_tool_calls for p, _ in self._chain)
+
+    @supports_tool_calls.setter
+    def supports_tool_calls(self, value: bool) -> None:
+        raise AttributeError(
+            "FallbackProvider.supports_tool_calls is derived from the chain and cannot "
+            "be assigned — it is True only when every provider in the chain supports "
+            "tool calls. Set the flag on the provider that is wrong instead, e.g. "
+            "`my_provider.supports_tool_calls = True`."
+        )
+
+    @property
+    def supports_streaming_tools(self) -> bool:
+        """True only if *every* provider in the chain supports streaming tool calls.
+
+        Derived on access, for the same reason as :attr:`supports_tool_calls`.
+        """
+        return all(p.supports_streaming_tools for p, _ in self._chain)
+
+    @supports_streaming_tools.setter
+    def supports_streaming_tools(self, value: bool) -> None:
+        raise AttributeError(
+            "FallbackProvider.supports_streaming_tools is derived from the chain and "
+            "cannot be assigned — it is True only when every provider in the chain "
+            "supports streaming tool calls. Set the flag on the provider that is wrong "
+            "instead, e.g. `my_provider.supports_streaming_tools = True`."
+        )
 
     async def health(self) -> bool:
         for provider, _ in self._chain:
@@ -80,43 +122,6 @@ class FallbackProvider(BaseLLMProvider):
                 errors.append((provider.name, exc))
         raise AllProvidersFailedError(errors)
 
-    async def stream(
-        self,
-        messages: list[ChatMessage],
-        model: str,
-        temperature: float = 0.7,
-        max_tokens: int | None = None,
-        **kwargs: Any,
-    ) -> AsyncIterator[str]:
-        errors: list[tuple[str, BaseException]] = []
-        for provider, pmodel in self._chain:
-            emitted = False
-            try:
-                agen = provider.stream(
-                    messages=messages,
-                    model=pmodel or model,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    **kwargs,
-                )
-                async for chunk in agen:
-                    emitted = True
-                    yield chunk
-                return
-            except Exception as exc:
-                if emitted:
-                    # Bytes already reached the consumer. Restarting on another provider
-                    # would splice two different completions into one response, so the
-                    # failure has to surface instead.
-                    raise
-                log.warning(
-                    "fallback_stream_failed",
-                    provider=provider.name,
-                    error=str(exc),
-                )
-                errors.append((provider.name, exc))
-        raise AllProvidersFailedError(errors)
-
     async def stream_events(
         self,
         messages: list[ChatMessage],
@@ -129,9 +134,13 @@ class FallbackProvider(BaseLLMProvider):
     ) -> AsyncIterator[StreamEvent]:
         """Fall back across providers while preserving typed events.
 
-        Without this override the base-class implementation would wrap each provider's
-        ``stream`` (text only), silently dropping tool-call and usage events for every
-        provider in the chain.
+        This is the only streaming method the chain implements: ``stream`` is derived
+        from it by :class:`~actants.llm.base.BaseLLMProvider`, so plain-text streaming
+        gets the same fallback behaviour for free.
+
+        Fallback stops as soon as the first event reaches the consumer. Restarting on
+        another provider after that would splice two different completions into one
+        response, so a mid-stream failure surfaces instead of being retried.
         """
         errors: list[tuple[str, BaseException]] = []
         for provider, pmodel in self._chain:

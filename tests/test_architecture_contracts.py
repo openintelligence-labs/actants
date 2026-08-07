@@ -415,9 +415,6 @@ async def test_llm_routes_max_tokens_into_the_semantic_cache(tmp_path) -> None:
             self.calls += 1
             return _result(f"reply-{self.calls}")
 
-        async def stream(self, *a: Any, **kw: Any) -> AsyncIterator[str]:
-            yield ""
-
         async def health(self) -> bool:
             return True
 
@@ -465,9 +462,6 @@ class NoToolsProvider(BaseLLMProvider):
 
     async def complete(self, messages, model, temperature=0.7, max_tokens=None, **kw):
         return _result("ignored your tools")
-
-    async def stream(self, messages, model, **kw) -> AsyncIterator[str]:
-        yield "ignored"
 
     async def health(self) -> bool:
         return True
@@ -577,9 +571,6 @@ class FlakyStreamProvider(BaseLLMProvider):
 
     async def complete(self, messages, model, temperature=0.7, max_tokens=None, **kw):
         return _result("complete")
-
-    async def stream(self, messages, model, **kw) -> AsyncIterator[str]:
-        yield "x"
 
     async def stream_events(
         self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kw
@@ -969,3 +960,201 @@ async def test_agent_stream_still_dispatches_tools() -> None:
     assert len(started) == 1 and started[0].call.name == "add"
     assert len(completed) == 1 and completed[0].ok
     assert completed[0].value == 5
+
+
+# ---------------------------------------------------------------------------
+# 5. stream_events is the streaming primitive
+# ---------------------------------------------------------------------------
+
+
+class _MinimalProvider(BaseLLMProvider):
+    """The smallest provider a third party could write: complete + stream_events."""
+
+    name = "minimal"
+
+    async def complete(
+        self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+    ) -> CompletionResult:
+        return CompletionResult(content="done", model=model, provider=self.name)
+
+    async def stream_events(
+        self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+    ) -> AsyncIterator[StreamEvent]:
+        for word in ("hello", " ", "world"):
+            yield TextDelta(text=word)
+        yield UsageDelta(usage=TokenUsage(prompt_tokens=1, completion_tokens=3, total_tokens=4))
+        yield FinishDelta(reason="stop")
+
+    async def health(self) -> bool:
+        return True
+
+
+@pytest.mark.asyncio
+async def test_minimal_custom_provider_streams_text_through_the_client() -> None:
+    """A provider implementing only `stream_events` must work through LLM.stream().
+
+    This is the third-party contract: implement the one primitive, and every
+    streaming entry point works. Before, `stream` was a separate abstract method
+    and the two could disagree.
+    """
+    llm = LLM(provider=_MinimalProvider(), model="m", tracing=False)
+    chunks = [c async for c in llm.stream("hi")]
+    assert "".join(chunks) == "hello world"
+
+
+@pytest.mark.asyncio
+async def test_minimal_custom_provider_streams_events_through_the_client() -> None:
+    llm = LLM(provider=_MinimalProvider(), model="m", tracing=False)
+    events = [e async for e in llm.stream_events("hi")]
+    assert "".join(e.text for e in events if isinstance(e, TextDelta)) == "hello world"
+    assert any(isinstance(e, UsageDelta) for e in events)
+    assert isinstance(events[-1], FinishDelta)
+
+
+@pytest.mark.asyncio
+async def test_provider_stream_helper_matches_its_stream_events() -> None:
+    """The derived `stream` helper must yield exactly the text of `stream_events`."""
+    provider = _MinimalProvider()
+    from_stream = [c async for c in provider.stream([ChatMessage(role="user", content="hi")], "m")]
+    from_events = [
+        e.text
+        async for e in provider.stream_events([ChatMessage(role="user", content="hi")], "m")
+        if isinstance(e, TextDelta)
+    ]
+    assert from_stream == from_events == ["hello", " ", "world"]
+
+
+def test_overriding_stream_instead_of_stream_events_is_rejected() -> None:
+    """A provider written against the pre-`stream_events` shape must not fail silently.
+
+    Its `stream` override would never be called — every actants path reads
+    `stream_events` — so the provider would appear to stream nothing at all.
+    """
+    with pytest.raises(TypeError) as exc:
+
+        class LegacyProvider(BaseLLMProvider):
+            name = "legacy"
+
+            async def complete(
+                self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+            ) -> CompletionResult:
+                return CompletionResult(content="x", model=model, provider=self.name)
+
+            async def stream(
+                self, messages, model, temperature=0.7, max_tokens=None, **kwargs
+            ) -> AsyncIterator[str]:
+                yield "never reached"
+
+            async def health(self) -> bool:
+                return True
+
+    message = str(exc.value)
+    assert "stream_events" in message
+    assert "LegacyProvider" in message
+
+
+@pytest.mark.asyncio
+async def test_completion_only_provider_needs_no_streaming_stub() -> None:
+    """`stream_events` is not abstract, so a complete-only provider stays usable."""
+
+    class CompleteOnly(BaseLLMProvider):
+        name = "complete-only"
+
+        async def complete(
+            self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+        ) -> CompletionResult:
+            return CompletionResult(content="ok", model=model, provider=self.name)
+
+        async def health(self) -> bool:
+            return True
+
+    llm = LLM(provider=CompleteOnly(), model="m", tracing=False)
+    assert (await llm.complete("hi")).content == "ok"
+
+    with pytest.raises(NotImplementedError) as exc:
+        async for _ in llm.stream("hi"):
+            pass
+    assert "stream_events" in str(exc.value)
+
+
+# ---------------------------------------------------------------------------
+# 6. FallbackProvider capabilities track the chain
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_fallback_capability_flags_follow_later_mutation() -> None:
+    """Flags are derived on access, not snapshotted at construction.
+
+    A provider that flips its capability after the chain is built — a runtime
+    handshake, or a test — was invisible to a construction-time snapshot, so the
+    chain kept answering with the stale value.
+    """
+    from actants.policies.fallback import FallbackProvider
+
+    weak = FakeLLMProvider()
+    strong = FakeLLMProvider()
+    chain = FallbackProvider([(weak, None), (strong, None)])
+    assert chain.supports_tool_calls is True
+    assert chain.supports_streaming_tools is True
+
+    weak.supports_tool_calls = False
+    assert chain.supports_tool_calls is False, "flag must reflect the chain as it is now"
+
+    weak.supports_tool_calls = True
+    assert chain.supports_tool_calls is True, "and must recover when the member recovers"
+
+    strong.supports_streaming_tools = False
+    assert chain.supports_streaming_tools is False
+
+
+def test_fallback_capability_flags_cannot_be_assigned() -> None:
+    """The derived flags are read-only; the error says where to set them instead."""
+    from actants.policies.fallback import FallbackProvider
+
+    chain = FallbackProvider([(FakeLLMProvider(), None)])
+    with pytest.raises(AttributeError) as exc:
+        chain.supports_tool_calls = False
+    assert "derived from the chain" in str(exc.value)
+
+    with pytest.raises(AttributeError):
+        chain.supports_streaming_tools = False
+
+
+@pytest.mark.asyncio
+async def test_llm_refuses_tools_when_a_chain_member_loses_capability() -> None:
+    """The end-to-end consequence: the client must honour the live flag."""
+    from actants.policies.fallback import FallbackProvider
+
+    weak = FakeLLMProvider([fake_completion("ok")])
+    chain = FallbackProvider([(weak, None)])
+    llm = LLM(provider=chain, model="m", tracing=False)
+    spec = ToolSpec(name="add", description="Add", parameters={"type": "object"})
+
+    assert (await llm.complete("hi", tools=[spec])).content == "ok"
+
+    weak.supports_tool_calls = False
+    with pytest.raises(ToolCallsNotSupportedError):
+        await llm.complete("hi", tools=[spec])
+
+
+# ---------------------------------------------------------------------------
+# 7. Closed string sets are Literal-typed and validated
+# ---------------------------------------------------------------------------
+
+
+def test_agent_rejects_an_invalid_concurrency_mode() -> None:
+    with pytest.raises(ValueError) as exc:
+        Agent(llm=LLM(provider=FakeLLMProvider(), tracing=False), concurrency="serialised")
+    message = str(exc.value)
+    assert "isolated" in message and "serialized" in message
+    assert "serialised" in message
+
+
+def test_concurrency_mode_literal_matches_the_runtime_check() -> None:
+    """The Literal and the runtime tuple must not drift apart."""
+    from typing import get_args
+
+    from actants.agents.agent import _CONCURRENCY_MODES, ConcurrencyMode
+
+    assert set(get_args(ConcurrencyMode)) == set(_CONCURRENCY_MODES)

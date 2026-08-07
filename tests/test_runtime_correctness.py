@@ -51,11 +51,6 @@ class RecordingProvider(BaseLLMProvider):
         self.completions += 1
         return CompletionResult(content="ok", model=model, provider=self.name, usage=TokenUsage())
 
-    async def stream(
-        self, messages, model, temperature=0.7, max_tokens=None, **kwargs
-    ) -> AsyncIterator[str]:
-        yield "ok"
-
     async def health(self) -> bool:
         return True
 
@@ -219,9 +214,6 @@ async def test_agent_loop_survives_an_unserializable_tool_return() -> None:
                 content="done", model=model, provider=self.name, usage=TokenUsage()
             )
 
-        async def stream(self, messages, model, **kwargs) -> AsyncIterator[str]:
-            yield "x"
-
         async def health(self) -> bool:
             return True
 
@@ -252,9 +244,6 @@ class CostedStreamProvider(BaseLLMProvider):
 
     async def complete(self, messages, model, **kwargs) -> CompletionResult:
         raise NotImplementedError
-
-    async def stream(self, messages, model, **kwargs) -> AsyncIterator[str]:
-        yield "hi"
 
     async def health(self) -> bool:
         return True
@@ -302,11 +291,11 @@ class PartialThenFailProvider(BaseLLMProvider):
     async def complete(self, messages, model, **kwargs) -> CompletionResult:
         raise NotImplementedError
 
-    async def stream(
-        self, messages, model, temperature=0.7, max_tokens=None, **kwargs
-    ) -> AsyncIterator[str]:
-        yield "Hello "
-        yield "wor"
+    async def stream_events(
+        self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+    ) -> AsyncIterator[StreamEvent]:
+        yield TextDelta(text="Hello ")
+        yield TextDelta(text="wor")
         raise RuntimeError("connection reset")
 
     async def health(self) -> bool:
@@ -321,17 +310,13 @@ class HealthyProvider(BaseLLMProvider):
     async def complete(self, messages, model, **kwargs) -> CompletionResult:
         raise NotImplementedError
 
-    async def stream(
-        self, messages, model, temperature=0.7, max_tokens=None, **kwargs
-    ) -> AsyncIterator[str]:
-        yield "Hello world"
-
     async def health(self) -> bool:
         return True
 
     async def stream_events(
         self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
     ) -> AsyncIterator[StreamEvent]:
+        yield TextDelta(text="Hello world")
         yield ToolCallDelta(tool_call=ToolCall(id="1", name="t", arguments={"a": 1}))
         yield FinishDelta(reason="tool_calls")
 
@@ -353,9 +338,9 @@ async def test_fallback_stream_still_fails_over_before_emitting() -> None:
         async def complete(self, messages, model, **kwargs) -> CompletionResult:
             raise NotImplementedError
 
-        async def stream(
-            self, messages, model, temperature=0.7, max_tokens=None, **kwargs
-        ) -> AsyncIterator[str]:
+        async def stream_events(
+            self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+        ) -> AsyncIterator[StreamEvent]:
             raise RuntimeError("connection refused")
             yield  # unreachable; keeps this an async generator
 
@@ -386,9 +371,6 @@ def test_fallback_reports_tool_support_of_the_weakest_link() -> None:
 
         async def complete(self, messages, model, **kwargs) -> CompletionResult:
             raise NotImplementedError
-
-        async def stream(self, messages, model, **kwargs) -> AsyncIterator[str]:
-            yield "x"
 
         async def health(self) -> bool:
             return True

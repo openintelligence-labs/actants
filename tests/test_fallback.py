@@ -8,6 +8,9 @@ from actants.llm.base import (
     BaseLLMProvider,
     ChatMessage,
     CompletionResult,
+    FinishDelta,
+    StreamEvent,
+    TextDelta,
     TokenUsage,
 )
 from actants.policies.fallback import AllProvidersFailedError, FallbackProvider
@@ -19,9 +22,9 @@ class FailingProvider(BaseLLMProvider):
     async def complete(self, messages, model, temperature=0.7, max_tokens=None, **kwargs):
         raise RuntimeError("boom")
 
-    async def stream(
-        self, messages, model, temperature=0.7, max_tokens=None, **kwargs
-    ) -> AsyncIterator[str]:
+    async def stream_events(
+        self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+    ) -> AsyncIterator[StreamEvent]:
         raise RuntimeError("stream boom")
         yield  # unreachable but keeps this an async generator
 
@@ -40,11 +43,12 @@ class OkProvider(BaseLLMProvider):
             usage=TokenUsage(prompt_tokens=1, completion_tokens=1, total_tokens=2),
         )
 
-    async def stream(
-        self, messages, model, temperature=0.7, max_tokens=None, **kwargs
-    ) -> AsyncIterator[str]:
+    async def stream_events(
+        self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+    ) -> AsyncIterator[StreamEvent]:
         for c in ("a", "b"):
-            yield c
+            yield TextDelta(text=c)
+        yield FinishDelta(reason="stop")
 
     async def health(self) -> bool:
         return True

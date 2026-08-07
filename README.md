@@ -239,29 +239,29 @@ configure; `actants` itself sends nothing.
 
 ## Benchmark
 
-Measured against LangChain 1.3.14, Pydantic AI 2.21.0, LlamaIndex 0.14.23,
-and the raw `ollama` client, on one machine (Apple M4 Pro, Python 3.13.5,
-Ollama 0.32.4, `qwen2.5:7b`). Framework overhead is isolated from model time
-with a recording proxy; latency is p50 over 7 samples with framework order
-shuffled between rounds.
+Measured on `actants` 1.0.0 installed from PyPI, against LangChain 1.3.14,
+Pydantic AI 2.25.0, LlamaIndex 0.14.23, and the raw `ollama` client, on one
+machine (Apple M4 Pro, Python 3.13.5, Ollama 0.32.6, `qwen2.5:7b`, 2026-08-06).
+Framework overhead is isolated from model time with a recording proxy; latency
+is p50 over 7 samples with framework order shuffled between rounds.
 
 | | actants | LangChain | Pydantic AI | LlamaIndex | raw |
 |---|---|---|---|---|---|
 | Install (packages) | **18** | 38 | 98 | 63 | 12 |
-| Install (site-packages) | **14.1 MB** | 35.9 MB | 105.7 MB | 126.7 MB | 11.3 MB |
-| Cold import | **96.9 ms** | 343.2 ms | 742.5 ms | 565.7 ms | 116.8 ms |
-| Overhead, completion | **6.03 ms** | 10.40 ms | 10.37 ms | 11.80 ms | 5.58 ms |
-| Overhead, tool agent | **7.58 ms** | 17.33 ms | 12.88 ms | 951.32 ms | 7.62 ms |
-| Overhead, structured | **6.21 ms** | 12.03 ms | 10.46 ms | 12.40 ms | 6.21 ms |
-| LOC, three tasks | 33 | **23** | 32 | 25 | 49 |
+| Install (site-packages) | **14.3 MB** | 36.0 MB | 106.7 MB | 126.6 MB | 11.3 MB |
+| Cold import | **95.6 ms** | 343.9 ms | 724.1 ms | 539.4 ms | 105.9 ms |
+| Overhead, completion | **7.54 ms** | 12.29 ms | 10.05 ms | 12.53 ms | 6.39 ms |
+| Overhead, tool agent | **8.56 ms** | 18.45 ms | 13.47 ms | 934.21 ms | 7.74 ms |
+| Overhead, structured | **7.71 ms** | 13.44 ms | 11.04 ms | 12.17 ms | 6.72 ms |
+| LOC, three tasks | 24 | **23** | 32 | 25 | 49 |
 
 `actants` has the smallest install and the lowest per-call overhead of the
 frameworks tested — statistically tied with hand-written raw HTTP — and
-**loses on tool ergonomics**: registering one tool took 20 lines against
-LangChain's 10, because 0.5.3 — the version measured — required a hand-written
-JSON Schema. Annotation-based schema inference ships in 1.0, so that row is now
-pessimistic; the table has not yet been re-run against 1.0 and still reports
-what was actually measured rather than what is expected.
+**still loses the LOC row, by one line**. Schema inference in 1.0 cut tool
+registration from 20 lines to 11, taking the total from 33 to 24 and moving
+`actants` from last place to second; LangChain's `@tool` decorator still edges
+it out, because `actants` requires an explicit `ToolRegistry` where LangChain
+registers in place.
 
 Model time dominates all wall-clock differences; these overheads are ~5 ms on
 top of a ~150 ms model call. Single machine, small samples, no retrieval or

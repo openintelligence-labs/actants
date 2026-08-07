@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-31T01:08:55-0500",
+  "generated_at": "2026-08-06T22:24:58-0500",
   "model": "qwen2.5:7b",
-  "ollama_version": "0.32.4",
+  "ollama_version": "0.32.6",
   "machine": {
     "platform": "macOS-15.7.3-arm64-arm-64bit-Mach-O",
     "machine": "arm64",
@@ -18,7 +18,7 @@
   },
   "versions": {
     "actants": {
-      "actants": "0.5.3",
+      "actants": "1.0.0",
       "annotated-types": "0.8.0",
       "anyio": "4.14.2",
       "certifi": "2026.7.22",
@@ -57,11 +57,11 @@
       "langgraph-checkpoint": "4.1.1",
       "langgraph-prebuilt": "1.1.0",
       "langgraph-sdk": "0.4.2",
-      "langsmith": "0.10.14",
+      "langsmith": "0.10.16",
       "ollama": "0.6.2",
       "orjson": "3.11.9",
       "ormsgpack": "1.12.2",
-      "packaging": "26.2",
+      "packaging": "26.3",
       "pydantic": "2.13.4",
       "pydantic-core": "2.46.4",
       "pyyaml": "6.0.3",
@@ -78,32 +78,32 @@
       "zstandard": "0.25.0"
     },
     "pydantic_ai": {
-      "aiofile": "3.11.1",
+      "aiofile": "3.12.3",
       "annotated-types": "0.8.0",
       "anthropic": "0.120.2",
       "anyio": "4.14.2",
-      "argcomplete": "3.7.0",
+      "argcomplete": "3.7.2",
       "attrs": "26.1.0",
       "authlib": "1.7.2",
       "beartype": "0.22.9",
-      "cachetools": "7.1.6",
-      "caio": "0.9.25",
+      "cachetools": "7.1.7",
+      "caio": "0.12.2",
       "certifi": "2026.7.22",
-      "cffi": "2.1.0",
+      "cffi": "2.1.1",
       "charset-normalizer": "3.4.9",
       "click": "8.4.2",
-      "cryptography": "49.0.0",
+      "cryptography": "50.0.0",
       "distro": "1.9.0",
       "dnspython": "2.8.0",
       "docstring-parser": "0.18.0",
       "email-validator": "2.3.0",
       "exceptiongroup": "1.3.1",
       "executing": "2.2.1",
-      "fastmcp-slim": "3.4.5",
-      "genai-prices": "0.1.0",
-      "google-auth": "2.56.2",
-      "google-genai": "2.16.0",
-      "googleapis-common-protos": "1.75.0",
+      "fastmcp-slim": "3.4.6",
+      "genai-prices": "0.1.1",
+      "google-auth": "2.56.3",
+      "google-genai": "2.17.0",
+      "googleapis-common-protos": "1.75.1",
       "griffelib": "2.1.0",
       "h11": "0.16.0",
       "httpcore": "1.0.9",
@@ -120,13 +120,13 @@
       "jsonschema": "4.26.0",
       "jsonschema-specifications": "2025.9.1",
       "keyring": "25.7.0",
-      "logfire": "4.39.0",
-      "logfire-api": "4.39.0",
+      "logfire": "4.40.0",
+      "logfire-api": "4.40.0",
       "markdown-it-py": "4.2.0",
       "mcp": "1.29.0",
       "mdurl": "0.1.2",
       "more-itertools": "11.1.0",
-      "openai": "2.51.0",
+      "openai": "2.53.0",
       "opentelemetry-api": "1.44.0",
       "opentelemetry-exporter-otlp-proto-common": "1.44.0",
       "opentelemetry-exporter-otlp-proto-http": "1.44.0",
@@ -136,7 +136,7 @@
       "opentelemetry-sdk": "1.44.0",
       "opentelemetry-semantic-conventions": "0.65b0",
       "opentelemetry-util-http": "0.65b0",
-      "packaging": "26.2",
+      "packaging": "26.3",
       "platformdirs": "4.11.0",
       "prompt-toolkit": "3.0.53",
       "protobuf": "7.35.1",
@@ -145,11 +145,11 @@
       "pyasn1-modules": "0.4.2",
       "pycparser": "3.0",
       "pydantic": "2.13.4",
-      "pydantic-ai": "2.21.0",
-      "pydantic-ai-slim": "2.21.0",
+      "pydantic-ai": "2.25.0",
+      "pydantic-ai-slim": "2.25.0",
       "pydantic-core": "2.46.4",
-      "pydantic-evals": "2.21.0",
-      "pydantic-graph": "2.21.0",
+      "pydantic-evals": "2.25.0",
+      "pydantic-graph": "2.25.0",
       "pydantic-settings": "2.14.2",
       "pygments": "2.20.0",
       "pyjwt": "2.13.0",
@@ -163,8 +163,8 @@
       "rich": "15.0.0",
       "rpds-py": "2026.6.3",
       "sniffio": "1.3.1",
-      "sse-starlette": "3.4.6",
-      "starlette": "1.3.1",
+      "sse-starlette": "3.4.8",
+      "starlette": "1.4.1",
       "tenacity": "9.1.4",
       "tiktoken": "0.13.0",
       "tqdm": "4.70.0",
@@ -172,7 +172,7 @@
       "typing-extensions": "4.16.0",
       "typing-inspection": "0.4.2",
       "urllib3": "2.7.0",
-      "uvicorn": "0.52.0",
+      "uvicorn": "0.52.1",
       "wcwidth": "0.8.2",
       "websockets": "16.1.1",
       "wrapt": "2.3.0"
@@ -210,17 +210,17 @@
       "llama-index-core": "0.14.23",
       "llama-index-instrumentation": "0.5.0",
       "llama-index-llms-ollama": "0.10.1",
-      "llama-index-workflows": "2.22.2",
+      "llama-index-workflows": "2.23.0",
       "markupsafe": "3.0.3",
       "marshmallow": "3.26.2",
       "multidict": "6.7.1",
       "mypy-extensions": "1.1.0",
       "nest-asyncio": "1.6.0",
       "networkx": "3.6.1",
-      "nltk": "3.10.0",
+      "nltk": "3.10.2",
       "numpy": "2.5.1",
       "ollama": "0.6.2",
-      "packaging": "26.2",
+      "packaging": "26.3",
       "pillow": "12.3.0",
       "platformdirs": "4.11.0",
       "propcache": "0.5.2",
@@ -260,94 +260,94 @@
   "footprint": {
     "actants": {
       "packages": 18,
-      "site_packages_bytes": 14093662
+      "site_packages_bytes": 14274709
     },
     "langchain": {
       "packages": 38,
-      "site_packages_bytes": 35852698
+      "site_packages_bytes": 36034610
     },
     "pydantic_ai": {
       "packages": 98,
-      "site_packages_bytes": 105663114
+      "site_packages_bytes": 106725594
     },
     "llama_index": {
       "packages": 63,
-      "site_packages_bytes": 126738775
+      "site_packages_bytes": 126613159
     },
     "raw": {
       "packages": 12,
-      "site_packages_bytes": 11307405
+      "site_packages_bytes": 11308365
     }
   },
   "imports": {
     "actants": {
       "statement": "from actants import LLM, LLMSettings, ToolRegistry",
-      "import_seconds_best": 0.09687129204394296,
-      "import_seconds_p50": 0.09912241698475555,
-      "rss_bytes_median": 42647552,
-      "modules_loaded": 396,
+      "import_seconds_best": 0.09557395799993174,
+      "import_seconds_p50": 0.1005067500000223,
+      "rss_bytes_median": 43057152,
+      "modules_loaded": 401,
       "samples": [
-        0.14943925000261515,
-        0.0970672499970533,
-        0.09687129204394296,
-        0.09997616603504866,
-        0.09912241698475555
+        0.12481208400004107,
+        0.10357887500003926,
+        0.09585983299984946,
+        0.09557395799993174,
+        0.1005067500000223
       ]
     },
     "langchain": {
       "statement": "from langchain_ollama import ChatOllama\nfrom langchain.agents import create_agent\nfrom langchain_core.tools import tool",
-      "import_seconds_best": 0.3431623340002261,
-      "import_seconds_p50": 0.34892008296446875,
-      "rss_bytes_median": 82640896,
+      "import_seconds_best": 0.34387137499970777,
+      "import_seconds_p50": 0.3470153329999448,
+      "rss_bytes_median": 83066880,
       "modules_loaded": 1058,
       "samples": [
-        0.47983875003410503,
-        0.3431623340002261,
-        0.41289958299603313,
-        0.34892008296446875,
-        0.34698941599344835
+        0.470818374999908,
+        0.3442879580002227,
+        0.3470153329999448,
+        0.35011762499971155,
+        0.34387137499970777
       ]
     },
     "pydantic_ai": {
       "statement": "from pydantic_ai import Agent, NativeOutput\nfrom pydantic_ai.models.openai import OpenAIChatModel\nfrom pydantic_ai.providers.ollama import OllamaProvider",
-      "import_seconds_best": 0.7424657919909805,
-      "import_seconds_p50": 0.8300428330549039,
-      "rss_bytes_median": 123879424,
-      "modules_loaded": 2493,
+      "import_seconds_best": 0.7241310829999748,
+      "import_seconds_p50": 0.7554859580000084,
+      "rss_bytes_median": 124420096,
+      "modules_loaded": 2496,
       "samples": [
-        1.0598392499960028,
-        1.3190565000404604,
-        0.7647690000012517,
-        0.7424657919909805,
-        0.8300428330549039
+        0.905370375000075,
+        0.7554859580000084,
+        0.7582453749996603,
+        0.7241310829999748,
+        0.736840334000135
       ]
     },
     "llama_index": {
       "statement": "from llama_index.llms.ollama import Ollama\nfrom llama_index.core.agent.workflow import FunctionAgent\nfrom llama_index.core.tools import FunctionTool",
-      "import_seconds_best": 0.5656943339854479,
-      "import_seconds_p50": 0.6164511669776402,
-      "rss_bytes_median": 115982336,
+      "import_seconds_best": 0.53939308300005,
+      "import_seconds_p50": 0.5469022910001513,
+      "rss_bytes_median": 115294208,
       "modules_loaded": 1441,
       "samples": [
-        0.8421360409702174,
-        0.6164511669776402,
-        0.5656943339854479,
-        0.6066441250150092,
-        0.712860833038576
+        0.6164452500001971,
+        0.53939308300005,
+        0.5530357079996975,
+        0.5469022910001513,
+        0.542175916999895
       ]
     },
     "raw": {
       "statement": "from ollama import AsyncClient",
-      "import_seconds_best": 0.11682545900112018,
-      "import_seconds_p50": 0.12384879100136459,
-      "rss_bytes_median": 45727744,
+      "import_seconds_best": 0.10586329199986722,
+      "import_seconds_p50": 0.1072427079998306,
+      "rss_bytes_median": 44810240,
       "modules_loaded": 356,
       "samples": [
-        0.18186250003054738,
-        0.1319902500254102,
-        0.12384879100136459,
-        0.11736479197861627,
-        0.11682545900112018
+        0.1357727499998873,
+        0.10971408300019903,
+        0.10719095900003595,
+        0.10586329199986722,
+        0.1072427079998306
       ]
     }
   },
@@ -355,31 +355,31 @@
     "actants": {
       "task_completion": {
         "n": 7,
-        "wall_p50": 0.14516804099548608,
-        "wall_p95": 0.15746999997645617,
-        "overhead_p50": 0.0060284159844741225,
-        "overhead_p95": 0.007739956956356764,
-        "wire_p50": 0.13881191599648446,
+        "wall_p50": 0.16119208300005994,
+        "wall_p95": 0.2175915000002533,
+        "overhead_p50": 0.007542749000094773,
+        "overhead_p95": 0.019002875000296626,
+        "wire_p50": 0.15450012500014054,
         "requests_median": 1,
         "eval_count_median": 2
       },
       "task_tool_agent": {
         "n": 7,
-        "wall_p50": 1.160266208986286,
-        "wall_p95": 1.389349666016642,
-        "overhead_p50": 0.007584083010442555,
-        "overhead_p95": 0.016676334955263883,
-        "wire_p50": 1.1435898740310222,
+        "wall_p50": 1.35415624999996,
+        "wall_p95": 2.044384166999862,
+        "overhead_p50": 0.008561292000194953,
+        "overhead_p95": 0.02800983399993129,
+        "wire_p50": 1.3466437920001226,
         "requests_median": 2,
         "eval_count_median": 36
       },
       "task_structured": {
         "n": 7,
-        "wall_p50": 0.7530550409574062,
-        "wall_p95": 0.9081522920168936,
-        "overhead_p50": 0.006212665990460664,
-        "overhead_p95": 0.008026374969631433,
-        "wire_p50": 0.7468423749669455,
+        "wall_p50": 1.0438395000001037,
+        "wall_p95": 1.4913368750003428,
+        "overhead_p50": 0.007707042000220099,
+        "overhead_p95": 0.02190562499981752,
+        "wire_p50": 1.0371838750002098,
         "requests_median": 1,
         "eval_count_median": 28
       }
@@ -387,63 +387,63 @@
     "langchain": {
       "task_completion": {
         "n": 7,
-        "wall_p50": 0.1519434590009041,
-        "wall_p95": 0.28946666698902845,
-        "overhead_p50": 0.010401958017610013,
-        "overhead_p95": 0.011339875985868275,
-        "wire_p50": 0.14080533402739093,
+        "wall_p50": 0.16917816700015464,
+        "wall_p95": 0.37265495800011195,
+        "overhead_p50": 0.012287624999771651,
+        "overhead_p95": 0.023861833000410115,
+        "wire_p50": 0.1588726250001855,
         "requests_median": 1,
         "eval_count_median": 2
       },
       "task_tool_agent": {
         "n": 7,
-        "wall_p50": 1.2674034170340747,
-        "wall_p95": 1.3301547499722801,
-        "overhead_p50": 0.017325832915958017,
-        "overhead_p95": 0.04543404304422438,
-        "wire_p50": 1.2219693739898503,
+        "wall_p50": 1.2652948330000982,
+        "wall_p95": 1.7707958750002035,
+        "overhead_p50": 0.018448666999574925,
+        "overhead_p95": 0.02019916800009014,
+        "wire_p50": 1.2477876670000114,
         "requests_median": 2,
-        "eval_count_median": 38
+        "eval_count_median": 35
       },
       "task_structured": {
         "n": 7,
-        "wall_p50": 0.7567681669606827,
-        "wall_p95": 0.8702061250223778,
-        "overhead_p50": 0.012030458019580692,
-        "overhead_p95": 0.014128957991488278,
-        "wire_p50": 0.7454070000094362,
+        "wall_p50": 0.9600063339998997,
+        "wall_p95": 1.3339622079997753,
+        "overhead_p50": 0.013439583000035782,
+        "overhead_p95": 0.01481862499986164,
+        "wire_p50": 0.945939042000191,
         "requests_median": 1,
-        "eval_count_median": 25
+        "eval_count_median": 28
       }
     },
     "pydantic_ai": {
       "task_completion": {
         "n": 7,
-        "wall_p50": 0.15327291697030887,
-        "wall_p95": 0.1890309999580495,
-        "overhead_p50": 0.010366209025960416,
-        "overhead_p95": 0.013067874999251217,
-        "wire_p50": 0.14349158300319687,
+        "wall_p50": 0.17777366599966626,
+        "wall_p95": 0.3314259169997058,
+        "overhead_p50": 0.010046708999652765,
+        "overhead_p95": 0.019600541000272642,
+        "wire_p50": 0.16835449999962293,
         "requests_median": 1,
         "eval_count_median": 0
       },
       "task_tool_agent": {
         "n": 7,
-        "wall_p50": 1.0824617500184104,
-        "wall_p95": 1.2119416660279967,
-        "overhead_p50": 0.012875040993094444,
-        "overhead_p95": 0.01914724998641759,
-        "wire_p50": 1.0696387910284102,
+        "wall_p50": 1.1985972499996933,
+        "wall_p95": 2.773720666999907,
+        "overhead_p50": 0.013465958000324463,
+        "overhead_p95": 0.02099883399978353,
+        "wire_p50": 1.1866138740001588,
         "requests_median": 2,
         "eval_count_median": 0
       },
       "task_structured": {
         "n": 7,
-        "wall_p50": 0.7742614169837907,
-        "wall_p95": 0.9121312079951167,
-        "overhead_p50": 0.010462042002473027,
-        "overhead_p95": 0.021709707973059267,
-        "wire_p50": 0.7648254999658093,
+        "wall_p50": 0.8768131249998987,
+        "wall_p95": 1.0257932909999,
+        "overhead_p50": 0.011038666000331432,
+        "overhead_p95": 0.19406516700018983,
+        "wire_p50": 0.8322475840000152,
         "requests_median": 1,
         "eval_count_median": 0
       }
@@ -451,31 +451,31 @@
     "llama_index": {
       "task_completion": {
         "n": 7,
-        "wall_p50": 0.15574933402240276,
-        "wall_p95": 0.21860758302500471,
-        "overhead_p50": 0.011804624984506518,
-        "overhead_p95": 0.03319391602417454,
-        "wire_p50": 0.14394470903789625,
+        "wall_p50": 0.16652466699997603,
+        "wall_p95": 0.19892237499971088,
+        "overhead_p50": 0.012534916999356938,
+        "overhead_p95": 0.018684832999497303,
+        "wire_p50": 0.1500969589997112,
         "requests_median": 2,
         "eval_count_median": 2
       },
       "task_tool_agent": {
         "n": 7,
-        "wall_p50": 2.0952276249881834,
-        "wall_p95": 2.2150242920033634,
-        "overhead_p50": 0.9513160830247216,
-        "overhead_p95": 0.9973927920800634,
-        "wire_p50": 1.1197671660338528,
+        "wall_p50": 2.0544975409998187,
+        "wall_p95": 6.0171988329998385,
+        "overhead_p50": 0.9342123729998093,
+        "overhead_p95": 4.660470083999826,
+        "wire_p50": 1.1300475829998504,
         "requests_median": 3,
-        "eval_count_median": 36
+        "eval_count_median": 35
       },
       "task_structured": {
         "n": 7,
-        "wall_p50": 0.7545616659917869,
-        "wall_p95": 0.8687392080319114,
-        "overhead_p50": 0.012400165956933051,
-        "overhead_p95": 0.022461040993221104,
-        "wire_p50": 0.7428563740104437,
+        "wall_p50": 0.8514194999997926,
+        "wall_p95": 1.071499084000152,
+        "overhead_p50": 0.012172665999969468,
+        "overhead_p95": 0.029465666999840323,
+        "wire_p50": 0.8392468339998231,
         "requests_median": 2,
         "eval_count_median": 28
       }
@@ -483,31 +483,31 @@
     "raw": {
       "task_completion": {
         "n": 7,
-        "wall_p50": 0.15151983295800164,
-        "wall_p95": 0.25148174999048933,
-        "overhead_p50": 0.0055769989266991615,
-        "overhead_p95": 0.014527917024679482,
-        "wire_p50": 0.14594283403130248,
+        "wall_p50": 0.16333404099987092,
+        "wall_p95": 0.16944904199999655,
+        "overhead_p50": 0.006394334000106028,
+        "overhead_p95": 0.007672833000015089,
+        "wire_p50": 0.15718370800004777,
         "requests_median": 1,
         "eval_count_median": 2
       },
       "task_tool_agent": {
         "n": 7,
-        "wall_p50": 1.1705257080029696,
-        "wall_p95": 1.6117025000276044,
-        "overhead_p50": 0.007622958044521511,
-        "overhead_p95": 0.011817082937341183,
-        "wire_p50": 1.1629027499584481,
+        "wall_p50": 1.254392457999984,
+        "wall_p95": 2.201750500000344,
+        "overhead_p50": 0.00773595899954671,
+        "overhead_p95": 0.010627833000398823,
+        "wire_p50": 1.2465170419995957,
         "requests_median": 2,
         "eval_count_median": 35
       },
       "task_structured": {
         "n": 7,
-        "wall_p50": 0.7584786250372417,
-        "wall_p95": 0.919360542029608,
-        "overhead_p50": 0.006205999990925193,
-        "overhead_p95": 0.008174583956133574,
-        "wire_p50": 0.7523302920162678,
+        "wall_p50": 1.0659189159996458,
+        "wall_p95": 1.2893581670000458,
+        "overhead_p50": 0.006724458999997296,
+        "overhead_p95": 0.01687012499996854,
+        "wire_p50": 1.0593631669999013,
         "requests_median": 1,
         "eval_count_median": 28
       }
@@ -521,7 +521,7 @@
         "imports": 1
       },
       "B": {
-        "loc": 20,
+        "loc": 11,
         "imports": 1
       },
       "C": {

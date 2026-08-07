@@ -41,16 +41,7 @@ async def get_weather(city: str) -> str:
 
 def _build_tools() -> ToolRegistry:
     tools = ToolRegistry()
-    tools.register_function(
-        "get_weather",
-        "Get the current weather for a city.",
-        get_weather,
-        input_schema={
-            "type": "object",
-            "properties": {"city": {"type": "string"}},
-            "required": ["city"],
-        },
-    )
+    tools.register_function("get_weather", "Get the current weather for a city.", get_weather)
     return tools
 
 

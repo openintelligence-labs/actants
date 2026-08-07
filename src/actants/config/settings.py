@@ -45,5 +45,8 @@ class AppSettings(BaseSettings):
     def load(cls, *, env_file: str | Path | None = None, **overrides: Any) -> Self:
         """Load settings, optionally from a specific env file. Overrides win."""
         if env_file is not None:
+            # pydantic-settings reads `_env_file` off the init kwargs at runtime, but
+            # BaseSettings.__init__ is typed to accept only the model's own fields, so
+            # there is no annotation under which this call type-checks.
             return cls(_env_file=str(env_file), **overrides)  # type: ignore[call-arg]
         return cls(**overrides)

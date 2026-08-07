@@ -136,6 +136,9 @@ def _register_tool(
 
     handler.__name__ = name
     handler.__doc__ = description
+    # `__signature__` is not declared on FunctionType, but assigning it is the
+    # documented way to tell `inspect.signature` (and so FastMCP's schema builder)
+    # what this dynamically-built handler accepts.
     handler.__signature__ = inspect.Signature(  # type: ignore[attr-defined]
         parameters=params, return_annotation=str
     )

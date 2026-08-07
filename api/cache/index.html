@@ -1594,6 +1594,8 @@
       
         
       
+        
+      
     
     
     
@@ -1722,6 +1724,34 @@
     
   
     Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors
   
 
     
@@ -2676,8 +2706,10 @@ block). Changes the shape of the answer, so it changes the key.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Escape hatch for provider-specific parameters not modelled above (seed,
-top_p, stop sequences...). Included in the key verbatim.</p>
+                <p>Provider-specific parameters not modelled above — <code>seed</code>, <code>top_p</code>,
+<code>stop</code>. Populated from the passthrough keyword arguments of
+:meth:<code>~actants.llm.client.LLM.complete</code>, and included in the key verbatim,
+so a <code>seed=1</code> answer is never served to a <code>seed=2</code> request.</p>
               </div>
             </td>
           </tr>
@@ -2943,7 +2975,7 @@ and falls back to :class:<code>CacheBackend</code>.</p>
 
 
 <a href="#actants.cache.semantic.SqliteVecCache" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">SqliteVecCache</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">embedder</span><span class="p">:</span> <span class="n">Embedder</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">similarity_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">default_ttl</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">on_schema_mismatch</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;reset&#39;</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">SqliteVecCache</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">embedder</span><span class="p">:</span> <span class="n">Embedder</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">similarity_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">default_ttl</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">on_schema_mismatch</span><span class="p">:</span> <span class="n">SchemaMismatchAction</span> <span class="o">=</span> <span class="s1">&#39;reset&#39;</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">

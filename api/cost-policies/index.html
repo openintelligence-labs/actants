@@ -1594,6 +1594,8 @@
       
         
       
+        
+      
     
     
     
@@ -1722,6 +1724,34 @@
     
   
     Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors
   
 
     
@@ -1979,6 +2009,28 @@
   
     <nav class="md-nav" aria-label=" FallbackProvider">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.policies.fallback.FallbackProvider.supports_tool_calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;supports_tool_calls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.policies.fallback.FallbackProvider.supports_streaming_tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;supports_streaming_tools
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#actants.policies.fallback.FallbackProvider.stream_events" class="md-nav__link">
@@ -2494,6 +2546,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#actants.policies.fallback.FallbackProvider.supports_tool_calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;supports_tool_calls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.policies.fallback.FallbackProvider.supports_streaming_tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;supports_streaming_tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#actants.policies.fallback.FallbackProvider.stream_events" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2765,6 +2839,65 @@ caller-supplied model name is used for that provider.</p>
 
 
 
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="actants.policies.fallback.FallbackProvider.supports_tool_calls" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">supports_tool_calls</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+<a href="#actants.policies.fallback.FallbackProvider.supports_tool_calls" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">supports_tool_calls</span><span class="p">:</span> <span class="nb">bool</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>True only if <em>every</em> provider in the chain supports tool calls.</p>
+<p>A chain is only as capable as its weakest link: any provider may end up serving
+the request, so a capability holds only if all of them support it.</p>
+<p>Derived on access rather than snapshotted in <code>__init__</code> because a provider's
+flag is an ordinary attribute that callers legitimately set after construction —
+a provider that learns its capabilities from a handshake, or a test that flips
+the flag. A construction-time snapshot silently kept the old answer, so tools
+were either refused by a chain that could serve them or passed to one that
+could not.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="actants.policies.fallback.FallbackProvider.supports_streaming_tools" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">supports_streaming_tools</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+<a href="#actants.policies.fallback.FallbackProvider.supports_streaming_tools" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">supports_streaming_tools</span><span class="p">:</span> <span class="nb">bool</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>True only if <em>every</em> provider in the chain supports streaming tool calls.</p>
+<p>Derived on access, for the same reason as :attr:<code>supports_tool_calls</code>.</p>
+
+    </div>
+
+</div>
+
 
 
 
@@ -2786,9 +2919,12 @@ caller-supplied model name is used for that provider.</p>
     <div class="doc doc-contents ">
 
         <p>Fall back across providers while preserving typed events.</p>
-<p>Without this override the base-class implementation would wrap each provider's
-<code>stream</code> (text only), silently dropping tool-call and usage events for every
-provider in the chain.</p>
+<p>This is the only streaming method the chain implements: <code>stream</code> is derived
+from it by :class:<code>~actants.llm.base.BaseLLMProvider</code>, so plain-text streaming
+gets the same fallback behaviour for free.</p>
+<p>Fallback stops as soon as the first event reaches the consumer. Restarting on
+another provider after that would splice two different completions into one
+response, so a mid-stream failure surfaces instead of being retried.</p>
 
 
     </div>
@@ -2817,11 +2953,13 @@ provider in the chain.</p>
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="RuntimeError">RuntimeError</span></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            ProviderError (actants.errors.ProviderError)" href="../errors/#actants.errors.ProviderError">ProviderError</a></code>, <code><span title="RuntimeError">RuntimeError</span></code></p>
 
 
 
         <p>Raised when every provider in a FallbackProvider chain fails.</p>
+<p>Carries the per-provider failures in <code>errors</code> so a caller can inspect why each
+link gave up, not just that the chain did.</p>
 
 
 

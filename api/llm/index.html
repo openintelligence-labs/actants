@@ -1594,6 +1594,8 @@
       
         
       
+        
+      
     
     
     
@@ -1940,10 +1942,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#actants.llm.base.BaseLLMProvider.stream" class="md-nav__link">
+  <a href="#actants.llm.base.BaseLLMProvider.stream_events" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream_events
       
     </span>
   </a>
@@ -1951,10 +1953,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#actants.llm.base.BaseLLMProvider.stream_events" class="md-nav__link">
+  <a href="#actants.llm.base.BaseLLMProvider.stream" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream_events
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream
       
     </span>
   </a>
@@ -2089,6 +2091,34 @@
     
   
     Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors
   
 
     
@@ -2791,10 +2821,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#actants.llm.base.BaseLLMProvider.stream" class="md-nav__link">
+  <a href="#actants.llm.base.BaseLLMProvider.stream_events" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream_events
       
     </span>
   </a>
@@ -2802,10 +2832,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#actants.llm.base.BaseLLMProvider.stream_events" class="md-nav__link">
+  <a href="#actants.llm.base.BaseLLMProvider.stream" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream_events
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream
       
     </span>
   </a>
@@ -3012,7 +3042,7 @@ print(r.content, r.cost_usd)</p>
   </span>
 
 <a href="#actants.llm.client.LLM.complete" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">complete</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompletionResult</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">complete</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompletionResult</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3020,6 +3050,15 @@ print(r.content, r.cost_usd)</p>
         <p>Run a chat completion and return the result.</p>
 <p>Passes through <code>cache</code>, <code>cost_tracker</code>, retry, and tracing layers set on the client.
 <code>tag</code> is recorded on the CostTracker for grouped reporting.</p>
+<p>Any additional keyword arguments are provider-specific parameters — <code>seed</code>,
+<code>top_p</code>, <code>stop</code>, <code>presence_penalty</code> — and are forwarded verbatim to the
+provider <em>and</em> folded into the cache key. Two requests differing only in
+<code>seed=1</code> versus <code>seed=2</code> are therefore different requests, as they must be::</p>
+<div class="language-text highlight"><pre><span></span><code>await llm.complete(&quot;hi&quot;, seed=42, top_p=0.9)
+</code></pre></div>
+<p>Which names a provider accepts is the provider's business; actants does not
+validate them, so a name the provider does not recognise surfaces as that
+provider's own error.</p>
 
 
     </div>
@@ -3120,12 +3159,14 @@ yield is the fully-parsed and validated <code>schema</code> instance.</p>
   </span>
 
 <a href="#actants.llm.client.LLM.stream" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Stream plain text chunks, with the client's retry and tracing applied.</p>
+<p>Extra keyword arguments are provider-specific parameters, forwarded verbatim —
+see :meth:<code>complete</code>.</p>
 
 
     </div>
@@ -3144,14 +3185,15 @@ yield is the fully-parsed and validated <code>schema</code> instance.</p>
   </span>
 
 <a href="#actants.llm.client.LLM.stream_events" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream_events</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream_events</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Yield typed StreamEvents (text, tool_call, usage, finish).</p>
 <p>Applies the same retry and tracing layers as :meth:<code>complete</code>, and honours the
-same per-call <code>model</code> / <code>temperature</code> overrides.</p>
+same per-call <code>model</code> / <code>temperature</code> overrides. Extra keyword arguments are
+provider-specific parameters, forwarded verbatim — see :meth:<code>complete</code>.</p>
 
 
     </div>
@@ -3487,6 +3529,45 @@ dispatches tool calls as they complete, and loops until a final text answer.</p>
 
 
 
+        <p>The contract every LLM provider implements.</p>
+<p>To write a provider, implement exactly three methods: :meth:<code>complete</code>,
+:meth:<code>stream_events</code>, and :meth:<code>health</code>. That is the whole surface.</p>
+<p><strong>Streaming has one primitive: <code>stream_events</code>.</strong> It yields typed
+:data:<code>StreamEvent</code> objects, which is a superset of what plain text streaming can
+express — text deltas, tool calls, token usage, and the finish reason.
+:meth:<code>stream</code> is a <em>provided helper</em> that filters those events down to text; it is
+not an extension point, and overriding it has no effect on what
+:meth:<code>~actants.llm.client.LLM.stream</code> yields, because the client also goes through
+<code>stream_events</code>. Implement <code>stream_events</code> and both work.</p>
+<p>Capability flags are declared as plain class attributes::</p>
+<div class="language-text highlight"><pre><span></span><code>class MyProvider(BaseLLMProvider):
+    name = &quot;my-provider&quot;
+    supports_tool_calls = True
+    supports_streaming_tools = True
+</code></pre></div>
+<p>They may also be set per instance (a provider that learns what it can do from a
+runtime handshake), or replaced by a <code>property</code> in a subclass that derives them
+from something else — see :class:<code>~actants.policies.fallback.FallbackProvider</code>,
+which computes both from the providers in its chain on every access.</p>
+<p>Example::</p>
+<div class="language-text highlight"><pre><span></span><code>class EchoProvider(BaseLLMProvider):
+    name = &quot;echo&quot;
+
+    async def complete(self, messages, model, temperature=0.7,
+                       max_tokens=None, *, tools=None, **kwargs):
+        return CompletionResult(
+            content=messages[-1].content, model=model, provider=self.name
+        )
+
+    async def stream_events(self, messages, model, temperature=0.7,
+                            max_tokens=None, *, tools=None, **kwargs):
+        yield TextDelta(text=messages[-1].content)
+        yield FinishDelta(reason=&quot;stop&quot;)
+
+    async def health(self) -&gt; bool:
+        return True
+</code></pre></div>
+
 
 
 
@@ -3536,31 +3617,6 @@ dispatches tool calls as they complete, and loops until a final text answer.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="actants.llm.base.BaseLLMProvider.stream" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">stream</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-<a href="#actants.llm.base.BaseLLMProvider.stream" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream</span><span class="p">(</span><span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-</span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Stream text content chunks as they arrive. Does not emit tool-call deltas.</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
 <h3 id="actants.llm.base.BaseLLMProvider.stream_events" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">stream_events</span>
 
@@ -3575,9 +3631,44 @@ dispatches tool calls as they complete, and loops until a final text answer.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Stream typed events (text deltas, tool calls, usage, finish).</p>
-<p>Default implementation wraps <code>stream</code> for providers that only stream text.
-Providers with native streaming tool calls should override this.</p>
+        <p>Stream typed events: text deltas, tool calls, usage, and finish.</p>
+<p><strong>This is the streaming primitive.</strong> Override it as an <code>async def</code> generator
+that yields :class:<code>TextDelta</code> for content, :class:<code>ToolCallDelta</code> for each tool
+call, :class:<code>UsageDelta</code> once token counts are known, and :class:<code>FinishDelta</code>
+last. A provider that cannot stream tool calls simply never yields a
+<code>ToolCallDelta</code> and leaves <code>supports_streaming_tools</code> at <code>False</code>.</p>
+<p>Not abstract, so a completion-only provider stays usable for
+:meth:<code>~actants.llm.client.LLM.complete</code> without writing a streaming stub. The
+default raises :class:<code>NotImplementedError</code> when something actually tries to
+stream.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.llm.base.BaseLLMProvider.stream" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">stream</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#actants.llm.base.BaseLLMProvider.stream" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream</span><span class="p">(</span><span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Yield just the text content of :meth:<code>stream_events</code>.</p>
+<p>Provided by this base class — <strong>do not override it.</strong> Every actants code path
+that streams goes through <code>stream_events</code>, so an override here would be
+bypassed and the two would silently disagree. Put your implementation in
+<code>stream_events</code>; this helper picks the text out of it.</p>
 
 
     </div>

@@ -45,7 +45,10 @@ class ToolSpec(BaseModel):
 
     name: str
     description: str
-    parameters: dict = Field(default_factory=lambda: {"type": "object", "properties": {}})
+    #: JSON Schema describing the tool's arguments. Keys are always strings, so this is
+    #: ``dict[str, Any]`` rather than a bare ``dict`` — under ``mypy --strict`` the
+    #: latter degrades to ``dict[Any, Any]`` and loses the key type for consumers.
+    parameters: dict[str, Any] = Field(default_factory=lambda: {"type": "object", "properties": {}})
 
 
 class TextDelta(BaseModel):

@@ -19,6 +19,15 @@ _LAZY: dict[str, tuple[str, str]] = {
     "AgentStep": ("actants.agents.agent", "AgentStep"),
     "AgentHooks": ("actants.agents.hooks", "AgentHooks"),
     "ConversationMemory": ("actants.agents.memory", "ConversationMemory"),
+    # Agent.stream() events. The LLM-level StreamEvent union and its members are
+    # exported below; these are their agent-level counterparts and are what
+    # Agent.stream() actually yields, so they belong at the same level.
+    "AgentEvent": ("actants.agents.agent", "AgentEvent"),
+    "AgentTextDelta": ("actants.agents.events", "AgentTextDelta"),
+    "AgentToolCallStarted": ("actants.agents.events", "AgentToolCallStarted"),
+    "AgentToolCallCompleted": ("actants.agents.events", "AgentToolCallCompleted"),
+    "AgentStepCompleted": ("actants.agents.events", "AgentStepCompleted"),
+    "AgentRunCompleted": ("actants.agents.events", "AgentRunCompleted"),
     # LLM core
     "LLM": ("actants.llm.client", "LLM"),
     "LLMSettings": ("actants.llm.client", "LLMSettings"),
@@ -114,8 +123,14 @@ if TYPE_CHECKING:
     # `from actants import LLM` fails under `mypy --strict` with
     # "does not explicitly export attribute".
     from actants.agents.agent import Agent as Agent
+    from actants.agents.agent import AgentEvent as AgentEvent
     from actants.agents.agent import AgentResult as AgentResult
     from actants.agents.agent import AgentStep as AgentStep
+    from actants.agents.events import AgentRunCompleted as AgentRunCompleted
+    from actants.agents.events import AgentStepCompleted as AgentStepCompleted
+    from actants.agents.events import AgentTextDelta as AgentTextDelta
+    from actants.agents.events import AgentToolCallCompleted as AgentToolCallCompleted
+    from actants.agents.events import AgentToolCallStarted as AgentToolCallStarted
     from actants.agents.hooks import AgentHooks as AgentHooks
     from actants.agents.memory import ConversationMemory as ConversationMemory
     from actants.cache.memory import InMemoryCache as InMemoryCache

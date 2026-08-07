@@ -187,9 +187,9 @@ class OllamaProvider(BaseLLMProvider):
         stream: bool,
         tools: list[ToolSpec] | None = None,
         **kwargs: Any,
-    ) -> dict:
-        options: dict = {"temperature": temperature}
-        payload_extra: dict = {}
+    ) -> dict[str, Any]:
+        options: dict[str, Any] = {"temperature": temperature}
+        payload_extra: dict[str, Any] = {}
         if max_tokens is not None:
             options["num_predict"] = max_tokens
         # Provider-specific passthrough from LLM.complete(**extra). Ollama takes its
@@ -203,7 +203,7 @@ class OllamaProvider(BaseLLMProvider):
                 payload_extra[key] = value
             else:
                 options[key] = value
-        payload: dict = {
+        payload: dict[str, Any] = {
             "model": model,
             "messages": [_message_to_ollama(m) for m in messages],
             "stream": stream,

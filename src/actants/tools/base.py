@@ -45,7 +45,7 @@ def serialize_tool_result(result: ToolResult) -> str:
 class Tool(BaseModel):
     name: str
     description: str
-    input_schema: dict = Field(default_factory=dict)
+    input_schema: dict[str, Any] = Field(default_factory=dict)
     requires_permission: bool = False
     handler: Callable[..., Awaitable[Any]] | None = None
 

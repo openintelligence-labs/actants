@@ -206,9 +206,9 @@ class GeminiProvider(BaseLLMProvider):
         *,
         tools: list[ToolSpec] | None = None,
         **kwargs: Any,
-    ) -> dict:
+    ) -> dict[str, Any]:
         system_parts: list[str] = []
-        contents: list[dict] = []
+        contents: list[dict[str, Any]] = []
         for m in messages:
             if m.role == "system":
                 system_parts.append(m.content)
@@ -229,7 +229,7 @@ class GeminiProvider(BaseLLMProvider):
                 )
                 continue
             role = "model" if m.role == "assistant" else "user"
-            parts: list[dict] = []
+            parts: list[dict[str, Any]] = []
             if m.content:
                 parts.append({"text": m.content})
             for tc in m.tool_calls:

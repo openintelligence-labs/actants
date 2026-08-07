@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from actants.llm.base import CompletionResult
@@ -26,7 +26,7 @@ class CostTracker:
         if tag:
             self.by_tag[tag] += result.cost_usd
 
-    def snapshot(self) -> dict:
+    def snapshot(self) -> dict[str, Any]:
         return {
             "total_usd": round(self.total_usd, 6),
             "total_prompt_tokens": self.total_prompt_tokens,

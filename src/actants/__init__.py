@@ -66,6 +66,9 @@ _LAZY: dict[str, tuple[str, str]] = {
     "CostTracker": ("actants.cost.tracker", "CostTracker"),
     "PRICING": ("actants.cost.pricing", "PRICING"),
     "estimate_cost": ("actants.cost.pricing", "estimate_cost"),
+    "estimate_cost_or_none": ("actants.cost.pricing", "estimate_cost_or_none"),
+    "lookup_price": ("actants.cost.pricing", "lookup_price"),
+    "is_priced": ("actants.cost.pricing", "is_priced"),
     # Policies
     "RetryPolicy": ("actants.policies.retry", "RetryPolicy"),
     "retry_async": ("actants.policies.retry", "retry_async"),
@@ -144,6 +147,9 @@ if TYPE_CHECKING:
     from actants.config.settings import AppSettings as AppSettings
     from actants.cost.pricing import PRICING as PRICING
     from actants.cost.pricing import estimate_cost as estimate_cost
+    from actants.cost.pricing import estimate_cost_or_none as estimate_cost_or_none
+    from actants.cost.pricing import is_priced as is_priced
+    from actants.cost.pricing import lookup_price as lookup_price
     from actants.cost.tracker import CostTracker as CostTracker
     from actants.embeddings.base import BaseEmbeddingProvider as BaseEmbeddingProvider
     from actants.embeddings.base import EmbeddingResult as EmbeddingResult

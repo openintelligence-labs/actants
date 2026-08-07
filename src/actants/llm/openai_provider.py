@@ -177,8 +177,8 @@ class OpenAIProvider(BaseLLMProvider):
         yield FinishDelta.from_provider(self.name, finish_reason)
 
 
-def _message_to_openai(m: ChatMessage) -> dict:
-    base: dict = {"role": m.role, "content": m.content}
+def _message_to_openai(m: ChatMessage) -> dict[str, Any]:
+    base: dict[str, Any] = {"role": m.role, "content": m.content}
     if m.name:
         base["name"] = m.name
     if m.tool_call_id and m.role == "tool":
@@ -195,7 +195,7 @@ def _message_to_openai(m: ChatMessage) -> dict:
     return base
 
 
-def _tool_to_openai(t: ToolSpec) -> dict:
+def _tool_to_openai(t: ToolSpec) -> dict[str, Any]:
     return {
         "type": "function",
         "function": {

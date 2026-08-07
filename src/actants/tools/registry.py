@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 import inspect
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -63,7 +64,7 @@ def _schema_from_signature(name: str, handler: Callable[..., Awaitable[Any]]) ->
             "pass input_schema=... explicitly."
         ) from exc
 
-    properties: dict[str, dict] = {}
+    properties: dict[str, dict[str, Any]] = {}
     required: list[str] = []
     missing: list[str] = []
 
@@ -77,7 +78,7 @@ def _schema_from_signature(name: str, handler: Callable[..., Awaitable[Any]]) ->
         json_type = _PY_TO_JSON_TYPE.get(annotation)
         if json_type is None and isinstance(annotation, str):
             json_type = _PY_TO_JSON_TYPE.get(
-                {"str": str, "int": int, "float": float, "bool": bool}.get(annotation, object)  # type: ignore[arg-type]
+                {"str": str, "int": int, "float": float, "bool": bool}.get(annotation, object)
             )
         if json_type is None:
             missing.append(param_name)
@@ -105,7 +106,7 @@ class ToolRegistry:
 
     def __init__(
         self,
-        permission_check: Callable[[str, dict], Awaitable[bool]] | None = None,
+        permission_check: Callable[[str, dict[str, Any]], Awaitable[bool]] | None = None,
     ) -> None:
         self._tools: dict[str, Tool] = {}
         self._permission_check = permission_check
@@ -179,10 +180,13 @@ class ToolRegistry:
             raise ToolError(f"Unknown tool: {name}. Registered tools: {known}.")
         return self._tools[name]
 
-    def list(self) -> list[Tool]:
+    def list(self) -> builtins.list[Tool]:
         return list(self._tools.values())
 
-    def as_specs(self) -> list[ToolSpec]:
+    # `builtins.list` throughout: the `list` method above shadows the builtin inside the
+    # class body, so a bare `list[...]` annotation on any method defined after it
+    # resolves to the method object and is silently not a type.
+    def as_specs(self) -> builtins.list[ToolSpec]:
         """Return a provider-agnostic tool description list for LLM function calling."""
         return [
             ToolSpec(

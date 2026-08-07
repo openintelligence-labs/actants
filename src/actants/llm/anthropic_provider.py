@@ -56,9 +56,11 @@ class AnthropicProvider(BaseLLMProvider):
         except Exception:
             return False
 
-    def _split_messages(self, messages: list[ChatMessage]) -> tuple[str | None, list[dict]]:
+    def _split_messages(
+        self, messages: list[ChatMessage]
+    ) -> tuple[str | None, list[dict[str, Any]]]:
         system: str | None = None
-        out: list[dict] = []
+        out: list[dict[str, Any]] = []
         for m in messages:
             if m.role == "system":
                 system = (system + "\n\n" + m.content) if system else m.content
@@ -78,7 +80,7 @@ class AnthropicProvider(BaseLLMProvider):
                 )
                 continue
             if m.tool_calls:
-                blocks: list[dict] = []
+                blocks: list[dict[str, Any]] = []
                 if m.content:
                     blocks.append({"type": "text", "text": m.content})
                 for tc in m.tool_calls:
@@ -193,10 +195,19 @@ class AnthropicProvider(BaseLLMProvider):
         async with self._client.messages.stream(**request_kwargs) as stream:
             async for raw in stream:
                 etype = getattr(raw, "type", None)
+                # `index` is read through getattr for the same reason as every other
+                # field here: the SDK's event union carries it on only some members and
+                # reshapes across releases, so the string `type` dispatch above — not the
+                # static union — is what tells us the attribute is present.
+                index = getattr(raw, "index", None)
                 if etype == "content_block_start":
                     block = getattr(raw, "content_block", None)
-                    if block is not None and getattr(block, "type", "") == "tool_use":
-                        tool_blocks[raw.index] = {
+                    if (
+                        index is not None
+                        and block is not None
+                        and getattr(block, "type", "") == "tool_use"
+                    ):
+                        tool_blocks[index] = {
                             "id": block.id,
                             "name": block.name,
                             "arguments": "",
@@ -208,10 +219,10 @@ class AnthropicProvider(BaseLLMProvider):
                     dtype = getattr(delta, "type", "")
                     if dtype == "text_delta":
                         yield TextDelta(text=delta.text)
-                    elif dtype == "input_json_delta" and raw.index in tool_blocks:
-                        tool_blocks[raw.index]["arguments"] += delta.partial_json
+                    elif dtype == "input_json_delta" and index in tool_blocks:
+                        tool_blocks[index]["arguments"] += delta.partial_json
                 elif etype == "content_block_stop":
-                    slot = tool_blocks.pop(raw.index, None)
+                    slot = tool_blocks.pop(index, None) if index is not None else None
                     if slot is not None:
                         try:
                             args = _json.loads(slot["arguments"] or "{}")

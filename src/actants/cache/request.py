@@ -44,8 +44,10 @@ class CacheRequest:
         tools: Tool definitions offered to the model.
         response_format: Provider-specific structured-output request (e.g. a JSON-schema
             block). Changes the shape of the answer, so it changes the key.
-        extra: Escape hatch for provider-specific parameters not modelled above (seed,
-            top_p, stop sequences...). Included in the key verbatim.
+        extra: Provider-specific parameters not modelled above — ``seed``, ``top_p``,
+            ``stop``. Populated from the passthrough keyword arguments of
+            :meth:`~actants.llm.client.LLM.complete`, and included in the key verbatim,
+            so a ``seed=1`` answer is never served to a ``seed=2`` request.
     """
 
     messages: list[ChatMessage]

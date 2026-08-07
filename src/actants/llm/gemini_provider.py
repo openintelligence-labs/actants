@@ -26,6 +26,10 @@ from actants.llm.base import (
 
 log = structlog.get_logger(__name__)
 
+#: Passthrough keys Gemini takes at the top level of the request body. Everything else
+#: a caller passes is a sampling knob and belongs inside ``generationConfig``.
+_TOP_LEVEL_FIELDS = frozenset({"safetySettings", "cachedContent", "toolConfig"})
+
 
 class GeminiProvider(BaseLLMProvider):
     """Google Gemini via its native REST API. No SDK dependency — just httpx.
@@ -83,7 +87,7 @@ class GeminiProvider(BaseLLMProvider):
         tools: list[ToolSpec] | None = None,
         **kwargs: Any,
     ) -> CompletionResult:
-        payload = self._build_payload(messages, temperature, max_tokens, tools=tools)
+        payload = self._build_payload(messages, temperature, max_tokens, tools=tools, **kwargs)
         url = f"{self.base_url}/models/{model}:generateContent"
         start = time.perf_counter()
         r = await self._client.post(url, params={"key": self.api_key}, json=payload)
@@ -141,7 +145,7 @@ class GeminiProvider(BaseLLMProvider):
         tools: list[ToolSpec] | None = None,
         **kwargs: Any,
     ) -> AsyncIterator[StreamEvent]:
-        payload = self._build_payload(messages, temperature, max_tokens, tools=tools)
+        payload = self._build_payload(messages, temperature, max_tokens, tools=tools, **kwargs)
         url = f"{self.base_url}/models/{model}:streamGenerateContent"
         prompt_tokens = 0
         completion_tokens = 0
@@ -201,6 +205,7 @@ class GeminiProvider(BaseLLMProvider):
         max_tokens: int | None,
         *,
         tools: list[ToolSpec] | None = None,
+        **kwargs: Any,
     ) -> dict:
         system_parts: list[str] = []
         contents: list[dict] = []
@@ -237,6 +242,14 @@ class GeminiProvider(BaseLLMProvider):
         }
         if max_tokens is not None:
             payload["generationConfig"]["maxOutputTokens"] = max_tokens
+        # Provider-specific passthrough from LLM.complete(**extra). Gemini keeps its
+        # sampling knobs (topP, topK, seed, stopSequences, ...) inside
+        # ``generationConfig``; a caller naming a real top-level field gets it there.
+        for key, value in kwargs.items():
+            if key in _TOP_LEVEL_FIELDS:
+                payload[key] = value
+            else:
+                payload["generationConfig"][key] = value
         if system_parts:
             payload["systemInstruction"] = {"parts": [{"text": "\n\n".join(system_parts)}]}
         if tools:

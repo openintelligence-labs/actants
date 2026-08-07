@@ -7,7 +7,7 @@ import os
 from collections.abc import AsyncIterator
 from difflib import get_close_matches
 from functools import partial
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -234,11 +234,23 @@ class LLM:
         tag: str | None = None,
         use_cache: bool = True,
         tools: list[ToolSpec] | None = None,
+        **extra: Any,
     ) -> CompletionResult:
         """Run a chat completion and return the result.
 
         Passes through ``cache``, ``cost_tracker``, retry, and tracing layers set on the client.
         ``tag`` is recorded on the CostTracker for grouped reporting.
+
+        Any additional keyword arguments are provider-specific parameters — ``seed``,
+        ``top_p``, ``stop``, ``presence_penalty`` — and are forwarded verbatim to the
+        provider *and* folded into the cache key. Two requests differing only in
+        ``seed=1`` versus ``seed=2`` are therefore different requests, as they must be::
+
+            await llm.complete("hi", seed=42, top_p=0.9)
+
+        Which names a provider accepts is the provider's business; actants does not
+        validate them, so a name the provider does not recognise surfaces as that
+        provider's own error.
         """
         _require_tool_specs(tools)
         self._require_tool_support(tools)
@@ -249,6 +261,10 @@ class LLM:
         # One description of the request, shared by every cache backend. Both the
         # exact-match key and the semantic scope hash derive from it, so the two kinds of
         # backend can never disagree about what makes a request unique.
+        #
+        # ``extra`` must be carried here as well as sent to the provider: it is exactly
+        # the set of parameters that change the answer without appearing in any modelled
+        # field, so omitting it would serve a seed=1 answer to a seed=2 request.
         cache_request = CacheRequest(
             messages=messages,
             model=effective_model,
@@ -256,6 +272,7 @@ class LLM:
             provider=self.provider.name,
             max_tokens=max_tokens,
             tools=tools,
+            extra=extra,
         )
         request_cache = getattr(self.cache, "get_request", None) if self.cache is not None else None
         caching = self.cache is not None and use_cache and not tools
@@ -274,6 +291,7 @@ class LLM:
                 temperature=effective_temp,
                 max_tokens=max_tokens,
                 tools=tools,
+                **extra,
             )
 
         result = await self._run(_call, op="complete", model=effective_model)
@@ -448,8 +466,13 @@ class LLM:
         temperature: float | None = None,
         max_tokens: int | None = None,
         system: str | None = None,
+        **extra: Any,
     ) -> AsyncIterator[str]:
-        """Stream plain text chunks, with the client's retry and tracing applied."""
+        """Stream plain text chunks, with the client's retry and tracing applied.
+
+        Extra keyword arguments are provider-specific parameters, forwarded verbatim —
+        see :meth:`complete`.
+        """
         messages = self._normalize(prompt, system=system)
         async for event in self._stream_layered(
             messages,
@@ -458,6 +481,7 @@ class LLM:
             max_tokens=max_tokens,
             tools=None,
             op="stream",
+            extra=extra,
         ):
             if isinstance(event, TextDelta):
                 yield event.text
@@ -471,11 +495,13 @@ class LLM:
         max_tokens: int | None = None,
         system: str | None = None,
         tools: list[ToolSpec] | None = None,
+        **extra: Any,
     ) -> AsyncIterator[StreamEvent]:
         """Yield typed StreamEvents (text, tool_call, usage, finish).
 
         Applies the same retry and tracing layers as :meth:`complete`, and honours the
-        same per-call ``model`` / ``temperature`` overrides.
+        same per-call ``model`` / ``temperature`` overrides. Extra keyword arguments are
+        provider-specific parameters, forwarded verbatim — see :meth:`complete`.
         """
         _require_tool_specs(tools)
         self._require_tool_support(tools, streaming=True)
@@ -487,6 +513,7 @@ class LLM:
             max_tokens=max_tokens,
             tools=tools,
             op="stream_events",
+            extra=extra,
         ):
             yield event
 
@@ -499,6 +526,7 @@ class LLM:
         max_tokens: int | None,
         tools: list[ToolSpec] | None,
         op: str,
+        extra: dict[str, Any] | None = None,
     ) -> AsyncIterator[StreamEvent]:
         """The single path every stream in actants goes through.
 
@@ -521,6 +549,7 @@ class LLM:
                 temperature=effective_temp,
                 max_tokens=max_tokens,
                 tools=tools,
+                **(extra or {}),
             )
 
         span_cm = (

@@ -25,6 +25,10 @@ from actants.llm.errors import raise_for_ollama_error
 
 log = structlog.get_logger(__name__)
 
+#: Passthrough keys that Ollama's /api/chat takes at the top level of the request body.
+#: Everything else a caller passes is a sampling knob and belongs inside ``options``.
+_TOP_LEVEL_FIELDS = frozenset({"format", "keep_alive", "think"})
+
 
 class OllamaProvider(BaseLLMProvider):
     name = "ollama"
@@ -185,13 +189,26 @@ class OllamaProvider(BaseLLMProvider):
         **kwargs: Any,
     ) -> dict:
         options: dict = {"temperature": temperature}
+        payload_extra: dict = {}
         if max_tokens is not None:
             options["num_predict"] = max_tokens
+        # Provider-specific passthrough from LLM.complete(**extra). Ollama takes its
+        # sampling knobs (seed, top_p, top_k, stop, repeat_penalty, ...) inside
+        # ``options``; anything the caller names that is a real top-level field on
+        # /api/chat (``format``, ``keep_alive``) is set there instead. Dropping these
+        # silently — which is what happened before — meant `seed=42` had no effect at
+        # all while looking like it did.
+        for key, value in kwargs.items():
+            if key in _TOP_LEVEL_FIELDS:
+                payload_extra[key] = value
+            else:
+                options[key] = value
         payload: dict = {
             "model": model,
             "messages": [_message_to_ollama(m) for m in messages],
             "stream": stream,
             "options": options,
+            **payload_extra,
         }
         if tools:
             payload["tools"] = [

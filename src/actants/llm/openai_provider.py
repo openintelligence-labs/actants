@@ -72,6 +72,10 @@ class OpenAIProvider(BaseLLMProvider):
             "messages": [_message_to_openai(m) for m in messages],
             "temperature": temperature,
             "max_tokens": max_tokens,
+            # Provider-specific passthrough from LLM.complete(**extra) — seed, top_p,
+            # stop, presence_penalty. Forwarded verbatim; the SDK rejects names it does
+            # not know, which beats dropping them silently as this did before.
+            **kwargs,
         }
         if tools:
             request_kwargs["tools"] = [_tool_to_openai(t) for t in tools]
@@ -118,6 +122,7 @@ class OpenAIProvider(BaseLLMProvider):
             "max_tokens": max_tokens,
             "stream": True,
             "stream_options": {"include_usage": True},
+            **kwargs,  # provider-specific passthrough; see complete()
         }
         if tools:
             request_kwargs["tools"] = [_tool_to_openai(t) for t in tools]

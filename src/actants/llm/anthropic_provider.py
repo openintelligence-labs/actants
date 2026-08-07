@@ -107,6 +107,9 @@ class AnthropicProvider(BaseLLMProvider):
             "messages": msgs,
             "temperature": temperature,
             "max_tokens": max_tokens or 4096,
+            # Provider-specific passthrough from LLM.complete(**extra) — top_p, top_k,
+            # stop_sequences. Forwarded verbatim rather than dropped silently.
+            **kwargs,
         }
         if tools:
             request_kwargs["tools"] = [
@@ -166,6 +169,7 @@ class AnthropicProvider(BaseLLMProvider):
             "messages": msgs,
             "temperature": temperature,
             "max_tokens": max_tokens or 4096,
+            **kwargs,  # provider-specific passthrough; see complete()
         }
         if tools:
             request_kwargs["tools"] = [

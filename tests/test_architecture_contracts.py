@@ -1158,3 +1158,97 @@ def test_concurrency_mode_literal_matches_the_runtime_check() -> None:
     from actants.agents.agent import _CONCURRENCY_MODES, ConcurrencyMode
 
     assert set(get_args(ConcurrencyMode)) == set(_CONCURRENCY_MODES)
+
+
+# ---------------------------------------------------------------------------
+# 8. Provider-specific passthrough reaches both the provider and the cache key
+# ---------------------------------------------------------------------------
+
+
+class _EchoKwargsProvider(BaseLLMProvider):
+    """Records the passthrough kwargs each call received."""
+
+    name = "echo-kwargs"
+    supports_tool_calls = True
+    supports_streaming_tools = True
+
+    def __init__(self) -> None:
+        self.seen: list[dict[str, Any]] = []
+
+    async def complete(
+        self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+    ) -> CompletionResult:
+        self.seen.append(dict(kwargs))
+        return CompletionResult(content="ok", model=model, provider=self.name)
+
+    async def stream_events(
+        self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+    ) -> AsyncIterator[StreamEvent]:
+        self.seen.append(dict(kwargs))
+        yield TextDelta(text="ok")
+        yield FinishDelta(reason="stop")
+
+    async def health(self) -> bool:
+        return True
+
+
+@pytest.mark.asyncio
+async def test_complete_forwards_passthrough_kwargs_to_the_provider() -> None:
+    provider = _EchoKwargsProvider()
+    llm = LLM(provider=provider, model="m", tracing=False)
+    await llm.complete("hi", seed=42, top_p=0.9)
+    assert provider.seen == [{"seed": 42, "top_p": 0.9}]
+
+
+@pytest.mark.asyncio
+async def test_stream_forwards_passthrough_kwargs_to_the_provider() -> None:
+    provider = _EchoKwargsProvider()
+    llm = LLM(provider=provider, model="m", tracing=False)
+    async for _ in llm.stream("hi", seed=7):
+        pass
+    assert provider.seen == [{"seed": 7}]
+
+
+@pytest.mark.asyncio
+async def test_passthrough_kwargs_are_part_of_the_cache_key() -> None:
+    """The invariant: anything that reaches the provider also reaches the key.
+
+    `CacheRequest.extra` existed but nothing populated it, so adding passthrough
+    without routing it here would have silently reintroduced the collision:
+    seed=1 and seed=2 sharing one cached answer.
+    """
+    provider = _EchoKwargsProvider()
+    cache = InMemoryCache()
+    llm = LLM(provider=provider, model="m", cache=cache, tracing=False)
+
+    await llm.complete("hi", seed=1)
+    await llm.complete("hi", seed=2)
+    assert len(cache) == 2, "different seeds must not share a cache entry"
+    assert len(provider.seen) == 2
+
+    await llm.complete("hi", seed=1)
+    assert len(provider.seen) == 2, "identical seed must be served from cache"
+
+
+def test_cache_request_extra_changes_the_key_and_scope_hash() -> None:
+    msgs = [ChatMessage(role="user", content="hi")]
+    plain = CacheRequest(messages=msgs, model="m", temperature=0.5)
+    seeded = CacheRequest(messages=msgs, model="m", temperature=0.5, extra={"seed": 1})
+    other = CacheRequest(messages=msgs, model="m", temperature=0.5, extra={"seed": 2})
+
+    assert plain.key() != seeded.key() != other.key()
+    assert plain.scope_hash() != seeded.scope_hash() != other.scope_hash()
+
+
+def test_llm_complete_exposes_passthrough_kwargs() -> None:
+    """A signature guard: `complete` must keep accepting **extra.
+
+    If this parameter is ever removed, `CacheRequest.extra` goes back to being
+    populated by nobody and the trap this closes is reopened.
+    """
+    import inspect
+
+    params = inspect.signature(LLM.complete).parameters
+    var_kw = [p for p in params.values() if p.kind is inspect.Parameter.VAR_KEYWORD]
+    assert var_kw, "LLM.complete must accept provider-specific passthrough kwargs"
+    assert var_kw[0].name == "extra"

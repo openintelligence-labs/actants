@@ -70,7 +70,7 @@ class MCPClient:
             self._toolsets[name] = MCPToolset(name=name, session=session, tools=tools)
         return self
 
-    async def __aexit__(self, *exc) -> None:
+    async def __aexit__(self, *exc: object) -> None:
         if self._stack is not None:
             await self._stack.aclose()
             self._stack = None

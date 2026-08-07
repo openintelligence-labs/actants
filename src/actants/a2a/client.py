@@ -108,7 +108,9 @@ def _extract_text(event: Any, get_artifact_text: Any, get_stream_response_text: 
         try:
             text = getter(event)
             if text:
-                return text
+                # The getters are passed in untyped (they come from a2a.helpers via a
+                # lazy import), so coerce rather than trust them to return str.
+                return str(text)
         except Exception:
             continue
     return ""

@@ -73,3 +73,39 @@ def test_jsonrpc_endpoint_exists():
         response = client.post("/", json={"jsonrpc": "2.0", "id": 1, "method": "ping"})
         # Either 200 with an RPC error envelope, or 4xx — just not 404.
         assert response.status_code != 404
+
+
+@pytest.mark.asyncio
+async def test_executor_generates_ids_when_the_context_has_none():
+    """Regression: a context without IDs produced events keyed to the empty string.
+
+    `RequestContext.task_id` / `.context_id` are `str | None`, and the SDK only
+    auto-generates them when the context was built with a request payload -- its
+    `_check_or_generate_task_id` returns early on `if not self._params`. The a2a
+    helpers then coerce `None` to `""` rather than rejecting it, so every such run
+    emitted a Task with `id=""` and status events with `task_id=""`, all correlating
+    to one another instead of failing loudly.
+    """
+    from a2a.server.agent_execution import RequestContext
+    from a2a.server.context import ServerCallContext
+
+    from actants.a2a.executor import build_executor
+
+    class _CollectingQueue:
+        def __init__(self):
+            self.events = []
+
+        async def enqueue_event(self, event):
+            self.events.append(event)
+
+    executor = build_executor(_build_agent())
+    context = RequestContext(call_context=ServerCallContext(state={}))
+    assert context.task_id is None and context.context_id is None
+
+    queue = _CollectingQueue()
+    await executor.cancel(context, queue)
+
+    assert len(queue.events) == 1
+    event = queue.events[0]
+    assert event.task_id, "task_id must not be empty"
+    assert event.context_id, "context_id must not be empty"

@@ -37,6 +37,7 @@ class OllamaProvider(BaseLLMProvider):
 
     def __init__(
         self,
+        *,
         base_url: str = "http://localhost:11434",
         timeout: float = 120.0,
         client: httpx.AsyncClient | None = None,

@@ -30,6 +30,11 @@ class Embeddings:
         emb = Embeddings()
         result = await emb.embed(["hello", "world"])
         score = Embeddings.cosine(result.vectors[0], result.vectors[1])
+
+    ``settings`` is copied at construction, so mutating the object you passed in has no
+    effect on this client. Of the copy's own fields, only ``model`` is re-read per call;
+    ``provider`` and ``base_url`` select the provider once, at construction. To change
+    those, build a new ``Embeddings``.
     """
 
     def __init__(
@@ -39,7 +44,10 @@ class Embeddings:
         model: str | None = None,
         settings: EmbeddingSettings | None = None,
     ) -> None:
-        self.settings = settings or EmbeddingSettings()
+        # Copied, not aliased — see LLM.__init__ for why.
+        self.settings = (
+            settings.model_copy(deep=True) if settings is not None else EmbeddingSettings()
+        )
         if model is not None:
             self.settings.model = model
         self.provider = provider or _make_provider(self.settings)

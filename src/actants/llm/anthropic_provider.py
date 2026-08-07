@@ -28,7 +28,12 @@ class AnthropicProvider(BaseLLMProvider):
     supports_tool_calls = True
     supports_streaming_tools = True
 
-    def __init__(self, api_key: str | None = None, client: AsyncAnthropic | None = None) -> None:
+    def __init__(
+        self,
+        api_key: str | None = None,
+        *,
+        client: AsyncAnthropic | None = None,
+    ) -> None:
         if client is None:
             try:
                 from anthropic import AsyncAnthropic

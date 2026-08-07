@@ -32,8 +32,8 @@ class OpenAIProvider(BaseLLMProvider):
     def __init__(
         self,
         api_key: str | None = None,
-        client: AsyncOpenAI | None = None,
         *,
+        client: AsyncOpenAI | None = None,
         base_url: str | None = None,
     ) -> None:
         if client is None:

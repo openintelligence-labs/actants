@@ -33,23 +33,36 @@ Operation = Literal[
     "execute_tool",
 ]
 
-# Provider enum from gen_ai attribute registry. Add new ones here as they ship.
-KNOWN_PROVIDERS: set[str] = {
-    "openai",
-    "anthropic",
-    "gcp.gen_ai",
-    "gcp.vertex_ai",
-    "aws.bedrock",
-    "az.ai.openai",
-    "cohere",
-    "mistral_ai",
-    "groq",
-    "ollama",
-    "ibm.watsonx.ai",
-    "xai",
-    "deepseek",
-    "perplexity",
-}
+# Provider enum from the gen_ai attribute registry. Add new ones here as they ship.
+#
+# Named for the spec it comes from, not "KNOWN_PROVIDERS": that name is also
+# ``actants.llm.client.KNOWN_PROVIDERS``, which is a different thing entirely — the six
+# providers actants can construct, versus the fourteen names the OTel semantic
+# conventions define. One identifier meaning two things in one package is a trap worth
+# removing before the API freezes.
+OTEL_GENAI_PROVIDERS: frozenset[str] = frozenset(
+    {
+        "openai",
+        "anthropic",
+        "gcp.gen_ai",
+        "gcp.vertex_ai",
+        "aws.bedrock",
+        "az.ai.openai",
+        "cohere",
+        "mistral_ai",
+        "groq",
+        "ollama",
+        "ibm.watsonx.ai",
+        "xai",
+        "deepseek",
+        "perplexity",
+    }
+)
+
+#: Deprecated alias for :data:`OTEL_GENAI_PROVIDERS`. Kept so the old name keeps
+#: resolving; prefer the new one, which cannot be confused with
+#: ``actants.llm.client.KNOWN_PROVIDERS``.
+KNOWN_PROVIDERS: frozenset[str] = OTEL_GENAI_PROVIDERS
 
 
 def get_tracer() -> Tracer:

@@ -20,6 +20,7 @@ class OllamaEmbedder:
 
     def __init__(
         self,
+        *,
         base_url: str = "http://localhost:11434",
         model: str = "nomic-embed-text",
         client: httpx.AsyncClient | None = None,

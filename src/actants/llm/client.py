@@ -181,6 +181,18 @@ class LLM:
         >>> llm = LLM()  # ollama
         >>> r = await llm.complete("hello")
         >>> print(r.content, r.cost_usd)
+
+    Settings lifetime
+    -----------------
+    ``settings`` is **copied** at construction, so mutating the object you passed in
+    afterwards has no effect on this client — and a settings object shared between two
+    clients cannot have one client's ``model=`` override leak into the other.
+
+    Of the copy's own fields, ``model`` and ``temperature`` are re-read on every call, so
+    assigning ``llm.settings.model`` does change subsequent requests. ``provider`` and
+    ``base_url`` are read once, to build :attr:`provider`; assigning them later does
+    nothing. Build a new ``LLM`` to change provider, or pass a provider instance
+    directly.
     """
 
     def __init__(
@@ -201,7 +213,11 @@ class LLM:
                 "LLMSettings(provider='ollama', model='llama3.2'), or pass the common "
                 "options directly: LLM(provider=..., model=...)."
             )
-        self.settings = settings or LLMSettings()
+        # Copied, not aliased: `model=` and `provider=` below write into this object, and
+        # a caller who builds one LLMSettings and passes it to two clients must not have
+        # the second client's overrides appear in the first's settings — or, worse, in
+        # their own object after construction.
+        self.settings = settings.model_copy(deep=True) if settings is not None else LLMSettings()
         if model is not None:
             if not isinstance(model, str):
                 raise TypeError(

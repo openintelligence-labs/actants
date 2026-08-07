@@ -40,9 +40,12 @@ def make_key(
 class InMemoryCache:
     """Exact-match cache. For semantic caching, use SqliteVecCache (optional extra)."""
 
-    def __init__(self, default_ttl: int | None = 3600) -> None:
+    def __init__(self, *, default_ttl: int | None = 3600) -> None:
         self._data: dict[str, tuple[CompletionResult, float | None]] = {}
-        self._default_ttl = default_ttl
+        #: Public to match :class:`~actants.cache.semantic.SqliteVecCache`, the other
+        #: reference backend — third parties copy whichever they read first, so the two
+        #: must agree.
+        self.default_ttl = default_ttl
 
     async def get(self, key: str) -> CompletionResult | None:
         entry = self._data.get(key)
@@ -55,7 +58,7 @@ class InMemoryCache:
         return value
 
     async def set(self, key: str, value: CompletionResult, ttl: int | None = None) -> None:
-        effective_ttl = ttl if ttl is not None else self._default_ttl
+        effective_ttl = ttl if ttl is not None else self.default_ttl
         expires_at = time.time() + effective_ttl if effective_ttl is not None else None
         self._data[key] = (value, expires_at)
 

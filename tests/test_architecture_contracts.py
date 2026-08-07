@@ -1372,3 +1372,118 @@ async def test_catching_actants_error_catches_a_real_failure() -> None:
     spec = ToolSpec(name="add", description="Add", parameters={"type": "object"})
     with pytest.raises(ActantsError):
         await llm.complete("hi", tools=[spec])
+
+
+# ---------------------------------------------------------------------------
+# 10. 1.0-freeze guards on the public signature surface
+# ---------------------------------------------------------------------------
+
+
+def test_settings_are_copied_not_aliased() -> None:
+    """One LLMSettings shared by two clients must not leak overrides between them.
+
+    `LLM.__init__` writes `model=` and `provider=` into `self.settings`; when that
+    was the caller's own object, the second client's override silently became the
+    first client's configuration.
+    """
+    from actants import LLM, LLMSettings
+
+    shared = LLMSettings(model="llama3.2")
+    first = LLM(provider=FakeLLMProvider(), settings=shared, tracing=False)
+    second = LLM(provider=FakeLLMProvider(), settings=shared, model="gpt-4o", tracing=False)
+
+    assert shared.model == "llama3.2", "the caller's settings object must not be mutated"
+    assert first.settings.model == "llama3.2"
+    assert second.settings.model == "gpt-4o"
+
+
+def test_embeddings_settings_are_copied_not_aliased() -> None:
+    from actants import Embeddings, EmbeddingSettings
+    from actants.testing import FakeEmbeddingProvider
+
+    shared = EmbeddingSettings(model="nomic-embed-text")
+    Embeddings(provider=FakeEmbeddingProvider(), settings=shared, model="other")
+    assert shared.model == "nomic-embed-text"
+
+
+@pytest.mark.parametrize(
+    ("factory", "args"),
+    [
+        ("actants.cache.memory:InMemoryCache", ("default_ttl",)),
+        ("actants.llm.ollama:OllamaProvider", ("base_url", "timeout", "client")),
+        ("actants.cache.embeddings:OllamaEmbedder", ("base_url", "model", "client", "timeout")),
+    ],
+)
+def test_growable_constructors_take_options_keyword_only(
+    factory: str, args: tuple[str, ...]
+) -> None:
+    """Positional order is the one thing a 1.0 freeze can never take back.
+
+    These classes will grow options (eviction policy, auth, pooling). Any parameter
+    a caller can pass positionally today is pinned to its slot forever.
+    """
+    import importlib
+    import inspect
+
+    module_name, _, cls_name = factory.partition(":")
+    cls = getattr(importlib.import_module(module_name), cls_name)
+    params = inspect.signature(cls.__init__).parameters
+    positional = [
+        name
+        for name, p in params.items()
+        if name != "self" and p.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+    ]
+    offenders = sorted(set(positional) & set(args))
+    assert not offenders, (
+        f"{cls_name} accepts {offenders} positionally; make them keyword-only with `*` "
+        "before 1.0 freezes the parameter order."
+    )
+
+
+def test_openai_compatible_subclasses_accept_the_parent_signature() -> None:
+    """Groq/Mistral narrowed OpenAIProvider's signature, so `client=` was a TypeError.
+
+    They are public subclasses of a public class; dropping parameters the parent
+    accepts is an LSP violation a user hits the moment they inject a test client.
+    """
+    pytest.importorskip("openai")
+    import inspect
+
+    from actants.llm.groq_provider import GroqProvider
+    from actants.llm.mistral_provider import MistralProvider
+    from actants.llm.openai_provider import OpenAIProvider
+
+    parent = set(inspect.signature(OpenAIProvider.__init__).parameters)
+    for cls in (GroqProvider, MistralProvider):
+        child = set(inspect.signature(cls.__init__).parameters)
+        missing = sorted(parent - child)
+        assert not missing, f"{cls.__name__} drops parent parameters {missing}"
+
+
+def test_known_providers_name_is_not_reused_for_two_different_things() -> None:
+    """`KNOWN_PROVIDERS` meant both 'providers actants builds' and 'OTel provider ids'."""
+    from actants.llm.client import KNOWN_PROVIDERS as ACTANTS_PROVIDERS
+    from actants.tracing.genai import OTEL_GENAI_PROVIDERS
+
+    assert set(ACTANTS_PROVIDERS) != set(OTEL_GENAI_PROVIDERS)
+    assert "gcp.vertex_ai" in OTEL_GENAI_PROVIDERS
+    assert "gcp.vertex_ai" not in ACTANTS_PROVIDERS
+
+
+def test_cache_backends_agree_on_default_ttl() -> None:
+    """Two reference implementations of one protocol must not disagree on shape.
+
+    Third parties copy whichever backend they read first.
+    """
+    pytest.importorskip("sqlite_vec")
+    import inspect
+
+    from actants.cache.memory import InMemoryCache
+    from actants.cache.semantic import SqliteVecCache
+
+    for cls in (InMemoryCache, SqliteVecCache):
+        p = inspect.signature(cls.__init__).parameters["default_ttl"]
+        assert p.kind is inspect.Parameter.KEYWORD_ONLY, f"{cls.__name__}.default_ttl"
+        assert p.default == 3600, f"{cls.__name__}.default_ttl default"
+
+    assert InMemoryCache().default_ttl == 3600, "must be public on both backends"

@@ -405,7 +405,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/differentiation/" class="md-tabs__link">
+        <a href="../../reference/stability/" class="md-tabs__link">
           
   
   
@@ -2032,6 +2032,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" FinishDelta">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.llm.base.FinishDelta.from_provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2436,6 +2453,8 @@
       
         
       
+        
+      
     
     
     
@@ -2480,6 +2499,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stability policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2911,6 +2958,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" FinishDelta">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.llm.base.FinishDelta.from_provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3017,6 +3081,24 @@ assigning <code>llm.settings.model</code> does change subsequent requests. <code
 <code>base_url</code> are read once, to build :attr:<code>provider</code>; assigning them later does
 nothing. Build a new <code>LLM</code> to change provider, or pass a provider instance
 directly.</p>
+<h4 id="actants.llm.client.LLM--counting-conventions">Counting conventions<a class="headerlink" href="#actants.llm.client.LLM--counting-conventions" title="Permanent link">&para;</a></h4>
+<p>Three parameters bound how many times actants will go back to the model, and they do
+not all count the same thing. The rule is that a name saying <em>attempts</em> or <em>steps</em>
+bounds the <strong>total</strong>, and a name saying <em>repairs</em> bounds the <strong>extras</strong>:</p>
+<ul>
+<li><code>RetryPolicy(max_attempts=N)</code> — at most <code>N</code> requests in total. <code>N=1</code> means no
+  retry.</li>
+<li><code>max_steps=N</code> (:meth:<code>run_agent</code>, :meth:<code>run_agent_stream</code>, <code>Agent.run</code>) — at
+  most <code>N</code> LLM round-trips in the loop, in total.</li>
+<li><code>max_repairs=N</code> (:meth:<code>extract</code>) — the initial completion, plus at most <code>N</code>
+  self-correction attempts after it: <code>N + 1</code> requests in total. <code>N=0</code> disables
+  repair, and is the analogue of <code>max_attempts=1</code>.</li>
+</ul>
+<p><code>max_repairs</code> counts differently on purpose, because a repair is not a retry. A
+retry re-sends the same request after a transport failure; a repair sends a <em>new,
+longer</em> conversation containing the model's bad output and the parser error, so the
+model can correct itself. Naming it <code>max_attempts</code> would suggest <code>1</code> allows one
+self-correction, when it would in fact allow none.</p>
 
 
 
@@ -3114,7 +3196,7 @@ Raises RuntimeError if the loop exceeds <code>max_steps</code> without a final a
   </span>
 
 <a href="#actants.llm.client.LLM.extract" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">extract</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_repairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">extract</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_repairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3123,6 +3205,14 @@ Raises RuntimeError if the loop exceeds <code>max_steps</code> without a final a
 <p>If the first response doesn't parse, retries once with the parser error appended
 to the conversation so the model can self-correct. Works across all providers
 since it asks for JSON via prompt rather than provider-specific JSON modes.</p>
+<p><code>tag</code> is recorded on the CostTracker as in :meth:<code>complete</code>. Every attempt is
+recorded under the same tag, including repairs that failed to parse — a repair
+costs real tokens, so hiding it would understate what the extraction spent.</p>
+<p><code>max_repairs</code> counts <em>repair</em> attempts, not total attempts: the initial
+completion always happens, and <code>max_repairs=1</code> (the default) allows one
+self-correction after it, for at most two requests. <code>max_repairs=0</code> disables
+repair entirely. This differs deliberately from <code>RetryPolicy.max_attempts</code> and
+<code>max_steps</code>, which bound the total; see the note in the class docstring.</p>
 
 
     </div>
@@ -3141,7 +3231,7 @@ since it asks for JSON via prompt rather than provider-specific JSON modes.</p>
   </span>
 
 <a href="#actants.llm.client.LLM.extract_stream" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">extract_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">extract_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3150,6 +3240,7 @@ since it asks for JSON via prompt rather than provider-specific JSON modes.</p>
 <p>Each yielded instance represents the best parse of the bytes seen so far.
 Emits a new instance only when the parsed output has changed. The final
 yield is the fully-parsed and validated <code>schema</code> instance.</p>
+<p><code>tag</code> is recorded on the CostTracker as in :meth:<code>stream_events</code>.</p>
 
 
     </div>
@@ -3168,12 +3259,15 @@ yield is the fully-parsed and validated <code>schema</code> instance.</p>
   </span>
 
 <a href="#actants.llm.client.LLM.stream" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Stream plain text chunks, with the client's retry and tracing applied.</p>
+<p><code>tag</code> is recorded on the CostTracker exactly as in :meth:<code>complete</code>, so cost
+attribution survives the switch from <code>complete()</code> to streaming. The spend is
+recorded once, when the provider reports usage — see :meth:<code>stream_events</code>.</p>
 <p>Extra keyword arguments are provider-specific parameters, forwarded verbatim —
 see :meth:<code>complete</code>.</p>
 
@@ -3194,7 +3288,7 @@ see :meth:<code>complete</code>.</p>
   </span>
 
 <a href="#actants.llm.client.LLM.stream_events" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream_events</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream_events</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3203,6 +3297,11 @@ see :meth:<code>complete</code>.</p>
 <p>Applies the same retry and tracing layers as :meth:<code>complete</code>, and honours the
 same per-call <code>model</code> / <code>temperature</code> overrides. Extra keyword arguments are
 provider-specific parameters, forwarded verbatim — see :meth:<code>complete</code>.</p>
+<p><code>tag</code> is recorded on the CostTracker just as in :meth:<code>complete</code>. A stream
+reports its spend in a single :class:<code>~actants.llm.base.UsageDelta</code> near the end,
+so the tracker is credited once per streamed request, at that point — a stream
+the consumer abandons before the usage event therefore records nothing, because
+actants never saw what it cost.</p>
 
 
     </div>
@@ -3221,13 +3320,15 @@ provider-specific parameters, forwarded verbatim — see :meth:<code>complete</c
   </span>
 
 <a href="#actants.llm.client.LLM.run_agent_stream" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">run_agent_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="n">tools</span><span class="p">:</span> <span class="n">ToolRegistry</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">run_agent_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="n">tools</span><span class="p">:</span> <span class="n">ToolRegistry</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Streaming agent loop. Yields text deltas while the model is thinking,
 dispatches tool calls as they complete, and loops until a final text answer.</p>
+<p><code>tag</code> is recorded on the CostTracker for every step of the loop, matching
+:meth:<code>run_agent</code>.</p>
 
 
     </div>
@@ -3873,6 +3974,13 @@ bypassed and the two would silently disagree. Put your implementation in
 
 
 
+        <p>The terminal event of a stream, carrying why generation stopped.</p>
+<p><code>reason</code> is normalized the same way as
+:attr:<code>CompletionResult.finish_reason</code>, so a streamed run and a completed one can be
+branched on identically; <code>raw_reason</code> preserves the provider's own string.</p>
+<p>A provider may construct this with either — <code>FinishDelta(reason="stop")</code> in a
+hand-written provider, or via :meth:<code>from_provider</code> to normalize a raw wire value.</p>
+
 
 
 
@@ -3893,6 +4001,32 @@ bypassed and the two would silently disagree. Put your implementation in
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.llm.base.FinishDelta.from_provider" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">from_provider</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#actants.llm.base.FinishDelta.from_provider" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">from_provider</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FinishDelta</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build a <code>FinishDelta</code> from a provider's raw stop-reason string.</p>
+<p>This is what every built-in provider uses, so normalization happens in exactly
+one place per provider and the raw value is never dropped on the way.</p>
+
+
+    </div>
+
+</div>
 
 
 

@@ -405,7 +405,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/differentiation/" class="md-tabs__link">
+        <a href="../../reference/stability/" class="md-tabs__link">
           
   
   
@@ -1983,6 +1983,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#actants.cache.semantic.SqliteVecCache.path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.cache.semantic.SqliteVecCache.embedder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;embedder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#actants.cache.semantic.SqliteVecCache.get_request" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2238,6 +2260,8 @@
       
         
       
+        
+      
     
     
     
@@ -2282,6 +2306,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stability policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2522,6 +2574,28 @@
   
     <nav class="md-nav" aria-label=" SqliteVecCache">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.cache.semantic.SqliteVecCache.path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.cache.semantic.SqliteVecCache.embedder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;embedder
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#actants.cache.semantic.SqliteVecCache.get_request" class="md-nav__link">
@@ -3019,6 +3093,65 @@ a wrong answer.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="actants.cache.semantic.SqliteVecCache.path" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">path</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#actants.cache.semantic.SqliteVecCache.path" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">path</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The database file this cache is bound to. <strong>Read-only.</strong></p>
+<p>Assigning it would have been a no-op with a misleading result: the path is
+snapshotted into the sqlite connection the first time the cache is used, so a
+reassignment moved nothing, while :meth:<code>describe</code> and :meth:<code>__repr__</code> went on
+reporting the new value — the cache would claim to be somewhere it was not. To
+use a different file, construct a new <code>SqliteVecCache</code>.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="actants.cache.semantic.SqliteVecCache.embedder" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">embedder</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#actants.cache.semantic.SqliteVecCache.embedder" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">embedder</span><span class="p">:</span> <span class="n">Embedder</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The embedder used to vectorize requests. <strong>Read-only.</strong></p>
+<p>Every stored vector was produced by this embedder, and vectors from two different
+embedders are not comparable — swapping it mid-flight would silently compare a
+new model's vectors against an old model's index and return nonsense neighbours
+within the similarity threshold. The dimension is also fixed in the vec0 table at
+first connect, so a differently-sized embedder would fail at the sqlite layer
+instead. Construct a new <code>SqliteVecCache</code> for a different embedder.</p>
+
+    </div>
+
+</div>
 
 
 

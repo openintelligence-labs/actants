@@ -403,7 +403,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../differentiation/" class="md-tabs__link">
+        <a href="../stability/" class="md-tabs__link">
           
   
   
@@ -2064,6 +2064,8 @@
       
         
       
+        
+      
     
     
     
@@ -2111,6 +2113,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stability policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2290,10 +2320,122 @@
 <p>This page mirrors the most recent releases for offline reading.</p>
 <h1 id="changelog_1">Changelog<a class="headerlink" href="#changelog_1" title="Permanent link">&para;</a></h1>
 <h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
-<p>Architectural defects found by adversarial review, plus the API-surface questions
-left open for the 1.0 freeze. Each changes an API or a protocol, so each lands
-before the freeze rather than after.</p>
+<h2 id="100-2026-08-06">[1.0.0] - 2026-08-06<a class="headerlink" href="#100-2026-08-06" title="Permanent link">&para;</a></h2>
+<p><strong>The API is now stable.</strong> See the
+<a href="https://actants.openintelligence-labs.org/reference/stability/">stability policy</a> for
+what that covers: <code>actants.__all__</code> is the public API, 1.x will not break it, and
+anything provisional (<code>mcp</code>, <code>a2a</code>, <code>bench</code>, the cache file format, OTel attribute
+names) says so explicitly.</p>
+<p>The honest version of how this release came about: 1.0 was not reached by adding
+features. It was reached by an adversarial review of the existing code that found a
+row of defects sharing one property — <strong>they were all silent</strong>. Tools passed to a
+provider that could not call them were dropped, and the model answered as though no
+tools existed. The semantic cache collided across requests that differed in
+<code>max_tokens</code>, so a 4096-token answer could be served to a request capped at 16. Every
+streamed run reported a cost of $0.00. A fallback mid-stream spliced two completions
+into one response. <code>seed=42</code> type-checked, looked like it worked, and set no seed.
+None of these raised; each one just returned a plausible wrong answer. Fixing them is
+the substance of this release, and it is why the version number moved.</p>
+<p>The API hardening that follows was the second half: a 1.0 promise is only worth making
+about a surface that is worth freezing, so anything that would have been painful to
+live with for the life of 1.x — an unnormalized provider string in a
+provider-agnostic type, a cost tag that vanished on the streaming path, mutable
+attributes that lied after assignment — was fixed <em>before</em> the freeze rather than
+deprecated after it.</p>
+<p>Also in 1.0: <strong>13 providers</strong> (Ollama, OpenAI, Anthropic, Gemini, plus nine
+OpenAI-compatible hosts behind one generated adapter), <strong>corrected pricing with honest
+unknown-cost reporting</strong> — an unpriced model now surfaces in
+<code>CostTracker.untracked_models</code> and flags the total as a lower bound, instead of
+contributing $0.00 to a total that looked authoritative — a <strong>published benchmark</strong>
+with full methodology and reproduction commands, and documentation whose every code
+block is executed as a test.</p>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>tag</code> on every path that spends money.</strong> <code>LLM.stream</code>, <code>LLM.stream_events</code>,
+  <code>LLM.extract</code>, <code>LLM.extract_stream</code>, and <code>LLM.run_agent_stream</code> now accept <code>tag</code>,
+  matching <code>LLM.complete</code> and <code>Agent.run</code> / <code>Agent.stream</code>. Cost attribution
+  previously vanished the moment a user switched a tagged <code>complete()</code> call to
+  streaming: the spend still reached <code>total_usd</code>, so nothing looked wrong, but
+  <code>by_tag</code> quietly stopped adding up.</li>
+</ul>
+<p>Streamed spend is recorded once per request, when the provider reports its
+  <code>UsageDelta</code>, through the same <code>CostTracker.record()</code> that <code>complete()</code> uses — so an
+  unpriced model streamed under a tag also lands in <code>untracked_models</code>, exactly as a
+  completion does. A stream abandoned before the usage event records nothing, because
+  actants never saw what it cost. Recording now happens in one place for all streaming
+  entry points; <code>Agent.stream</code> no longer records separately, which also removes a
+  latent double-count.</p>
+<ul>
+<li>
+<p><strong><code>CompletionResult.raw_finish_reason</code></strong> preserves the provider's own stop-reason
+  string verbatim, alongside the normalized <code>finish_reason</code>. Nothing is lost by
+  normalization.</p>
+</li>
+<li>
+<p><strong><code>FinishReason</code>, <code>FINISH_REASONS</code>, and <code>normalize_finish_reason</code></strong> are exported at
+  top level, since <code>FinishReason</code> is now the type of a public field.</p>
+</li>
+</ul>
 <h3 id="changed-breaking">Changed (breaking)<a class="headerlink" href="#changed-breaking" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>finish_reason</code> is normalized across providers.</strong> It was <code>str | None</code> carrying
+  whatever the provider said — <code>"stop"</code> from OpenAI, <code>"end_turn"</code> from Anthropic,
+  <code>"STOP"</code> from Gemini, <code>"done"</code>-style values from Ollama — inside a deliberately
+  provider-agnostic result type, so callers could not branch on it portably without
+  writing the union of every provider's vocabulary. It is now
+  <code>Literal["stop", "length", "tool_calls", "content_filter", "error", "unknown"]</code>,
+  mapped explicitly for every provider, with the raw string preserved on
+  <code>raw_finish_reason</code>. <code>FinishDelta</code> gains the same treatment (<code>reason</code> normalized,
+  <code>raw_reason</code> verbatim) so streamed and completed runs can be branched on identically.</li>
+</ul>
+<p>This had to land before 1.0 rather than after: a field can be <em>widened</em> in a minor
+  release, but never narrowed, so <code>str | None</code> would have been permanent.</p>
+<p>An unrecognized provider value maps to <code>"unknown"</code> and keeps its raw string — it is
+  never an exception. Providers extend these enums without notice (Gemini alone has
+  added <code>MALFORMED_FUNCTION_CALL</code>, <code>BLOCKLIST</code>, <code>SPII</code>, and <code>IMAGE_SAFETY</code> since
+  launch), and a completion that already succeeded must not be turned into a crash by
+  a string actants has not seen before. <code>FinishReason</code> is an <strong>open</strong> set: new
+  canonical values may be added in a minor release, so give it a default branch.</p>
+<p>Migration: <code>result.finish_reason == "stop"</code> keeps working for OpenAI-family
+  providers and now <em>also</em> works for Anthropic, Gemini, and Ollama. Code matching a
+  provider-native spelling (<code>== "end_turn"</code>, <code>== "MAX_TOKENS"</code>) should either switch to
+  the canonical value or read <code>raw_finish_reason</code>. The field is no longer <code>None</code> when
+  absent — it is <code>"unknown"</code>.</p>
+<ul>
+<li><strong><code>SqliteVecCache.path</code> and <code>.embedder</code> are read-only properties.</strong> Both were plain
+  attributes, but both are snapshotted into the sqlite connection on first use, so
+  assigning them moved nothing while <code>describe()</code> and <code>repr()</code> went on reporting the
+  new value — the cache would claim to be a file it was not using. Swapping the
+  embedder was worse than a no-op: vectors from two embedders are not comparable, so
+  it would have compared a new model's vectors against an old model's index. Assigning
+  either now raises <code>AttributeError</code>. Construct a new cache instead.</li>
+</ul>
+<h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>A stability policy</strong> (<code>docs_site/reference/stability.md</code>, linked from the README)
+  states what the 1.0 guarantee covers: the public API is exactly <code>actants.__all__</code>,
+  what each semver level permits, which surfaces are provisional and why, what is
+  explicitly <em>not</em> promised (model output, costs for a given prompt, cache hit rates,
+  exception message wording), and the deprecation process — <code>DeprecationWarning</code> plus
+  at least two minor releases and six months before any removal, which only ever
+  happens in a major version.</p>
+</li>
+<li>
+<p><strong><code>max_repairs</code> counting is documented against <code>max_attempts</code> and <code>max_steps</code>.</strong> The
+  three were compared and the difference is deliberate, not an off-by-one:
+  <code>max_attempts</code> and <code>max_steps</code> bound the <strong>total</strong>, while <code>max_repairs</code> bounds the
+  <strong>extras</strong> — the initial completion always happens, plus at most <code>N</code> self-corrections
+  after it. A repair is not a retry; it sends a new, longer conversation containing the
+  model's bad output and the parser error. Naming it <code>max_attempts</code> would have implied
+  <code>1</code> allows one self-correction when it would in fact allow none. The <code>LLM</code> class
+  docstring now states all three conventions in one place, and tests pin the counts.</p>
+</li>
+</ul>
+<hr />
+<p>The remainder of this entry covers the correctness and API work done in the run-up to
+the freeze, all of it released here for the first time.</p>
+<h3 id="changed-breaking_1">Changed (breaking)<a class="headerlink" href="#changed-breaking_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>stream_events</code> is the single streaming primitive a provider implements.</strong>
   <code>LLM.stream()</code> filters <code>stream_events</code> rather than calling <code>provider.stream()</code>, so a
@@ -2319,7 +2461,7 @@ before the freeze rather than after.</p>
   re-exports the identical class objects, so existing imports and <code>except</code> clauses are
   unaffected.</li>
 </ul>
-<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Provider-specific parameters pass through and reach the cache key.</strong> <code>complete</code>,
   <code>stream</code>, and <code>stream_events</code> accept arbitrary keyword arguments — <code>seed</code>, <code>top_p</code>,
@@ -2410,7 +2552,7 @@ before the freeze rather than after.</p>
   <code>ImportError</code> from a circular import via <code>actants.llm.__init__</code>. The protocol module's
   imports are now annotation-only.</li>
 </ul>
-<h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h3>
+<h3 id="documentation_1">Documentation<a class="headerlink" href="#documentation_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>docs_site/</code> is now committed rather than gitignored, so the published documentation
   lives in the repository and is covered by CI. The docs-snippet suite checks every
@@ -2437,7 +2579,7 @@ before the freeze rather than after.</p>
   PyPI still carries 0.5.2. Install 0.5.3 from the GitHub release artifacts.</li>
 </ul>
 <h2 id="052-2026-05-03">[0.5.2] - 2026-05-03<a class="headerlink" href="#052-2026-05-03" title="Permanent link">&para;</a></h2>
-<h3 id="documentation_1">Documentation<a class="headerlink" href="#documentation_1" title="Permanent link">&para;</a></h3>
+<h3 id="documentation_2">Documentation<a class="headerlink" href="#documentation_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Rewrote README and several <code>docs_site/</code> pages (<code>index</code>, <code>differentiation</code>,
   <code>faq</code>, migration guides) in a neutral technical tone. Removed manifesto
@@ -2449,7 +2591,7 @@ before the freeze rather than after.</p>
 with documentation that included unverified comparison numbers (0.5.0) and
 manifesto-style framing (0.5.1). Use 0.5.2 instead.</p>
 <h2 id="051-2026-05-03-yanked">[0.5.1] - 2026-05-03 (yanked)<a class="headerlink" href="#051-2026-05-03-yanked" title="Permanent link">&para;</a></h2>
-<h3 id="documentation_2">Documentation<a class="headerlink" href="#documentation_2" title="Permanent link">&para;</a></h3>
+<h3 id="documentation_3">Documentation<a class="headerlink" href="#documentation_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Removed comparison-benchmark table and specific timing claims from README
   and docs that lacked verifiable measurement methodology.</li>
@@ -2502,7 +2644,7 @@ See 0.5.2.)</p>
 <li><strong><code>actants/__init__.py</code> is now PEP 562 lazy</strong> — module symbols load on first attribute access rather than at import time. Public API is unchanged.</li>
 <li><strong>CI gate</strong>: <code>tests/test_cold_import.py</code> enforces an upper bound on bare-import time so eager top-level imports fail CI.</li>
 </ul>
-<h3 id="documentation_3">Documentation<a class="headerlink" href="#documentation_3" title="Permanent link">&para;</a></h3>
+<h3 id="documentation_4">Documentation<a class="headerlink" href="#documentation_4" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>README rewritten</strong> — local-first quickstart and runnable examples without API keys.</li>
 <li><strong>mkdocs site</strong> under <code>docs_site/</code>: quickstart, concepts (Agent / LLM / Tools / Streaming / ReAct), MCP client+server, A2A client+server, cookbook (research-agent, mcp-tools, a2a-pair), migration guides (LangChain, CrewAI, Pydantic AI), reference (differentiation, benchmarks, OTel).</li>
@@ -2535,7 +2677,7 @@ See 0.5.2.)</p>
 <li><code>[all]</code> extra now includes <code>[cli]</code> deps.</li>
 </ul>
 <h2 id="030-unreleased">[0.3.0] - unreleased<a class="headerlink" href="#030-unreleased" title="Permanent link">&para;</a></h2>
-<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
+<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Streaming with tool calls.</strong> <code>provider.stream_events()</code> + <code>LLM.stream_events()</code> yield typed <code>TextDelta</code> / <code>ToolCallDelta</code> / <code>UsageDelta</code> / <code>FinishDelta</code> events. <code>LLM.run_agent_stream()</code> streams a full agent loop.</li>
 <li><strong>Partial-JSON streaming.</strong> <code>LLM.extract_stream(prompt, PydanticModel)</code> yields progressively-complete pydantic instances as JSON arrives. Forgiving parser tolerates truncated output.</li>
@@ -2550,7 +2692,7 @@ See 0.5.2.)</p>
 <li><code>BaseLLMProvider</code> gained <code>stream_events()</code> (default wraps <code>stream()</code>) and <code>supports_streaming_tools</code> flag.</li>
 </ul>
 <h2 id="020">[0.2.0]<a class="headerlink" href="#020" title="Permanent link">&para;</a></h2>
-<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
+<h3 id="added_3">Added<a class="headerlink" href="#added_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>LLM.run_agent()</code> — tool-calling agent loop across Ollama / OpenAI / Anthropic.</li>
 <li><code>LLM.extract()</code> — structured output into any pydantic model with self-repair.</li>
@@ -2571,7 +2713,7 @@ See 0.5.2.)</p>
 <li><code>BaseLLMProvider.complete</code> gained a <code>tools</code> parameter; providers declare <code>supports_tool_calls</code>.</li>
 </ul>
 <h2 id="010">[0.1.0]<a class="headerlink" href="#010" title="Permanent link">&para;</a></h2>
-<h3 id="added_3">Added<a class="headerlink" href="#added_3" title="Permanent link">&para;</a></h3>
+<h3 id="added_4">Added<a class="headerlink" href="#added_4" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Initial release</li>
 <li><code>OllamaProvider</code> with chat, streaming, and health check</li>

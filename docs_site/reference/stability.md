@@ -133,8 +133,11 @@ The policy is checked, not merely promised:
 
 - `actants.__all__` and its type-checker re-exports are pinned by tests, so a public name
   cannot be added or dropped unnoticed.
-- `mypy --strict` runs against the package's public entry point in CI, so the types
-  downstream consumers see are the types they actually get.
+- `mypy --strict` runs against the whole of `src/` in CI, not just the public entry
+  point, so the types downstream consumers see are the types they actually get. The one
+  exception is the `sqlite_vec` import in the semantic cache: that package ships no
+  `py.typed` marker and has no stub package, so its import alone is excused by a scoped
+  override in `pyproject.toml`. The module importing it is still fully checked.
 - Every code block in this documentation and in the README is executed as a test, so a
   documented call that stops working fails the build.
 - Provider mappings, cost attribution, and cache-key scoping each have dedicated

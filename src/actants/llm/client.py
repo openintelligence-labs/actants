@@ -4,7 +4,7 @@ import asyncio
 import contextlib
 import json
 import os
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from difflib import get_close_matches
 from functools import partial
 from typing import TYPE_CHECKING, Any, TypeVar
@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from actants.cache.protocol import CacheBackend
+from actants.cache.protocol import CacheBackend, RequestCacheBackend
 from actants.cache.request import CacheRequest
 from actants.cost.tracker import CostTracker
 from actants.llm.base import (
@@ -333,13 +333,17 @@ class LLM:
             tools=tools,
             extra=extra,
         )
-        request_cache = getattr(self.cache, "get_request", None) if self.cache is not None else None
+        # `self.cache` is narrowed directly rather than through a `caching` bool: mypy
+        # cannot carry a None-check stored in a variable, and routing the two backend
+        # protocols through `isinstance` (RequestCacheBackend is runtime_checkable)
+        # replaces a getattr probe that had to be silenced with two type: ignores.
         caching = self.cache is not None and use_cache and not tools
-        if caching:
-            if request_cache is not None:
-                cached = await self.cache.get_request(cache_request)  # type: ignore[union-attr]
+        if self.cache is not None and caching:
+            cached: CompletionResult | None
+            if isinstance(self.cache, RequestCacheBackend):
+                cached = await self.cache.get_request(cache_request)
             else:
-                cached = await self.cache.get(cache_request.key())  # type: ignore[union-attr]
+                cached = await self.cache.get(cache_request.key())
             if cached is not None:
                 return cached
 
@@ -357,11 +361,11 @@ class LLM:
 
         if self.cost_tracker is not None:
             self.cost_tracker.record(result, tag=tag)
-        if caching:
-            if request_cache is not None:
-                await self.cache.set_request(cache_request, result)  # type: ignore[union-attr]
+        if self.cache is not None and caching:
+            if isinstance(self.cache, RequestCacheBackend):
+                await self.cache.set_request(cache_request, result)
             else:
-                await self.cache.set(cache_request.key(), result)  # type: ignore[union-attr]
+                await self.cache.set(cache_request.key(), result)
         return result
 
     async def run_agent(
@@ -685,11 +689,13 @@ class LLM:
                         yield event
                     break
                 except Exception as exc:
+                    # Narrowed with an `is None` guard rather than folded into a
+                    # `retryable` bool: mypy cannot carry a None-check through a
+                    # variable, so the delay_for call below was unchecked.
+                    if policy is None:
+                        raise
                     retryable = (
-                        policy is not None
-                        and emitted == 0
-                        and attempt < attempts
-                        and isinstance(exc, policy.retry_on)
+                        emitted == 0 and attempt < attempts and isinstance(exc, policy.retry_on)
                     )
                     if not retryable:
                         raise
@@ -793,8 +799,14 @@ class LLM:
             streaming=streaming,
         )
 
-    async def _run(self, coro_fn, *, op: str, model: str) -> CompletionResult:
-        call = coro_fn
+    async def _run(
+        self,
+        coro_fn: Callable[[], Awaitable[CompletionResult]],
+        *,
+        op: str,
+        model: str,
+    ) -> CompletionResult:
+        call: Callable[[], Awaitable[CompletionResult]] = coro_fn
         if self.retry_policy is not None:
             call = partial(retry_async, coro_fn, self.retry_policy)
 

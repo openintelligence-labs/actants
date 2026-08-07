@@ -141,6 +141,8 @@ nav:
   - API reference:
       - Overview: api/index.md
       - Agent: api/agent.md
+      - Durability: api/durability.md
+      - StateGraph: api/graph.md
       - LLM: api/llm.md
       - Tools: api/tools.md
       - Errors: api/errors.md

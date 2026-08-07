@@ -199,7 +199,7 @@ class ToolRegistry:
         The tool name and arguments come from the model, so a hallucinated name or a
         bogus argument list is normal model behaviour — not a programming error. Both
         are reported back as ``ok=False`` so the agent loop can feed the error to the
-        model and let it correct itself. Use :meth:`get` when you want an unknown tool
+        model and let it correct itself. Use `get` when you want an unknown tool
         to raise.
         """
         try:

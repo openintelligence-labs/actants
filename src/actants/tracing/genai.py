@@ -59,7 +59,7 @@ OTEL_GENAI_PROVIDERS: frozenset[str] = frozenset(
     }
 )
 
-#: Deprecated alias for :data:`OTEL_GENAI_PROVIDERS`. Kept so the old name keeps
+#: Deprecated alias for `OTEL_GENAI_PROVIDERS`. Kept so the old name keeps
 #: resolving; prefer the new one, which cannot be confused with
 #: ``actants.llm.client.KNOWN_PROVIDERS``.
 KNOWN_PROVIDERS: frozenset[str] = OTEL_GENAI_PROVIDERS

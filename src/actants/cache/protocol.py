@@ -15,7 +15,7 @@ class CacheBackend(Protocol):
     """Key-value cache keyed by an opaque string.
 
     Implement this for exact-match caches. The key is produced by
-    :meth:`CacheRequest.key`, so it already covers every request parameter that changes
+    `CacheRequest.key`, so it already covers every request parameter that changes
     the answer — a backend must never derive its own key from a subset of the request.
     """
 
@@ -29,12 +29,12 @@ class RequestCacheBackend(Protocol):
     """Cache that decides hits from the whole request rather than a precomputed key.
 
     Semantic caches need this: they match message content by embedding distance, so they
-    cannot be handed a hash. They receive the full :class:`CacheRequest` and are
+    cannot be handed a hash. They receive the full `CacheRequest` and are
     responsible for honouring *every* field on it — a backend that ignores ``max_tokens``
     or ``tools`` returns answers generated under different constraints.
 
-    :class:`~actants.llm.client.LLM` prefers this protocol when a backend implements it,
-    and falls back to :class:`CacheBackend`.
+    `LLM` prefers this protocol when a backend implements it,
+    and falls back to `CacheBackend`.
     """
 
     async def get_request(self, request: CacheRequest) -> CompletionResult | None: ...

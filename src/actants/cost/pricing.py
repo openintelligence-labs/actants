@@ -5,8 +5,8 @@ is a published list price in USD per 1M tokens, ``(input, output)``. An entry th
 cannot be verified is not added: a wrong price in a cost-tracking SDK is worse than
 no price, because a wrong number is still believed.
 
-The same rule shapes :func:`lookup_price`. A model that is not in the table has an
-*unknown* cost, not a zero cost — see :func:`estimate_cost` for how that is surfaced.
+The same rule shapes `lookup_price`. A model that is not in the table has an
+*unknown* cost, not a zero cost — see `estimate_cost` for how that is surfaced.
 """
 
 from __future__ import annotations
@@ -112,7 +112,7 @@ def estimate_cost_or_none(
 ) -> float | None:
     """Estimate USD cost, or ``None`` when the model's price is unknown.
 
-    Prefer this over :func:`estimate_cost` anywhere the difference between "free" and
+    Prefer this over `estimate_cost` anywhere the difference between "free" and
     "we don't know" is visible to a human — a spend report that prints ``$0.00`` for an
     unpriced model reads as "this was free", which is the failure this function exists
     to prevent.
@@ -133,11 +133,11 @@ def estimate_cost(provider: str, model: str, prompt_tokens: int, completion_toke
     """Estimate USD cost for a completion, returning ``0.0`` when the price is unknown.
 
     ``0.0`` here is a *floor*, not a claim that the call was free. The field it feeds
-    (:attr:`~actants.llm.base.CompletionResult.cost_usd`) is a non-optional float, so
+    (`cost_usd`) is a non-optional float, so
     an unpriced model has to be some number; this keeps totals from being inflated by
     a guess. Callers that need to tell "free" from "unknown" apart must use
-    :func:`estimate_cost_or_none` or :func:`is_priced` — and
-    :attr:`~actants.cost.tracker.CostTracker.untracked_models` records every model
+    `estimate_cost_or_none` or `is_priced` — and
+    `untracked_models` records every model
     that took this path, so an unknown model is visible in the report instead of
     disappearing into a $0.00 line.
     """

@@ -21,7 +21,7 @@ class CostTracker:
     by_tag: dict[str, float] = field(default_factory=lambda: defaultdict(float))
     #: Models recorded that actants has no published price for, as ``"provider/model"``.
     #: Their spend is counted as 0.0 in the totals above, so a non-empty set means the
-    #: totals are a *lower bound* — not a complete bill. Reported by :meth:`snapshot`
+    #: totals are a *lower bound* — not a complete bill. Reported by `snapshot`
     #: as ``untracked_models`` so an unpriced model is visible rather than silently
     #: contributing $0.00 to a total that looks authoritative.
     untracked_models: set[str] = field(default_factory=set)
@@ -40,7 +40,7 @@ class CostTracker:
     def has_untracked_cost(self) -> bool:
         """True when at least one recorded call had no known price.
 
-        When this is true, :attr:`total_usd` understates real spend. Surface it next to
+        When this is true, `total_usd` understates real spend. Surface it next to
         the total wherever the total is shown to a person.
         """
         return bool(self.untracked_models)

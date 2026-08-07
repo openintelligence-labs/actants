@@ -22,8 +22,8 @@ def make_key(
 ) -> str:
     """Hash every request parameter that can change the answer.
 
-    Thin wrapper over :meth:`CacheRequest.key`; kept because it is the documented way to
-    build a key by hand. New code should build a :class:`CacheRequest` and call
+    Thin wrapper over `CacheRequest.key`; kept because it is the documented way to
+    build a key by hand. New code should build a `CacheRequest` and call
     ``.key()`` on it, which is also what the cache protocol passes to backends.
     """
     return CacheRequest(
@@ -42,7 +42,7 @@ class InMemoryCache:
 
     def __init__(self, *, default_ttl: int | None = 3600) -> None:
         self._data: dict[str, tuple[CompletionResult, float | None]] = {}
-        #: Public to match :class:`~actants.cache.semantic.SqliteVecCache`, the other
+        #: Public to match `SqliteVecCache`, the other
         #: reference backend — third parties copy whichever they read first, so the two
         #: must agree.
         self.default_ttl = default_ttl

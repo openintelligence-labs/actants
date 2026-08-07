@@ -39,14 +39,14 @@ class CompletionResult(BaseModel):
     cost_usd: float = 0.0
     latency_ms: float = 0.0
     #: Why generation stopped, normalized across providers — see
-    #: :data:`~actants.llm.finish_reason.FinishReason`. Safe to branch on: every provider
+    #: `FinishReason`. Safe to branch on: every provider
     #: maps onto the same six values, and an unrecognized or absent provider value
     #: becomes ``"unknown"`` rather than leaking through or raising.
     finish_reason: FinishReason = "unknown"
     #: The provider's own stop-reason string, exactly as it came off the wire
     #: (``"end_turn"``, ``"MAX_TOKENS"``, ``"tool_calls"``, ...), or ``None`` if the
     #: provider reported none. Nothing is lost by normalization; use this for logging or
-    #: a provider-specific workaround, and :attr:`finish_reason` for control flow.
+    #: a provider-specific workaround, and `finish_reason` for control flow.
     raw_finish_reason: str | None = None
     tool_calls: list[ToolCall] = Field(default_factory=list)
 
@@ -82,17 +82,17 @@ class FinishDelta(BaseModel):
     """The terminal event of a stream, carrying why generation stopped.
 
     ``reason`` is normalized the same way as
-    :attr:`CompletionResult.finish_reason`, so a streamed run and a completed one can be
+    `CompletionResult.finish_reason`, so a streamed run and a completed one can be
     branched on identically; ``raw_reason`` preserves the provider's own string.
 
     A provider may construct this with either — ``FinishDelta(reason="stop")`` in a
-    hand-written provider, or via :meth:`from_provider` to normalize a raw wire value.
+    hand-written provider, or via `from_provider` to normalize a raw wire value.
     """
 
     type: Literal["finish"] = "finish"
     reason: FinishReason = "unknown"
     #: The provider's own stop-reason string, verbatim. See
-    #: :attr:`CompletionResult.raw_finish_reason`.
+    #: `CompletionResult.raw_finish_reason`.
     raw_reason: str | None = None
 
     @classmethod
@@ -113,15 +113,15 @@ StreamEvent = TextDelta | ToolCallDelta | UsageDelta | FinishDelta
 class BaseLLMProvider(ABC):
     """The contract every LLM provider implements.
 
-    To write a provider, implement exactly three methods: :meth:`complete`,
-    :meth:`stream_events`, and :meth:`health`. That is the whole surface.
+    To write a provider, implement exactly three methods: `complete`,
+    `stream_events`, and `health`. That is the whole surface.
 
     **Streaming has one primitive: ``stream_events``.** It yields typed
-    :data:`StreamEvent` objects, which is a superset of what plain text streaming can
+    `StreamEvent` objects, which is a superset of what plain text streaming can
     express — text deltas, tool calls, token usage, and the finish reason.
-    :meth:`stream` is a *provided helper* that filters those events down to text; it is
+    `stream` is a *provided helper* that filters those events down to text; it is
     not an extension point, and overriding it has no effect on what
-    :meth:`~actants.llm.client.LLM.stream` yields, because the client also goes through
+    `stream` yields, because the client also goes through
     ``stream_events``. Implement ``stream_events`` and both work.
 
     Capability flags are declared as plain class attributes::
@@ -133,7 +133,7 @@ class BaseLLMProvider(ABC):
 
     They may also be set per instance (a provider that learns what it can do from a
     runtime handshake), or replaced by a ``property`` in a subclass that derives them
-    from something else — see :class:`~actants.policies.fallback.FallbackProvider`,
+    from something else — see `FallbackProvider`,
     which computes both from the providers in its chain on every access.
 
     Example::
@@ -159,12 +159,12 @@ class BaseLLMProvider(ABC):
     name: str
 
     #: Whether this provider can be given tool definitions.
-    #: :class:`~actants.llm.client.LLM` refuses to pass tools to a provider that
+    #: `LLM` refuses to pass tools to a provider that
     #: declares ``False``, because the specs would otherwise be dropped on the way to
     #: the wire and the model would answer as if no tools existed.
     supports_tool_calls: bool = False
 
-    #: Whether this provider emits :class:`ToolCallDelta` events while streaming.
+    #: Whether this provider emits `ToolCallDelta` events while streaming.
     supports_streaming_tools: bool = False
 
     @abstractmethod
@@ -193,14 +193,14 @@ class BaseLLMProvider(ABC):
         """Stream typed events: text deltas, tool calls, usage, and finish.
 
         **This is the streaming primitive.** Override it as an ``async def`` generator
-        that yields :class:`TextDelta` for content, :class:`ToolCallDelta` for each tool
-        call, :class:`UsageDelta` once token counts are known, and :class:`FinishDelta`
+        that yields `TextDelta` for content, `ToolCallDelta` for each tool
+        call, `UsageDelta` once token counts are known, and `FinishDelta`
         last. A provider that cannot stream tool calls simply never yields a
         ``ToolCallDelta`` and leaves ``supports_streaming_tools`` at ``False``.
 
         Not abstract, so a completion-only provider stays usable for
-        :meth:`~actants.llm.client.LLM.complete` without writing a streaming stub. The
-        default raises :class:`NotImplementedError` when something actually tries to
+        `complete` without writing a streaming stub. The
+        default raises `NotImplementedError` when something actually tries to
         stream.
         """
         raise NotImplementedError(
@@ -220,7 +220,7 @@ class BaseLLMProvider(ABC):
         max_tokens: int | None = None,
         **kwargs: object,
     ) -> AsyncIterator[str]:
-        """Yield just the text content of :meth:`stream_events`.
+        """Yield just the text content of `stream_events`.
 
         Provided by this base class — **do not override it.** Every actants code path
         that streams goes through ``stream_events``, so an override here would be

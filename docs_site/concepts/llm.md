@@ -4,6 +4,15 @@
 Gemini, and every major OpenAI-compatible host — Groq, Mistral, xAI, DeepSeek,
 Together, Fireworks, OpenRouter, Cerebras, and Perplexity.
 
+!!! note "Not all 13 providers are live-verified"
+
+    Supporting 13 providers is a claim about code paths, not about how many have been
+    run against a live endpoint. Ollama and the shared OpenAI-compatible request path
+    are live-verified; the rest are covered by mock-based unit tests whose wire formats
+    come from provider documentation. See
+    [Provider verification status](https://github.com/openintelligence-labs/actants/blob/main/docs/PROVIDER_VERIFICATION.md)
+    for what was measured, and `python -m verification.run` to reproduce it.
+
 ## Default: Ollama, no config
 
 ```python
@@ -80,6 +89,25 @@ class Person(BaseModel):
 person = await llm.extract("John is 30 years old.", Person)
 print(person.name, person.age)
 ```
+
+Where the provider supports provider-native constrained decoding, the schema is sent on
+the wire and schema-invalid output is impossible. Otherwise the schema is described in a
+system prompt and a failed parse is repaired. `llm.last_schema_plan()` reports which path
+ran.
+
+Each native mode is a different wire format, and they have not all been confirmed
+against a live endpoint:
+
+| Mode | Providers | Live-verified? |
+|---|---|---|
+| `ollama` (`format`) | Ollama | Yes |
+| `openai_json_schema` (`response_format`) | OpenAI, Mistral, xAI, Together, Fireworks, OpenRouter, Cerebras, Perplexity | Request path yes, individual hosts no |
+| `anthropic_tool` (forced tool call) | Anthropic | **No** |
+| `gemini` (`responseSchema`) | Gemini | **No** |
+| `none` (prompt path) | Groq, DeepSeek | n/a |
+
+The two unverified modes are the most intricate of the four. See
+[Provider verification status](https://github.com/openintelligence-labs/actants/blob/main/docs/PROVIDER_VERIFICATION.md).
 
 ## OpenAI-compatible providers
 

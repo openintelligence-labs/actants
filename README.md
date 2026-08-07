@@ -142,21 +142,55 @@ Agent(llm=LLM(provider="xai", model="grok-4"))  # XAI_API_KEY
 Agent(llm=LLM(provider="deepseek", model="deepseek-chat"))  # DEEPSEEK_API_KEY
 ```
 
-| Provider | API key env var | Notes |
-|---|---|---|
-| `ollama` | *(none)* | Default. Local, no key. |
-| `openai` | `OPENAI_API_KEY` | |
-| `anthropic` | `ANTHROPIC_API_KEY` | |
-| `gemini` | `GEMINI_API_KEY` | |
-| `groq` | `GROQ_API_KEY` | OpenAI-compatible |
-| `mistral` | `MISTRAL_API_KEY` | OpenAI-compatible |
-| `xai` | `XAI_API_KEY` | OpenAI-compatible |
-| `deepseek` | `DEEPSEEK_API_KEY` | OpenAI-compatible |
-| `together` | `TOGETHER_API_KEY` | OpenAI-compatible |
-| `fireworks` | `FIREWORKS_API_KEY` | OpenAI-compatible |
-| `openrouter` | `OPENROUTER_API_KEY` | OpenAI-compatible |
-| `cerebras` | `CEREBRAS_API_KEY` | OpenAI-compatible |
-| `perplexity` | `PERPLEXITY_API_KEY` | OpenAI-compatible |
+| Provider | API key env var | Notes | Verification |
+|---|---|---|---|
+| `ollama` | *(none)* | Default. Local, no key. | Live-verified |
+| `openai` | `OPENAI_API_KEY` | | Unit-tested only |
+| `anthropic` | `ANTHROPIC_API_KEY` | | Unit-tested only |
+| `gemini` | `GEMINI_API_KEY` | | Unit-tested only |
+| `groq` | `GROQ_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `mistral` | `MISTRAL_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `xai` | `XAI_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `deepseek` | `DEEPSEEK_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `together` | `TOGETHER_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `fireworks` | `FIREWORKS_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `openrouter` | `OPENROUTER_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `cerebras` | `CEREBRAS_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `perplexity` | `PERPLEXITY_API_KEY` | OpenAI-compatible | Unit-tested only |
+
+### What "verified" means here
+
+actants supports 13 providers. That is a claim about code paths, not about how many
+have been pointed at a live endpoint — so the table above says which is which, and
+this section says exactly what was measured.
+
+**Live-verified** means every one of these ran green against a real endpoint:
+non-streaming completion, streaming (with usage reported at stream end and the
+concatenated deltas matching the completed content), a tool call round-trip, a nested
+structured-output extraction on the provider's *native* schema path, and a cost figure
+that matches the provider's own reported token usage times the published price in
+`actants.cost.PRICING`.
+
+**Unit-tested only** means the provider is covered by the test suite against mocked
+HTTP responses. Those mocks encode what actants *believes* the provider's wire format
+is. That belief is derived from provider documentation and has not been confirmed
+against the live API — so a provider marked this way may work perfectly, or may fail
+on a detail the documentation did not describe. It is not a claim that it is broken;
+it is a refusal to claim that it works.
+
+Reproduce or extend the matrix — providers with no key present skip rather than fail,
+so it is useful with a single key:
+
+```bash
+python -m verification.run                    # free providers only, no paid calls
+python -m verification.run --yes              # every provider with a key present
+python -m verification.run --only openai --yes
+```
+
+Paid APIs are never called without `--yes`, and the estimated spend is printed first.
+See [`verification/`](verification/) for the harness and
+[`docs/PROVIDER_VERIFICATION.md`](docs/PROVIDER_VERIFICATION.md) for the last recorded
+run.
 
 Cost tracking covers the models actants has verified prices for. A model with no
 published price in `actants.cost.PRICING` is reported as *unknown*, not as `$0.00` —

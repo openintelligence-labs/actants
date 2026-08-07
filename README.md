@@ -5,8 +5,9 @@
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
 
 A Python framework for building LLM agents. Defaults to Ollama for local
-development; integrates OpenAI, Anthropic, Gemini, Groq, and Mistral via
-opt-in extras. Includes MCP (Model Context Protocol) and A2A (Agent2Agent
+development; integrates OpenAI, Anthropic, Gemini, and every major
+OpenAI-compatible host (Groq, Mistral, xAI, DeepSeek, Together, Fireworks,
+OpenRouter, Cerebras, Perplexity) via opt-in extras. Includes MCP (Model Context Protocol) and A2A (Agent2Agent
 Protocol) clients and servers, an embeddings client, SQLite-based storage
 helpers, OpenTelemetry GenAI tracing, and a Click + Rich CLI scaffold.
 
@@ -25,6 +26,13 @@ Optional extras:
 | `gemini` | Google Gemini provider |
 | `groq` | Groq provider |
 | `mistral` | Mistral provider |
+| `xai` | xAI / Grok provider |
+| `deepseek` | DeepSeek provider |
+| `together` | Together AI provider |
+| `fireworks` | Fireworks AI provider |
+| `openrouter` | OpenRouter provider |
+| `cerebras` | Cerebras provider |
+| `perplexity` | Perplexity provider |
 | `mcp` | MCP client + server |
 | `a2a` | A2A client + server |
 | `cache` | sqlite-vec semantic cache |
@@ -130,7 +138,30 @@ Agent(
 Agent(
     llm=LLM(settings=LLMSettings(provider="groq", model="llama-3.3-70b-versatile"))
 )  # GROQ_API_KEY
+Agent(llm=LLM(provider="xai", model="grok-4"))  # XAI_API_KEY
+Agent(llm=LLM(provider="deepseek", model="deepseek-chat"))  # DEEPSEEK_API_KEY
 ```
+
+| Provider | API key env var | Notes |
+|---|---|---|
+| `ollama` | *(none)* | Default. Local, no key. |
+| `openai` | `OPENAI_API_KEY` | |
+| `anthropic` | `ANTHROPIC_API_KEY` | |
+| `gemini` | `GEMINI_API_KEY` | |
+| `groq` | `GROQ_API_KEY` | OpenAI-compatible |
+| `mistral` | `MISTRAL_API_KEY` | OpenAI-compatible |
+| `xai` | `XAI_API_KEY` | OpenAI-compatible |
+| `deepseek` | `DEEPSEEK_API_KEY` | OpenAI-compatible |
+| `together` | `TOGETHER_API_KEY` | OpenAI-compatible |
+| `fireworks` | `FIREWORKS_API_KEY` | OpenAI-compatible |
+| `openrouter` | `OPENROUTER_API_KEY` | OpenAI-compatible |
+| `cerebras` | `CEREBRAS_API_KEY` | OpenAI-compatible |
+| `perplexity` | `PERPLEXITY_API_KEY` | OpenAI-compatible |
+
+Cost tracking covers the models actants has verified prices for. A model with no
+published price in `actants.cost.PRICING` is reported as *unknown*, not as `$0.00` —
+`CostTracker.untracked_models` lists them, so a total that is really a lower bound
+says so rather than looking like a free run.
 
 Provider and model can also be set via `ACTANTS_PROVIDER` / `ACTANTS_MODEL`
 environment variables, or by passing a provider instance as the first

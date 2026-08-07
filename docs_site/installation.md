@@ -29,6 +29,13 @@ do not pay for themselves at import time.
 | `gemini` | Google Gemini provider (uses bundled httpx) | `pip install 'actants[gemini]'` |
 | `groq` | Groq provider (OpenAI-compatible) | `pip install 'actants[groq]'` |
 | `mistral` | Mistral provider (OpenAI-compatible) | `pip install 'actants[mistral]'` |
+| `xai` | xAI / Grok provider (OpenAI-compatible) | `pip install 'actants[xai]'` |
+| `deepseek` | DeepSeek provider (OpenAI-compatible) | `pip install 'actants[deepseek]'` |
+| `together` | Together AI provider (OpenAI-compatible) | `pip install 'actants[together]'` |
+| `fireworks` | Fireworks AI provider (OpenAI-compatible) | `pip install 'actants[fireworks]'` |
+| `openrouter` | OpenRouter provider (OpenAI-compatible) | `pip install 'actants[openrouter]'` |
+| `cerebras` | Cerebras provider (OpenAI-compatible) | `pip install 'actants[cerebras]'` |
+| `perplexity` | Perplexity provider (OpenAI-compatible) | `pip install 'actants[perplexity]'` |
 | `cache` | `SqliteVecCache` semantic cache (sqlite-vec) | `pip install 'actants[cache]'` |
 | `cli` | Click + Rich CLI helpers | `pip install 'actants[cli]'` |
 | `mcp` | MCP client + server (official `mcp` SDK) | `pip install 'actants[mcp]'` |

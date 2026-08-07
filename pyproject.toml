@@ -47,8 +47,18 @@ dependencies = [
 openai = ["openai>=1.30"]
 anthropic = ["anthropic>=0.30"]
 gemini = []  # Uses httpx, already a core dep
-groq = ["openai>=1.30"]  # Groq exposes an OpenAI-compatible API
-mistral = ["openai>=1.30"]  # Mistral exposes an OpenAI-compatible API
+# Every provider below exposes an OpenAI-compatible API, so they all resolve to the
+# same dependency. They are named separately so `pip install 'actants[deepseek]'` —
+# which is what the missing-extra error tells the user to run — actually works.
+groq = ["openai>=1.30"]
+mistral = ["openai>=1.30"]
+xai = ["openai>=1.30"]
+deepseek = ["openai>=1.30"]
+together = ["openai>=1.30"]
+fireworks = ["openai>=1.30"]
+openrouter = ["openai>=1.30"]
+cerebras = ["openai>=1.30"]
+perplexity = ["openai>=1.30"]
 cache = ["sqlite-vec>=0.1.0"]
 cli = ["click>=8.1", "rich>=13.7"]
 # mcp 2.0.0 removed mcp.server.fastmcp and mcp.shared.memory helpers; pin <2

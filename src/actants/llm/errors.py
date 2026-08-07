@@ -54,7 +54,21 @@ __all__ = [
 #: does, so this is offered as the fix when a *custom* provider does not. Kept here
 #: rather than imported from the client to avoid a cycle (``llm.client`` imports this
 #: module).
-_TOOL_CAPABLE_PROVIDERS = ("ollama", "openai", "anthropic", "gemini", "groq", "mistral")
+_TOOL_CAPABLE_PROVIDERS = (
+    "ollama",
+    "openai",
+    "anthropic",
+    "gemini",
+    "groq",
+    "mistral",
+    "xai",
+    "deepseek",
+    "together",
+    "fireworks",
+    "openrouter",
+    "cerebras",
+    "perplexity",
+)
 
 
 def tool_calls_not_supported(

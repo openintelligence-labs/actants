@@ -56,6 +56,11 @@ class LLMSettings(BaseSettings):
 
 
 #: provider name -> (env var holding its API key, extra that installs it)
+#:
+#: Everything from ``groq`` down speaks the OpenAI wire format and is served by
+#: :mod:`actants.llm.openai_compatible`, so adding one is a row here plus a row there.
+#: Each has its own extra in pyproject — all aliases for ``openai``, the SDK they
+#: actually need — so the "install this extra" error can name what the user expects.
 _PROVIDER_REQUIREMENTS: dict[str, tuple[str | None, str]] = {
     "ollama": (None, "ollama"),
     "openai": ("OPENAI_API_KEY", "openai"),
@@ -63,6 +68,13 @@ _PROVIDER_REQUIREMENTS: dict[str, tuple[str | None, str]] = {
     "gemini": ("GEMINI_API_KEY", "gemini"),
     "groq": ("GROQ_API_KEY", "groq"),
     "mistral": ("MISTRAL_API_KEY", "mistral"),
+    "xai": ("XAI_API_KEY", "xai"),
+    "deepseek": ("DEEPSEEK_API_KEY", "deepseek"),
+    "together": ("TOGETHER_API_KEY", "together"),
+    "fireworks": ("FIREWORKS_API_KEY", "fireworks"),
+    "openrouter": ("OPENROUTER_API_KEY", "openrouter"),
+    "cerebras": ("CEREBRAS_API_KEY", "cerebras"),
+    "perplexity": ("PERPLEXITY_API_KEY", "perplexity"),
 }
 
 KNOWN_PROVIDERS: tuple[str, ...] = tuple(_PROVIDER_REQUIREMENTS)
@@ -112,13 +124,24 @@ def _make_provider(settings: LLMSettings) -> BaseLLMProvider:
             from actants.llm.gemini_provider import GeminiProvider
 
             return GeminiProvider(api_key=api_key)
-        if provider == "groq":
-            from actants.llm.groq_provider import GroqProvider
+        # Everything else is OpenAI-compatible: same request path, different base URL.
+        # Dispatching through the table rather than falling off the end of an if-chain
+        # means a provider added to _PROVIDER_REQUIREMENTS but not to the compatible
+        # table raises here, instead of being silently built as some other provider —
+        # which is what the old trailing `return MistralProvider(...)` would have done.
+        from actants.llm.openai_compatible import (
+            OPENAI_COMPATIBLE_PROVIDERS,
+            openai_compatible_provider,
+        )
 
-            return GroqProvider(api_key=api_key)
-        from actants.llm.mistral_provider import MistralProvider
-
-        return MistralProvider(api_key=api_key)
+        entry = OPENAI_COMPATIBLE_PROVIDERS.get(provider)
+        if entry is None:  # pragma: no cover - a test asserts the two tables agree
+            raise UnknownProviderError(
+                f"Provider {provider!r} is registered but has no constructor. "
+                "This is an actants bug: add it to OPENAI_COMPATIBLE_PROVIDERS, or "
+                "give it its own branch in _make_provider."
+            )
+        return openai_compatible_provider(provider, *entry)(api_key=api_key)
     except ImportError as exc:
         raise ProviderNotInstalledError(
             f"Provider {provider!r} needs an optional dependency that is not installed. "

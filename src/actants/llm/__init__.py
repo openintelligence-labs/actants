@@ -37,6 +37,14 @@ _LAZY_PROVIDERS: dict[str, str] = {
     "GeminiProvider": "actants.llm.gemini_provider",
     "GroqProvider": "actants.llm.groq_provider",
     "MistralProvider": "actants.llm.mistral_provider",
+    # OpenAI-compatible hosts: one shared module, one class each.
+    "XAIProvider": "actants.llm.openai_compatible",
+    "DeepSeekProvider": "actants.llm.openai_compatible",
+    "TogetherProvider": "actants.llm.openai_compatible",
+    "FireworksProvider": "actants.llm.openai_compatible",
+    "OpenRouterProvider": "actants.llm.openai_compatible",
+    "CerebrasProvider": "actants.llm.openai_compatible",
+    "PerplexityProvider": "actants.llm.openai_compatible",
 }
 
 __all__ = [
@@ -44,15 +52,22 @@ __all__ = [
     "LLM",
     "AnthropicProvider",
     "BaseLLMProvider",
+    "CerebrasProvider",
     "ChatMessage",
     "CompletionResult",
+    "DeepSeekProvider",
     "FinishDelta",
+    "FireworksProvider",
     "GeminiProvider",
     "GroqProvider",
     "LLMSettings",
     "MistralProvider",
     "OllamaProvider",
     "OpenAIProvider",
+    "OpenRouterProvider",
+    "PerplexityProvider",
+    "TogetherProvider",
+    "XAIProvider",
     "Role",
     "StreamEvent",
     "TextDelta",
@@ -86,4 +101,11 @@ if TYPE_CHECKING:
     from actants.llm.gemini_provider import GeminiProvider as GeminiProvider
     from actants.llm.groq_provider import GroqProvider as GroqProvider
     from actants.llm.mistral_provider import MistralProvider as MistralProvider
+    from actants.llm.openai_compatible import CerebrasProvider as CerebrasProvider
+    from actants.llm.openai_compatible import DeepSeekProvider as DeepSeekProvider
+    from actants.llm.openai_compatible import FireworksProvider as FireworksProvider
+    from actants.llm.openai_compatible import OpenRouterProvider as OpenRouterProvider
+    from actants.llm.openai_compatible import PerplexityProvider as PerplexityProvider
+    from actants.llm.openai_compatible import TogetherProvider as TogetherProvider
+    from actants.llm.openai_compatible import XAIProvider as XAIProvider
     from actants.llm.openai_provider import OpenAIProvider as OpenAIProvider

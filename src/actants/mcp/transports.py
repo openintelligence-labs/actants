@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import contextlib
+from collections.abc import AsyncIterator, Mapping
 from contextlib import asynccontextmanager
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from actants.errors import ActantsError
+
+if TYPE_CHECKING:
+    from mcp import ClientSession
 
 
 class MCPConnectionError(ActantsError, RuntimeError):
@@ -19,8 +23,12 @@ def _describe(exc: BaseException) -> str:
 
 
 @asynccontextmanager
-async def open_session(config: dict[str, Any]):
+async def open_session(config: Mapping[str, Any]) -> AsyncIterator[ClientSession]:
     """Open an MCP ClientSession for one server config dict.
+
+    Takes a read-only `Mapping` rather than `dict`: the config is only ever read here,
+    and `dict` is invariant, so a `MCPServerConfig` TypedDict -- which is what
+    `MCPClient` accepts and passes straight through -- is not assignable to it.
 
     Config shape mirrors Claude Desktop's ``mcpServers`` entries:
       - stdio: ``{"command": "uvx", "args": [...], "env": {...}}``

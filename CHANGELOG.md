@@ -2,6 +2,42 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Durable execution for `Agent.run()`.** `Agent(checkpointer=...)` plus
+  `run(prompt, thread_id=...)` persists the run's state after every LLM completion and
+  after *each individual tool result*; `agent.resume(thread_id)` continues it.
+
+  The guarantee is deliberately narrow and stated rather than implied: resume is
+  **at-most-once for every tool call whose result was recorded**, and **at-least-once for
+  the single call that was in flight when the process died**. That one call is the
+  irreducible ambiguity — the process died before the tool could report — so actants
+  surfaces it instead of guessing. Tools registered `idempotent=False` are never
+  auto-replayed; they raise `UnresolvedToolCallError`, and the caller resumes with
+  `resolve="retry"` or `resolve="skip"`.
+
+- **Human-in-the-loop.** `Agent(interrupt_before=["send_email"])` pauses the run before
+  those tools rather than dispatching them, returning an `AgentResult` with
+  `.interrupted` and `.pending_call`. `resume(thread_id, approve=True)` dispatches it;
+  `approve=False` appends a tool result recording the rejection, so the model responds to
+  the refusal instead of the run dying. The pending call lives in the checkpoint, so this
+  works across processes.
+
+- `Checkpointer` protocol with `InMemoryCheckpointer` and `SqliteCheckpointer`
+  implementations, plus `Checkpoint`, `StepRecord`, `CheckpointStatus`, and
+  `ResumeResolution`.
+
+- `Tool(idempotent=...)` / `register_function(..., idempotent=...)`. Defaults to `True`
+  because most tools are reads — which is the wrong default for anything that writes, and
+  the docs say so.
+
+- `CheckpointError`, `CheckpointSchemaMismatch`, `UnknownThreadError`, and
+  `UnresolvedToolCallError`, all under `ActantsError`.
+
+Durability is opt-in per run: an `Agent` built without a `checkpointer`, or a `run()`
+called without a `thread_id`, behaves exactly as it did before and touches no storage.
+`stream()` is not yet checkpointed.
+
 ## [1.0.0] - 2026-08-06
 
 **The API is now stable.** See the

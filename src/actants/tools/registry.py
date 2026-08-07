@@ -134,12 +134,17 @@ class ToolRegistry:
         *,
         input_schema: dict[str, Any] | None = None,
         requires_permission: bool = False,
+        idempotent: bool = True,
     ) -> Tool:
         """Register an async function as a tool.
 
         When ``input_schema`` is omitted it is derived from the handler's type
         annotations. Every parameter must be annotated, otherwise the model would
         receive a tool with no visible arguments.
+
+        Pass ``idempotent=False`` for anything with an externally-visible side effect —
+        see :attr:`Tool.idempotent <actants.tools.base.Tool.idempotent>`, which the
+        default of ``True`` is wrong for.
         """
         if not callable(handler):
             raise TypeError(
@@ -170,6 +175,7 @@ class ToolRegistry:
             handler=handler,
             input_schema=input_schema,
             requires_permission=requires_permission,
+            idempotent=idempotent,
         )
         self.register(tool)
         return tool

@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from actants.agents.agent import Agent, AgentEvent, AgentResult, AgentStep
+from actants.agents.agent import Agent, AgentEvent, AgentResult, AgentStep, ResumeResolution
+from actants.agents.checkpoint import (
+    Checkpoint,
+    Checkpointer,
+    CheckpointStatus,
+    InMemoryCheckpointer,
+    SqliteCheckpointer,
+    StepRecord,
+)
 from actants.agents.events import (
     AgentRunCompleted,
     AgentStepCompleted,
@@ -22,5 +30,12 @@ __all__ = [
     "AgentTextDelta",
     "AgentToolCallCompleted",
     "AgentToolCallStarted",
+    "Checkpoint",
+    "CheckpointStatus",
+    "Checkpointer",
     "ConversationMemory",
+    "InMemoryCheckpointer",
+    "ResumeResolution",
+    "SqliteCheckpointer",
+    "StepRecord",
 ]

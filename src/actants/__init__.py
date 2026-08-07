@@ -19,6 +19,14 @@ _LAZY: dict[str, tuple[str, str]] = {
     "AgentStep": ("actants.agents.agent", "AgentStep"),
     "AgentHooks": ("actants.agents.hooks", "AgentHooks"),
     "ConversationMemory": ("actants.agents.memory", "ConversationMemory"),
+    # Durable execution: checkpoint/resume and human-in-the-loop.
+    "Checkpoint": ("actants.agents.checkpoint", "Checkpoint"),
+    "Checkpointer": ("actants.agents.checkpoint", "Checkpointer"),
+    "CheckpointStatus": ("actants.agents.checkpoint", "CheckpointStatus"),
+    "StepRecord": ("actants.agents.checkpoint", "StepRecord"),
+    "InMemoryCheckpointer": ("actants.agents.checkpoint", "InMemoryCheckpointer"),
+    "SqliteCheckpointer": ("actants.agents.checkpoint", "SqliteCheckpointer"),
+    "ResumeResolution": ("actants.agents.agent", "ResumeResolution"),
     # Agent.stream() events. The LLM-level StreamEvent union and its members are
     # exported below; these are their agent-level counterparts and are what
     # Agent.stream() actually yields, so they belong at the same level.
@@ -63,6 +71,10 @@ _LAZY: dict[str, tuple[str, str]] = {
     "ToolCallsNotSupportedError": ("actants.errors", "ToolCallsNotSupportedError"),
     "ToolError": ("actants.tools.base", "ToolError"),
     "CacheSchemaMismatch": ("actants.cache.semantic", "CacheSchemaMismatch"),
+    "CheckpointError": ("actants.errors", "CheckpointError"),
+    "CheckpointSchemaMismatch": ("actants.errors", "CheckpointSchemaMismatch"),
+    "UnknownThreadError": ("actants.errors", "UnknownThreadError"),
+    "UnresolvedToolCallError": ("actants.errors", "UnresolvedToolCallError"),
     # Cache
     "InMemoryCache": ("actants.cache.memory", "InMemoryCache"),
     "CacheBackend": ("actants.cache.protocol", "CacheBackend"),
@@ -135,6 +147,13 @@ if TYPE_CHECKING:
     from actants.agents.agent import AgentEvent as AgentEvent
     from actants.agents.agent import AgentResult as AgentResult
     from actants.agents.agent import AgentStep as AgentStep
+    from actants.agents.agent import ResumeResolution as ResumeResolution
+    from actants.agents.checkpoint import Checkpoint as Checkpoint
+    from actants.agents.checkpoint import Checkpointer as Checkpointer
+    from actants.agents.checkpoint import CheckpointStatus as CheckpointStatus
+    from actants.agents.checkpoint import InMemoryCheckpointer as InMemoryCheckpointer
+    from actants.agents.checkpoint import SqliteCheckpointer as SqliteCheckpointer
+    from actants.agents.checkpoint import StepRecord as StepRecord
     from actants.agents.events import AgentRunCompleted as AgentRunCompleted
     from actants.agents.events import AgentStepCompleted as AgentStepCompleted
     from actants.agents.events import AgentTextDelta as AgentTextDelta
@@ -163,12 +182,16 @@ if TYPE_CHECKING:
     from actants.embeddings.client import EmbeddingSettings as EmbeddingSettings
     from actants.embeddings.ollama import OllamaEmbeddingProvider as OllamaEmbeddingProvider
     from actants.errors import ActantsError as ActantsError
+    from actants.errors import CheckpointError as CheckpointError
+    from actants.errors import CheckpointSchemaMismatch as CheckpointSchemaMismatch
     from actants.errors import MissingAPIKeyError as MissingAPIKeyError
     from actants.errors import ModelNotFoundError as ModelNotFoundError
     from actants.errors import ProviderError as ProviderError
     from actants.errors import ProviderNotInstalledError as ProviderNotInstalledError
     from actants.errors import ToolCallsNotSupportedError as ToolCallsNotSupportedError
     from actants.errors import UnknownProviderError as UnknownProviderError
+    from actants.errors import UnknownThreadError as UnknownThreadError
+    from actants.errors import UnresolvedToolCallError as UnresolvedToolCallError
     from actants.llm.base import BaseLLMProvider as BaseLLMProvider
     from actants.llm.base import ChatMessage as ChatMessage
     from actants.llm.base import CompletionResult as CompletionResult

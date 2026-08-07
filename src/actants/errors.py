@@ -20,8 +20,8 @@ caller wants to be precise::
     except ActantsError as exc:
         print(f"actants refused: {exc}")
 
-This module has no imports from the rest of actants, so any subpackage can raise from
-it without risking an import cycle.
+This module has no *runtime* imports from the rest of actants, so any subpackage can
+raise from it without risking an import cycle.
 
 The hierarchy::
 
@@ -35,19 +35,32 @@ The hierarchy::
     │   └── AllProvidersFailedError     (RuntimeError)
     ├── ToolError
     ├── CacheSchemaMismatch             (RuntimeError)
+    ├── CheckpointError
+    │   ├── UnknownThreadError          (KeyError)
+    │   ├── UnresolvedToolCallError     (RuntimeError)
+    │   └── CheckpointSchemaMismatch    (RuntimeError)
     └── MCPConnectionError              (RuntimeError)
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from actants.llm.base import ToolCall
+
 __all__ = [
     "ActantsError",
+    "CheckpointError",
+    "CheckpointSchemaMismatch",
     "MissingAPIKeyError",
     "ModelNotFoundError",
     "ProviderError",
     "ProviderNotInstalledError",
     "ToolCallsNotSupportedError",
     "UnknownProviderError",
+    "UnknownThreadError",
+    "UnresolvedToolCallError",
 ]
 
 
@@ -81,3 +94,47 @@ class ModelNotFoundError(ProviderError, ValueError):
 
 class ToolCallsNotSupportedError(ProviderError, TypeError):
     """Tools were passed to a provider that declares it cannot call them."""
+
+
+class CheckpointError(ActantsError):
+    """A durable agent run could not be persisted, found, or resumed."""
+
+
+class UnknownThreadError(CheckpointError, KeyError):
+    """No checkpoint exists for the requested ``thread_id``.
+
+    Either the thread never ran under a checkpointer, or its state was deleted. Also a
+    ``KeyError``, since the checkpointer is a keyed store.
+    """
+
+    def __str__(self) -> str:
+        # KeyError.__str__ reprs its argument, which would turn a carefully worded
+        # message into a quoted blob with escaped newlines.
+        return str(self.args[0]) if self.args else ""
+
+
+class UnresolvedToolCallError(CheckpointError, RuntimeError):
+    """Resume hit an in-flight call to a tool that declared ``idempotent=False``.
+
+    The process died while this call was executing, so actants cannot know whether the
+    side effect happened. Re-dispatching could duplicate it; skipping could drop it.
+    Rather than guess, resume raises this and hands the decision back — see
+    :meth:`~actants.agents.agent.Agent.resume` for the ``resolve=`` options.
+
+    The unresolved call is on :attr:`call`, and the thread it belongs to on
+    :attr:`thread_id`, so a handler can present it to a human or look it up in a
+    vendor's API by :attr:`ToolCall.id <actants.llm.base.ToolCall.id>`.
+    """
+
+    def __init__(self, message: str, *, thread_id: str, call: ToolCall) -> None:
+        super().__init__(message)
+        self.thread_id = thread_id
+        self.call = call
+
+
+class CheckpointSchemaMismatch(CheckpointError, RuntimeError):
+    """An on-disk checkpoint store was written by an incompatible schema version.
+
+    Unlike a cache, this is never discarded automatically: the rows are the only record
+    of which tool side effects already ran.
+    """

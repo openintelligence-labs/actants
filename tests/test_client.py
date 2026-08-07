@@ -8,6 +8,9 @@ from actants.llm.base import (
     BaseLLMProvider,
     ChatMessage,
     CompletionResult,
+    FinishDelta,
+    StreamEvent,
+    TextDelta,
     TokenUsage,
 )
 from actants.llm.client import LLM, LLMSettings
@@ -30,11 +33,12 @@ class FakeProvider(BaseLLMProvider):
             usage=TokenUsage(prompt_tokens=1, completion_tokens=2, total_tokens=3),
         )
 
-    async def stream(
-        self, messages, model, temperature=0.7, max_tokens=None, **kwargs
-    ) -> AsyncIterator[str]:
+    async def stream_events(
+        self, messages, model, temperature=0.7, max_tokens=None, *, tools=None, **kwargs
+    ) -> AsyncIterator[StreamEvent]:
         for part in ("a", "b", "c"):
-            yield part
+            yield TextDelta(text=part)
+        yield FinishDelta(reason="stop")
 
     async def health(self) -> bool:
         return True

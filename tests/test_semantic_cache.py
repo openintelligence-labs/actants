@@ -89,7 +89,6 @@ async def test_sqlite_vec_cache_threshold_rejects_dissimilar(tmp_path):
 
 @pytest.mark.asyncio
 async def test_semantic_cache_via_llm_client(tmp_path):
-    from collections.abc import AsyncIterator
 
     from actants.llm.base import BaseLLMProvider
     from actants.llm.client import LLM
@@ -103,11 +102,6 @@ async def test_semantic_cache_via_llm_client(tmp_path):
         async def complete(self, messages, model, temperature=0.7, max_tokens=None, **kwargs):
             self.calls += 1
             return _result(f"reply-{self.calls}")
-
-        async def stream(
-            self, messages, model, temperature=0.7, max_tokens=None, **kwargs
-        ) -> AsyncIterator[str]:
-            yield ""
 
         async def health(self) -> bool:
             return True

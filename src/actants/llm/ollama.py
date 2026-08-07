@@ -109,24 +109,6 @@ class OllamaProvider(BaseLLMProvider):
             tool_calls=tool_calls,
         )
 
-    async def stream(
-        self,
-        messages: list[ChatMessage],
-        model: str,
-        temperature: float = 0.7,
-        max_tokens: int | None = None,
-        **kwargs: Any,
-    ) -> AsyncIterator[str]:
-        async for event in self.stream_events(
-            messages=messages,
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **kwargs,
-        ):
-            if isinstance(event, TextDelta):
-                yield event.text
-
     async def stream_events(
         self,
         messages: list[ChatMessage],

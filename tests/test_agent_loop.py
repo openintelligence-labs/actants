@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
-
 import pytest
 
 from actants.llm.base import (
@@ -40,11 +38,6 @@ class ScriptedProvider(BaseLLMProvider):
         self.calls.append(list(messages))
         self.tools_seen.append(tools)
         return self._responses.pop(0)
-
-    async def stream(
-        self, messages, model, temperature=0.7, max_tokens=None, **kwargs
-    ) -> AsyncIterator[str]:
-        yield ""
 
     async def health(self) -> bool:
         return True

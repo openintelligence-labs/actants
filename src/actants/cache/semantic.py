@@ -5,7 +5,7 @@ import json
 import struct
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import structlog
 
@@ -27,6 +27,14 @@ log = structlog.get_logger(__name__)
 #: covered fewer fields must not be read by this one, because its entries were keyed on
 #: a subset of the request and would be served for requests they never matched.
 SCHEMA_VERSION = KEY_VERSION
+
+#: What to do when an on-disk cache was written by an incompatible schema version.
+#: ``"reset"`` discards the file and starts empty; ``"error"`` raises
+#: :class:`CacheSchemaMismatch`.
+SchemaMismatchAction = Literal["reset", "error"]
+
+#: Runtime mirror of :data:`SchemaMismatchAction`, for the constructor check.
+_SCHEMA_MISMATCH_ACTIONS: tuple[SchemaMismatchAction, ...] = ("reset", "error")
 
 
 def _serialize_vector(vec: list[float]) -> bytes:
@@ -79,7 +87,7 @@ class SqliteVecCache:
         *,
         similarity_threshold: float = 0.05,
         default_ttl: int | None = 3600,
-        on_schema_mismatch: str = "reset",
+        on_schema_mismatch: SchemaMismatchAction = "reset",
     ) -> None:
         try:
             import sqlite3
@@ -89,18 +97,20 @@ class SqliteVecCache:
             raise ImportError(
                 "Install with `pip install actants[cache]` to use SqliteVecCache"
             ) from exc
-        if on_schema_mismatch not in ("reset", "error"):
+        if on_schema_mismatch not in _SCHEMA_MISMATCH_ACTIONS:
             raise ValueError(
-                f"on_schema_mismatch must be 'reset' or 'error', got {on_schema_mismatch!r}. "
-                "'reset' discards an incompatible cache file and starts empty; "
-                "'error' raises CacheSchemaMismatch so you can handle it yourself."
+                f"on_schema_mismatch must be one of {list(_SCHEMA_MISMATCH_ACTIONS)}, got "
+                f"{on_schema_mismatch!r}. "
+                "'reset' (the default) discards an incompatible cache file and starts "
+                "empty; 'error' raises CacheSchemaMismatch so you can handle it yourself. "
+                "Example: SqliteVecCache(path, embedder, on_schema_mismatch='error')."
             )
         self._sqlite3 = sqlite3
         self.path = str(path)
         self.embedder = embedder
         self.similarity_threshold = similarity_threshold
         self.default_ttl = default_ttl
-        self.on_schema_mismatch = on_schema_mismatch
+        self.on_schema_mismatch: SchemaMismatchAction = on_schema_mismatch
         self._lock = asyncio.Lock()
         self._conn: sqlite3.Connection | None = None
         self._sqlite_vec = sqlite_vec

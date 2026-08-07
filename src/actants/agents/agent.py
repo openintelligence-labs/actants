@@ -4,6 +4,7 @@ import asyncio
 import contextlib
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
+from typing import Literal
 
 from actants.agents.events import (
     AgentRunCompleted,
@@ -39,7 +40,15 @@ AgentEvent = (
 
 #: How concurrent ``run()`` calls on one Agent share its ConversationMemory.
 #: See the :class:`Agent` docstring for the guarantee each one provides.
-_CONCURRENCY_MODES = frozenset({"isolated", "serialized"})
+#:
+#: Spelled as a ``Literal`` rather than an enum to match the rest of the public API
+#: (``Role``, ``LogFormat``, ``LogLevel``): callers pass a plain string, and a type
+#: checker rejects a typo at the call site instead of at runtime.
+ConcurrencyMode = Literal["isolated", "serialized"]
+
+#: Runtime mirror of :data:`ConcurrencyMode`, for the constructor check that catches
+#: callers who are not running a type checker.
+_CONCURRENCY_MODES: tuple[ConcurrencyMode, ...] = ("isolated", "serialized")
 
 
 @dataclass
@@ -133,7 +142,7 @@ class Agent:
         memory: ConversationMemory | None = None,
         hooks: AgentHooks | None = None,
         max_steps: int = 6,
-        concurrency: str = "isolated",
+        concurrency: ConcurrencyMode = "isolated",
     ) -> None:
         if llm is None:
             llm = LLM()
@@ -179,18 +188,18 @@ class Agent:
             )
         if concurrency not in _CONCURRENCY_MODES:
             raise ValueError(
-                f"concurrency must be one of {sorted(_CONCURRENCY_MODES)}, got "
+                f"concurrency must be one of {list(_CONCURRENCY_MODES)}, got "
                 f"{concurrency!r}. 'isolated' (the default) gives each run() a private "
                 "copy of the conversation, committed back when it finishes. "
                 "'serialized' makes concurrent runs queue on a lock so each sees every "
-                "earlier turn."
+                "earlier turn. Example: Agent(llm=LLM(), concurrency='serialized')."
             )
         self.llm = llm
         self.tools = tools
         self.memory = memory or ConversationMemory(system=system)
         self.hooks = hooks or AgentHooks()
         self.max_steps = max_steps
-        self.concurrency = concurrency
+        self.concurrency: ConcurrencyMode = concurrency
         self._lock = asyncio.Lock()
 
     @contextlib.asynccontextmanager

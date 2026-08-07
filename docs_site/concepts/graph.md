@@ -68,8 +68,13 @@ the node. That check exists because a type checker cannot see inside a returned 
 this is the only place a typo like `{"anwser": ...}` can be caught — and silently
 dropping it would surface much later as a field that mysteriously never changed.
 
-Merging never mutates the state a node was given. A node that raises leaves the state
-exactly as the last successful node left it.
+Merging never mutates the state a node was given, and never shares a mutable container
+with it: the merged state is independent, so a node that mutates a list in place cannot
+reach back into the value an earlier node — or a concurrent run — is holding. A node that
+raises leaves the state exactly as the last successful node left it.
+
+`invoke()` deep-copies the state you pass it for the same reason, so one seed object can
+safely start several concurrent runs.
 
 ## Reducers: accumulating instead of replacing
 
@@ -140,6 +145,11 @@ node names directly. A router returning a key that is not in the mapping raises
 Routers are sync deliberately. A router that needs to await is doing work, and work
 belongs in a node where it gets checkpointed — a router runs *after* its node's state is
 durably recorded and must be cheap enough to simply re-run on resume.
+
+That ordering is what makes a raising router safe: the node's completion is already in the
+checkpoint, so a router that raises — an unmapped key, a bug — fails the run without
+un-recording work that already happened. Resume picks up at the routing decision and
+re-runs only the router, never the node.
 
 A node has an unconditional edge or conditional edges, never both.
 

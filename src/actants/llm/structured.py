@@ -98,12 +98,18 @@ class SchemaPlan:
         request_kwargs: Provider parameters to forward verbatim. Empty on the prompt
             path.
         reason: Why the native path was declined. ``None`` when it was taken.
+        nulls_mean_default: Paths of fields strict mode had to widen to ``["T", "null"]``
+            purely to express "may be absent". A conforming model may return ``null`` for
+            any of them, which is *not* a value the pydantic model accepts — it means
+            "use the default". Each entry is a tuple of property names from the document
+            root. Empty on every non-strict path, which needs no such repair.
     """
 
     native: bool
     mode: NativeSchemaMode
     request_kwargs: dict[str, Any] = field(default_factory=dict)
     reason: str | None = None
+    nulls_mean_default: frozenset[tuple[str, ...]] = frozenset()
 
 
 def build_schema_plan(
@@ -134,24 +140,31 @@ def build_schema_plan(
         )
 
     raw = schema.model_json_schema()
+    widened: set[tuple[str, ...]] = set()
     try:
         return SchemaPlan(
             native=True,
             mode=mode,
-            request_kwargs=_request_kwargs(schema.__name__, raw, mode),
+            request_kwargs=_request_kwargs(schema.__name__, raw, mode, widened),
+            nulls_mean_default=frozenset(widened),
         )
     except UnsupportedSchemaError as exc:
         return SchemaPlan(native=False, mode=mode, reason=str(exc))
 
 
-def _request_kwargs(name: str, raw: dict[str, Any], mode: NativeSchemaMode) -> dict[str, Any]:
+def _request_kwargs(
+    name: str,
+    raw: dict[str, Any],
+    mode: NativeSchemaMode,
+    widened: set[tuple[str, ...]] | None = None,
+) -> dict[str, Any]:
     if mode == "openai_json_schema":
         return {
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
                     "name": _tool_safe_name(name),
-                    "schema": to_strict_schema(raw),
+                    "schema": to_strict_schema(raw, widened=widened),
                     "strict": True,
                 },
             }
@@ -168,7 +181,7 @@ def _request_kwargs(name: str, raw: dict[str, Any], mode: NativeSchemaMode) -> d
                 ToolSpec(
                     name=ANTHROPIC_EXTRACT_TOOL,
                     description=f"Record the extracted {name}. Call this exactly once.",
-                    parameters=to_strict_schema(raw),
+                    parameters=to_strict_schema(raw, widened=widened),
                 )
             ],
             "tool_choice": {"type": "tool", "name": ANTHROPIC_EXTRACT_TOOL},
@@ -191,7 +204,11 @@ def _tool_safe_name(name: str) -> str:
     return cleaned or "extraction"
 
 
-def to_strict_schema(raw: dict[str, Any]) -> dict[str, Any]:
+def to_strict_schema(
+    raw: dict[str, Any],
+    *,
+    widened: set[tuple[str, ...]] | None = None,
+) -> dict[str, Any]:
     """Rewrite a pydantic schema into OpenAI strict / Anthropic strict form.
 
     Strict mode is not a subset of JSON Schema that ``model_json_schema()`` happens to
@@ -206,6 +223,12 @@ def to_strict_schema(raw: dict[str, Any]) -> dict[str, Any]:
       "may be absent"; the documented encoding is a union with ``null``, which is also
       what pydantic already emits for ``X | None``.
 
+    That second rule widens a field the *pydantic* model may not accept as null — a
+    ``priority: int = 3`` becomes ``["integer", "null"]``, and a conforming provider is
+    then entitled to return null. ``widened`` collects the paths of exactly those fields
+    so the caller can read a null back as "the field was absent, use its default"; see
+    :attr:`SchemaPlan.nulls_mean_default`.
+
     Raises:
         UnsupportedSchemaError: The schema uses something with no strict equivalent —
             an unconstrained ``dict``, or a ``$ref`` cycle (strict mode forbids
@@ -214,12 +237,19 @@ def to_strict_schema(raw: dict[str, Any]) -> dict[str, Any]:
     defs = raw.get("$defs", {})
     if not isinstance(defs, dict):  # pragma: no cover - pydantic always emits a dict
         raise UnsupportedSchemaError("$defs is not an object")
-    converted = _strict_node(raw, defs, ())
+    converted = _strict_node(raw, defs, (), path=(), widened=widened)
     converted.pop("$defs", None)
     return converted
 
 
-def _strict_node(node: Any, defs: dict[str, Any], seen: tuple[str, ...]) -> dict[str, Any]:
+def _strict_node(
+    node: Any,
+    defs: dict[str, Any],
+    seen: tuple[str, ...],
+    *,
+    path: tuple[str, ...] = (),
+    widened: set[tuple[str, ...]] | None = None,
+) -> dict[str, Any]:
     if not isinstance(node, dict):
         raise UnsupportedSchemaError(f"schema fragment is not an object: {node!r}")
 
@@ -235,7 +265,7 @@ def _strict_node(node: Any, defs: dict[str, Any], seen: tuple[str, ...]) -> dict
         target = defs.get(key)
         if target is None:
             raise UnsupportedSchemaError(f"dangling $ref {ref!r}")
-        merged = _strict_node(target, defs, (*seen, key))
+        merged = _strict_node(target, defs, (*seen, key), path=path, widened=widened)
         # A sibling `description` on the $ref (pydantic emits one for a documented
         # field) is the field's, and is worth keeping over the model's own.
         for keyword in _STRICT_ANNOTATION_KEYWORDS:
@@ -253,7 +283,7 @@ def _strict_node(node: Any, defs: dict[str, Any], seen: tuple[str, ...]) -> dict
             raise UnsupportedSchemaError(
                 "strict mode does not support `allOf` with more than one branch"
             )
-        merged = _strict_node(all_of[0], defs, seen)
+        merged = _strict_node(all_of[0], defs, seen, path=path, widened=widened)
         for keyword in _STRICT_ANNOTATION_KEYWORDS:
             if keyword in node:
                 merged[keyword] = node[keyword]
@@ -274,8 +304,13 @@ def _strict_node(node: Any, defs: dict[str, Any], seen: tuple[str, ...]) -> dict
         elif key == "properties":
             if not isinstance(value, dict):
                 raise UnsupportedSchemaError("`properties` is not an object")
-            out["properties"] = {k: _strict_node(v, defs, seen) for k, v in value.items()}
+            out["properties"] = {
+                k: _strict_node(v, defs, seen, path=(*path, k), widened=widened)
+                for k, v in value.items()
+            }
         elif key == "items":
+            # Items have no property name of their own; a null inside an array is the
+            # array's business, not a missing-field signal, so the path stops here.
             out["items"] = _strict_node(value, defs, seen)
         elif key == "anyOf":
             if not isinstance(value, list):
@@ -303,9 +338,42 @@ def _strict_node(node: Any, defs: dict[str, Any], seen: tuple[str, ...]) -> dict
         original_required = set(node.get("required", []) or [])
         for prop_name, prop in properties.items():
             if prop_name not in original_required:
-                properties[prop_name] = _nullable(prop)
+                nullable = _nullable(prop)
+                if widened is not None and nullable is not prop:
+                    # Only a field this rewrite *made* nullable is a "null means absent"
+                    # field. One pydantic already emitted as `X | None` accepts null as a
+                    # real value, and rewriting that to the default would be wrong.
+                    widened.add((*path, prop_name))
+                properties[prop_name] = nullable
         out["required"] = list(properties)
 
+    return out
+
+
+def drop_defaulted_nulls(payload: Any, paths: frozenset[tuple[str, ...]]) -> Any:
+    """Delete the nulls strict mode's widening invited, so defaults apply instead.
+
+    Strict mode cannot say "this field may be absent", only "it may be null", so a
+    provider doing exactly what it was told may answer ``{"priority": null}`` for a
+    ``priority: int = 3``. Pydantic rightly refuses that null — but the model was not
+    expressing a value, it was expressing absence. Removing the key restores what the
+    schema meant, and pydantic then fills in the real default.
+
+    Only paths in ``paths`` are touched, so a field genuinely declared ``X | None`` keeps
+    its null. Returns ``payload`` unchanged when there is nothing to strip.
+    """
+    if not paths or not isinstance(payload, dict):
+        return payload
+    heads = {p[0] for p in paths}
+    out = dict(payload)
+    for head in heads:
+        if head not in out:
+            continue
+        deeper = frozenset(p[1:] for p in paths if p[0] == head and len(p) > 1)
+        if out[head] is None and (head,) in paths:
+            del out[head]
+        elif deeper:
+            out[head] = drop_defaulted_nulls(out[head], deeper)
     return out
 
 

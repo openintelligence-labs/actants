@@ -129,6 +129,21 @@ def _agent(
     return Agent(llm=LLM(provider=provider, model="m", tracing=False), tools=tools, **kwargs)
 
 
+def _slow(counter: Counter) -> Callable[..., Awaitable[str]]:
+    """A handler that yields to the loop mid-dispatch, as any real I/O tool does.
+
+    The concurrency regressions need that suspension point: without one, ``gather`` runs
+    the two resumes end to end and the race they exist to catch never opens.
+    """
+
+    async def run(**kwargs: Any) -> str:
+        counter.calls.append(dict(kwargs))
+        await asyncio.sleep(0.02)
+        return "sent"
+
+    return run
+
+
 def _registry(**counters: Counter) -> ToolRegistry:
     """Build a registry from named counters; an ``unsafe_`` prefix means non-idempotent."""
     registry = ToolRegistry()
@@ -535,6 +550,92 @@ async def test_unresolved_call_can_be_skipped_explicitly() -> None:
     assert tool_msg.tool_call_id == "c1"
     # The model got the skip as an ordinary tool result and answered it.
     assert provider.calls[-1][-1].role == "tool"
+
+
+@pytest.mark.asyncio
+async def test_in_flight_call_to_a_tool_the_registry_lost_is_not_replayed() -> None:
+    """Regression: a renamed tool used to discard the ``idempotent=False`` safety net.
+
+    ``self.tools.get`` raises for a tool that is gone, and the suppressed ToolError left
+    ``idempotent`` at its True default — so instead of raising, the run finished and told
+    the model "Unknown tool", i.e. that the side effect had NOT happened, when it may
+    well have. An unknown tool is exactly the case actants cannot vouch for.
+    """
+    store, provider, send = await _stage_in_flight("unsafe_send")
+
+    renamed = Counter()
+    registry = _registry(unsafe_send_v2=renamed)
+    provider.queue(_completion("finished"))
+
+    with pytest.raises(UnresolvedToolCallError) as exc:
+        await _agent(provider, registry, checkpointer=store).resume("t1")
+
+    assert send.count == 0 and renamed.count == 0
+    assert exc.value.call.name == "unsafe_send"
+    assert "no longer has" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_concurrent_resumes_of_one_thread_dispatch_the_call_once() -> None:
+    """Regression: two resumes in one process both dispatched the in-flight call.
+
+    The checkpointer's lock only serializes individual ``put`` calls, not the
+    read-decide-dispatch sequence, so both resumes read the same "running" checkpoint and
+    each dispatched. Asserted on the dispatch count — the consequence — because both
+    resumes returning an AgentResult looked perfectly healthy.
+    """
+    store, provider, send = await _stage_in_flight("unsafe_send")
+    provider.queue(_completion("finished"), _completion("finished"))
+    registry = ToolRegistry()
+    registry.register_function("unsafe_send", "send", _slow(send), idempotent=False)
+    agent = _agent(provider, registry, checkpointer=store)
+
+    results = await asyncio.gather(
+        agent.resume("t1", resolve="retry"),
+        agent.resume("t1", resolve="retry"),
+        return_exceptions=True,
+    )
+
+    assert send.count == 1, "the in-flight non-idempotent call was dispatched twice"
+    assert any(isinstance(r, AgentResult) for r in results)
+
+
+@pytest.mark.asyncio
+async def test_concurrent_approvals_of_one_interrupt_dispatch_the_call_once() -> None:
+    """The same race on the interrupt path: approving twice must charge once."""
+    provider = ScriptedProvider([_completion("", [_call("unsafe_send", "c1", x=1)])])
+    charge = Counter()
+    store = InMemoryCheckpointer()
+    registry = ToolRegistry()
+    registry.register_function("unsafe_send", "send", _slow(charge), idempotent=False)
+    agent = _agent(
+        provider,
+        registry,
+        checkpointer=store,
+        interrupt_before=["unsafe_send"],
+    )
+    paused = await agent.run("go", thread_id="t1")
+    assert paused.interrupted and charge.count == 0
+
+    provider.queue(_completion("finished"), _completion("finished"))
+    await asyncio.gather(
+        agent.resume("t1", approve=True),
+        agent.resume("t1", approve=True),
+        return_exceptions=True,
+    )
+
+    assert charge.count == 1, "approving concurrently dispatched the guarded tool twice"
+
+
+@pytest.mark.asyncio
+async def test_resumes_of_different_threads_are_not_serialized_against_each_other() -> None:
+    """The resume lock is per thread_id, so unrelated threads still overlap."""
+    provider = ScriptedProvider([])
+    agent = _agent(provider, checkpointer=InMemoryCheckpointer())
+
+    first = agent._resume_guard("a")
+    assert agent._resume_guard("a") is first, "one lock per thread_id"
+    assert agent._resume_guard("b") is not first
 
 
 @pytest.mark.asyncio

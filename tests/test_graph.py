@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib.util
+import json
 import shutil
 import subprocess
 import sys
@@ -29,6 +30,7 @@ from actants.errors import (
     UnknownThreadError,
 )
 from actants.graph import END, Append, CompiledGraph, StateGraph, agent_node
+from actants.graph.state import merge_update
 from actants.llm.client import LLM
 from actants.testing import FakeLLMProvider, fake_completion
 
@@ -207,6 +209,42 @@ async def test_append_reducer_takes_a_bare_value_as_one_item() -> None:
 
     result = await graph.compile().invoke(State())
     assert result.state.log == ["solo"]
+
+
+@pytest.mark.asyncio
+async def test_concurrent_runs_from_one_seed_state_do_not_corrupt_each_other() -> None:
+    """Regression: ``model_copy(update=...)`` is shallow, so runs shared the seed's lists.
+
+    Two runs seeded from one state object each appended one item in place and both saw
+    two — the consequence that matters, and one no identity assertion would have caught.
+    """
+
+    async def mutate(state: State) -> dict[str, Any]:
+        await asyncio.sleep(0)
+        state.log.append("mine")
+        return {}
+
+    graph: StateGraph[State] = StateGraph(State)
+    graph.add_node("m", mutate)
+    graph.set_entry_point("m")
+    graph.add_edge("m", END)
+    compiled = graph.compile()
+
+    seed = State()
+    first, second = await asyncio.gather(compiled.invoke(seed), compiled.invoke(seed))
+
+    assert first.state.log == ["mine"], "a concurrent run's write leaked into this one"
+    assert second.state.log == ["mine"]
+    assert seed.log == [], "invoke wrote through the caller's seed object"
+
+
+def test_merge_update_does_not_share_containers_with_the_state_it_copied() -> None:
+    """The documented 'never mutates state' contract, asserted on a real write."""
+    before = State(log=["seed"])
+    after = merge_update(before, {"value": 1}, accumulate=frozenset(), node="n")
+
+    after.log.append("added")
+    assert before.log == ["seed"], "the pre-node state saw a write made after it"
 
 
 def test_append_on_a_non_list_field_is_rejected() -> None:
@@ -434,6 +472,13 @@ def test_a_node_may_not_be_named_end() -> None:
         graph.add_node(END, Counter().node("x"))
 
 
+def test_a_node_may_not_shadow_the_routing_marker() -> None:
+    """It is a checkpoint value, so a node of that name would be dispatched on resume."""
+    graph: StateGraph[State] = StateGraph(State)
+    with pytest.raises(GraphValidationError, match="reserved"):
+        graph.add_node("__routing__", Counter().node("x"))
+
+
 def test_mixing_conditional_and_unconditional_edges_is_an_error() -> None:
     graph: StateGraph[State] = StateGraph(State)
     graph.add_node("a", Counter().node("a"))
@@ -507,19 +552,26 @@ async def test_a_thread_id_without_a_checkpointer_is_rejected() -> None:
 
 @pytest.mark.asyncio
 async def test_state_is_checkpointed_after_every_node() -> None:
-    """The boundary the resume guarantee rests on: a write per node."""
-    seen: list[tuple[str, str]] = []
+    """The boundary the resume guarantee rests on: each node is durable once it is done.
+
+    Asserted as "every completion is visible in a checkpoint before the next node runs",
+    not as a write count — the number of writes per node is an implementation detail, and
+    pinning it hid the router bug that lost a completed node's record entirely.
+    """
+    seen: list[list[str]] = []
 
     class Recording(InMemoryCheckpointer):
         async def put(self, checkpoint: Checkpoint) -> None:
             payload = checkpoint.messages[0].content
-            seen.append((checkpoint.status, payload))
+            seen.append(list(json.loads(payload)["completed"]))
             await super().put(checkpoint)
 
     compiled = _linear(Counter()).compile(checkpointer=Recording())
     await compiled.invoke(State(), thread_id="t1")
 
-    assert [status for status, _ in seen] == ["running", "running", "completed"]
+    assert seen[0] == ["a"]  # 'a' durable before 'b' can start
+    assert seen[-1] == ["a", "b"]
+    assert [c for c in seen if c and c[-1] == "b"], "'b' never recorded as completed"
 
 
 @pytest.mark.asyncio
@@ -594,6 +646,53 @@ async def test_resume_does_not_rerun_a_node_that_already_completed() -> None:
     assert result.state.value == 1, "the completed node's update must survive the crash"
     assert counter.count("a") == 1, "a node that already ran was executed again"
     assert result.executed == ["b"], "resume must run only what was left"
+
+
+@pytest.mark.asyncio
+async def test_a_router_that_raises_does_not_lose_its_nodes_completion() -> None:
+    """Regression: an unmapped router key used to erase a completed node's side effect.
+
+    ``_next_of`` runs between the node and the checkpoint, so a router raising left the
+    node — whose external side effect had already landed — unrecorded, and resume ran it
+    a second time. Asserted on the side-effect count, which is the only thing that
+    distinguishes "recorded" from "shipped the order twice".
+    """
+    shipped: list[str] = []
+
+    async def ship(state: State) -> dict[str, Any]:
+        shipped.append("order")
+        return {"label": "shipped"}
+
+    def build(store: Any, *, broken: bool) -> CompiledGraph[State]:
+        graph: StateGraph[State] = StateGraph(State)
+        graph.add_node("ship", ship)
+        graph.set_entry_point("ship")
+        graph.add_conditional_edges(
+            "ship",
+            (lambda s: "typo") if broken else (lambda s: "done"),
+            {"done": END},
+        )
+        return graph.compile(checkpointer=store)
+
+    store = InMemoryCheckpointer()
+    with pytest.raises(GraphValidationError, match="not a key of its mapping"):
+        await build(store, broken=True).invoke(State(), thread_id="t1")
+    assert shipped == ["order"]
+
+    stored = await store.get("t1")
+    assert stored is not None
+    assert "ship" in json.loads(stored.messages[0].content)["completed"], (
+        "the node completed, so the durable record must say so even though routing failed"
+    )
+
+    # The operator deploys the fixed router and resumes.
+    stored.status = "running"
+    stored.error = None
+    await store.put(stored)
+    result = await build(store, broken=False).resume("t1")
+
+    assert shipped == ["order"], "the completed node's side effect happened twice"
+    assert result.executed == [], "resume must not re-run a node that already completed"
 
 
 @pytest.mark.asyncio

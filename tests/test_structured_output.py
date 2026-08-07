@@ -87,9 +87,20 @@ def test_strict_schema_widens_a_defaulted_non_optional_field() -> None:
     class WithDefault(BaseModel):
         tags: list[str] = []
 
-    strict = to_strict_schema(WithDefault.model_json_schema())
+    widened: set[tuple[str, ...]] = set()
+    strict = to_strict_schema(WithDefault.model_json_schema(), widened=widened)
     assert strict["required"] == ["tags"]
     assert strict["properties"]["tags"]["type"] == ["array", "null"]
+    # The widening is forced by strict mode, so it is recorded rather than avoided —
+    # that record is what lets extract read the resulting null back as "use the default".
+    assert widened == {("tags",)}
+
+
+def test_a_field_pydantic_already_made_nullable_is_not_a_defaulted_null() -> None:
+    """``X | None`` accepts null as a real value, so it must not be stripped."""
+    widened: set[tuple[str, ...]] = set()
+    to_strict_schema(Person.model_json_schema(), widened=widened)
+    assert ("nickname",) not in widened
 
 
 def test_strict_schema_drops_only_the_keywords_strict_mode_rejects() -> None:
@@ -610,6 +621,48 @@ async def test_native_extraction_needs_no_repair_even_with_repairs_disabled() ->
     person = await llm.extract("who?", Person, max_repairs=0)
     assert person.name == "Ada"
     assert len(provider.calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_strict_mode_null_for_a_defaulted_field_validates_in_one_call() -> None:
+    """Regression: the strict rewrite produced output pydantic then rejected.
+
+    ``priority: int = 3`` is widened to ``["integer", "null"]`` and marked required, so a
+    provider with real constrained decoding may answer ``null``. That used to fail
+    validation, burn a repair, and raise — despite the response obeying the schema
+    actants itself sent. Asserted on the validated result and the call count, which is
+    what "a schema-valid response cannot fail to parse" actually promises.
+    """
+
+    class Task(BaseModel):
+        name: str
+        priority: int = 3
+        tags: list[str] = Field(default_factory=list)
+
+    provider = RecordingProvider(
+        ['{"name": "ship it", "priority": null, "tags": null}'],
+        mode="openai_json_schema",
+    )
+    llm = LLM(provider=provider, model="m", tracing=False)
+    task = await llm.extract("make a task", Task, max_repairs=0)
+
+    assert task == Task(name="ship it", priority=3, tags=[])
+    assert len(provider.calls) == 1, "a schema-valid response must not need a repair"
+
+
+@pytest.mark.asyncio
+async def test_a_genuinely_optional_field_keeps_its_null_on_the_strict_path() -> None:
+    """The other half: ``X | None`` still means None, not "fall back to the default"."""
+    provider = RecordingProvider(
+        [
+            '{"name": "Ada", "age": 36, "address": {"street": "1 Main", "city": "London"}, '
+            '"nickname": null}'
+        ],
+        mode="openai_json_schema",
+    )
+    llm = LLM(provider=provider, model="m", tracing=False)
+    person = await llm.extract("who?", Person, max_repairs=0)
+    assert person.nickname is None
 
 
 @pytest.mark.asyncio

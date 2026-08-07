@@ -39,6 +39,7 @@ from actants.llm.structured import (
     ANTHROPIC_EXTRACT_TOOL,
     SchemaPlan,
     build_schema_plan,
+    drop_defaulted_nulls,
     prompt_schema_guide,
 )
 from actants.policies.retry import RetryPolicy, retry_async
@@ -451,6 +452,12 @@ class LLM:
         ``max_steps``, which bound the total; see the note in the class docstring.
         Its meaning is unchanged on the native path — the repair loop is simply never
         entered, because a schema-valid response cannot fail to parse.
+
+        Strict mode has no way to say "this field may be absent", only "it may be null",
+        so a field with a non-null default is sent as nullable-and-required. A ``null``
+        for one of those is read back as the absence it was standing in for, and the
+        field's default applies — otherwise a provider obeying the schema exactly would
+        produce a response pydantic rejects, and no amount of repair could fix it.
         """
         _require_pydantic_model(schema)
         plan = self._plan_schema(schema)
@@ -467,7 +474,8 @@ class LLM:
                 **plan.request_kwargs,
             )
             try:
-                return schema.model_validate_json(_extract_payload(result, plan))
+                parsed = json.loads(_extract_payload(result, plan))
+                return schema.model_validate(drop_defaulted_nulls(parsed, plan.nulls_mean_default))
             except Exception as exc:
                 last_err = exc
                 if attempt >= max_repairs:
@@ -563,7 +571,9 @@ class LLM:
                 if parsed is None:
                     continue
                 try:
-                    candidate = schema.model_validate(parsed)
+                    candidate = schema.model_validate(
+                        drop_defaulted_nulls(parsed, plan.nulls_mean_default)
+                    )
                 except Exception:
                     continue
                 serialized = candidate.model_dump_json()
@@ -574,7 +584,7 @@ class LLM:
         if final is None:
             raise ValueError(f"Stream ended with no parseable JSON for {schema.__name__}: {buf!r}")
         try:
-            candidate = schema.model_validate(final)
+            candidate = schema.model_validate(drop_defaulted_nulls(final, plan.nulls_mean_default))
         except Exception as exc:
             raise ValueError(f"Stream ended with invalid {schema.__name__}: {exc}") from exc
         serialized = candidate.model_dump_json()

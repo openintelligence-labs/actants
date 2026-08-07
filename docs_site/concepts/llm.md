@@ -106,6 +106,16 @@ On this path the schema is *not* also repeated in the system prompt: it would sp
 on every call restating something the decoder is already enforcing. The repair loop is
 never entered either, because a schema-valid response cannot fail to parse.
 
+Strict mode (OpenAI and Anthropic) needs one translation to keep that last sentence true.
+It has no way to say "this field may be absent" — every property must be listed in
+`required` — so the encoding for optional is a union with `null`. A field with a non-null
+default, `priority: int = 3`, therefore goes on the wire as `["integer", "null"]` **and**
+required, and a provider doing exactly what it was told may answer `null`. That is not a
+value the pydantic model accepts; it is the absence the widening was standing in for. So
+`extract` reads a `null` for one of those fields back as absence and lets the field's
+default apply. A field you genuinely declared `str | None` keeps its `null` as a real
+value — only fields this rewrite *made* nullable are treated this way.
+
 ### The prompt path
 
 When the provider has no native mode, the schema is described in a system prompt and a

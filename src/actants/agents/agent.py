@@ -304,6 +304,7 @@ class Agent:
         self.checkpointer = checkpointer
         self.interrupt_before: frozenset[str] = frozenset(interrupt_before or ())
         self._lock = asyncio.Lock()
+        self._resume_locks: dict[str, asyncio.Lock] = {}
 
     @contextlib.asynccontextmanager
     async def _turn(self, prompt: str) -> AsyncIterator[_Turn]:
@@ -399,7 +400,10 @@ class Agent:
         because the process died before it could say so. For a tool declared
         ``idempotent=True`` (the default) that call is re-dispatched, making resume
         at-least-once for it; for ``idempotent=False`` it is surfaced as
-        :class:`~actants.errors.UnresolvedToolCallError` instead of being guessed at.
+        :class:`~actants.errors.UnresolvedToolCallError` instead of being guessed at. A
+        tool this Agent's registry no longer has — renamed or removed since the run
+        started — counts as non-idempotent, because an unknown tool is precisely the case
+        where actants cannot establish that repeating it is safe.
 
         ``approve`` answers a run paused by ``interrupt_before``: ``True`` dispatches the
         pending call and continues, ``False`` appends a tool result saying the call was
@@ -415,9 +419,41 @@ class Agent:
         original failure. An unknown ``thread_id`` raises
         :class:`~actants.errors.UnknownThreadError`.
 
-        Two processes resuming the same ``thread_id`` concurrently is undefined; actants
-        does not lock a thread across processes.
+        Concurrent resumes of one ``thread_id`` **within this process** are serialized on
+        a per-thread lock, so the read-decide-dispatch sequence cannot interleave and the
+        at-most-once guarantee above holds for them: the second resume runs after the
+        first has committed, sees a completed thread, and returns its stored result
+        without dispatching anything. Two *processes* resuming the same ``thread_id``
+        concurrently remains undefined — actants does not lock a thread across processes,
+        and no in-process lock can.
         """
+        async with self._resume_guard(thread_id):
+            return await self._resume_locked(
+                thread_id, approve=approve, max_steps=max_steps, resolve=resolve
+            )
+
+    def _resume_guard(self, thread_id: str) -> asyncio.Lock:
+        """The lock serializing resumes of one thread inside this process.
+
+        Per thread_id rather than one agent-wide lock so unrelated threads still resume
+        concurrently. Created on demand and kept: a lock is a few dozen bytes, and the
+        alternative — reference-counting them to delete on release — is a race in itself.
+        """
+        lock = self._resume_locks.get(thread_id)
+        if lock is None:
+            lock = asyncio.Lock()
+            self._resume_locks[thread_id] = lock
+        return lock
+
+    async def _resume_locked(
+        self,
+        thread_id: str,
+        *,
+        approve: bool | None,
+        max_steps: int | None,
+        resolve: ResumeResolution,
+    ) -> AgentResult:
+        """The body of :meth:`resume`, run while holding that thread's resume lock."""
         if self.checkpointer is None:
             raise ValueError(
                 f"resume({thread_id!r}) needs a checkpointer to read from, and this "
@@ -763,17 +799,25 @@ class Agent:
 
         Only that one call is ambiguous — every call before it has a recorded result and
         is replayed, never re-dispatched. An idempotent tool is simply left to the normal
-        loop to re-dispatch; a non-idempotent one goes through ``resolve``.
+        loop to re-dispatch; a non-idempotent one — and a tool the registry no longer
+        has — goes through ``resolve``.
 
         Returns the index the dispatch loop should start from.
         """
         if done >= len(step.tool_calls):
             return done
         call = step.tool_calls[done]
-        idempotent = True
+        # A tool missing from the registry — renamed, removed, or a registry the resuming
+        # process assembled differently — is treated as NON-idempotent. It is exactly the
+        # case where actants cannot know the side effect was safe to repeat, and the
+        # cheerful default would otherwise re-dispatch it into `tools.call`, which reports
+        # "Unknown tool" and thereby tells the model the side effect did not happen.
+        idempotent = False
+        known = False
         if self.tools is not None:
             with contextlib.suppress(ToolError):
-                idempotent = self.tools.get(call.name).idempotent
+                tool = self.tools.get(call.name)
+                idempotent, known = tool.idempotent, True
         if idempotent or resolve == "retry":
             return done
 
@@ -783,9 +827,16 @@ class Agent:
             await self._checkpoint(turn, state, status="running", step_index=step.index)
             return done + 1
 
+        why = (
+            "which is registered idempotent=False"
+            if known
+            else "which this Agent's registry no longer has, so actants cannot tell "
+            "whether repeating it is safe (a renamed or removed tool is treated as "
+            "non-idempotent)"
+        )
         raise UnresolvedToolCallError(
             f"Thread {state.thread_id!r} died while calling tool {call.name!r} "
-            f"(call id {call.id!r}), which is registered idempotent=False. actants "
+            f"(call id {call.id!r}), {why}. actants "
             "cannot know whether that side effect happened, and will not guess. Check "
             "whether it ran — the call id is stable, so a vendor-side idempotency key or "
             "an outbox can be looked up by it — then resume with resolve='retry' to run "

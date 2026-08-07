@@ -71,8 +71,23 @@ So actants does not pretend to know. It applies the tool's own declaration:
 - `idempotent=False` — the call is not re-dispatched. `resume()` raises
   `UnresolvedToolCallError` instead, carrying the thread id and the `ToolCall`, so the
   caller can decide.
+- **A tool the resuming agent's registry does not have** — renamed or removed since the
+  run started — is treated as `idempotent=False`. An unknown tool is precisely the case
+  where actants cannot establish that repeating it is safe, so it raises rather than
+  guessing.
 
 Exactly one call per thread is ever ambiguous. Everything before it is settled.
+
+**Concurrent `resume()` of one thread id is serialized within a process.** Two `resume()`
+calls on one `Agent` for the same thread id queue on an in-process lock, so the
+read-decide-dispatch sequence cannot interleave: the second runs after the first has
+committed, sees a completed thread, and returns its stored result without dispatching
+anything. The at-most-once half of the guarantee therefore holds for them.
+
+This lock is per thread id, so unrelated threads still resume concurrently — and it is an
+`asyncio` lock in one process. **Two *processes* resuming the same thread id concurrently
+remains undefined**, exactly as before; no in-process lock can close that, and arranging
+that exclusion is still yours.
 
 ## Declaring what is unsafe to repeat
 
@@ -254,7 +269,8 @@ with the version that wrote them, then delete the file.
   no `thread_id` parameter.
 - **Resume needs the same tools and the same agent shape.** The checkpoint stores the
   conversation, not your registry. Resuming with a tool renamed or removed will not end
-  well.
+  well — if that tool was the in-flight call, resume raises `UnresolvedToolCallError`
+  rather than telling the model the side effect did not happen.
 - **The at-least-once boundary is real.** If a tool has an externally-visible side effect,
   mark it `idempotent=False` and handle the resolution, or make the effect idempotent on
   the tool's own side. Leaving the default on a `charge_card` is a decision to

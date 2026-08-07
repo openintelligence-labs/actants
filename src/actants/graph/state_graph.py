@@ -107,6 +107,12 @@ GRAPH_TAG = "actants.graph"
 #: bump. "system" because the payload is framework bookkeeping, not conversation.
 _STATE_ROLE: Role = "system"
 
+#: ``next_node`` value meaning "the last entry of ``completed`` finished, but its router
+#: has not yet produced a successor". Only ever observed by a resume that follows a
+#: failure inside a router; resume re-runs that router, which is safe because a router is
+#: pure by construction (see :data:`RouterFn`).
+_ROUTING_PENDING = "__routing__"
+
 
 @dataclass
 class _Node[StateT: BaseModel]:
@@ -213,6 +219,11 @@ class StateGraph[StateT: BaseModel]:
             raise GraphValidationError(
                 f"{END!r} is the reserved terminal node name and cannot be used for a "
                 "node. Point an edge at END to finish the run instead."
+            )
+        if name == _ROUTING_PENDING:
+            raise GraphValidationError(
+                f"{_ROUTING_PENDING!r} is reserved: it is the checkpoint marker for a node "
+                "that finished before its router chose a successor. Pick another name."
             )
         if not name or not isinstance(name, str):
             raise GraphValidationError(f"Node names must be non-empty strings, got {name!r}.")
@@ -487,6 +498,9 @@ class CompiledGraph[StateT: BaseModel]:
         can continue it without re-running the nodes that already finished. A
         ``thread_id`` without a checkpointer is a ``ValueError``; a checkpointer without
         a ``thread_id`` persists nothing, so durability stays opt-in per run.
+
+        ``state`` is deep-copied on the way in, so the object you pass is never written
+        through and one seed object can safely start several concurrent runs.
         """
         run = self._new_run(state, thread_id)
         async for _ in self._drive(run):
@@ -529,7 +543,9 @@ class CompiledGraph[StateT: BaseModel]:
                 f"StateGraph({self.state_type.__name__})."
             )
         return _Run(
-            state=state,
+            # Deep-copied so the caller's object is never written through, and so two
+            # runs seeded from one state cannot share a list to corrupt.
+            state=state.model_copy(deep=True),
             next_node=self.entry_point,
             completed=[],
             iterations=0,
@@ -622,7 +638,7 @@ class CompiledGraph[StateT: BaseModel]:
         state = state_from_json(self.state_type, stored.state_json)
         run = _Run(
             state=state,
-            next_node=stored.next_node,
+            next_node=self._resolve_routing(stored, state, thread_id),
             completed=list(stored.completed),
             iterations=stored.iterations,
             thread_id=thread_id,
@@ -675,8 +691,7 @@ class CompiledGraph[StateT: BaseModel]:
                 if skip_pending:
                     skip_pending = False
                     run.completed.append(node.name)
-                    run.next_node = self._next_of(node, run.state)
-                    await self._checkpoint(run, status="running")
+                    await self._route_after(run, node)
                     continue
 
                 if run.iterations >= self.max_iterations:
@@ -702,10 +717,7 @@ class CompiledGraph[StateT: BaseModel]:
                 run.iterations += 1
                 run.completed.append(node.name)
                 run.executed.append(node.name)
-                run.next_node = self._next_of(node, run.state)
-                # After the node's update has landed, so the durable record says this
-                # node is done and resume must not run it again.
-                await self._checkpoint(run, status="running")
+                await self._route_after(run, node)
                 yield GraphNodeCompleted(
                     node=node.name, iteration=run.iterations - 1, state=run.state
                 )
@@ -735,6 +747,45 @@ class CompiledGraph[StateT: BaseModel]:
             accumulate=self._append,
             node=node.name,
         )
+
+    def _resolve_routing(self, stored: _GraphState, state: StateT, thread_id: str) -> str:
+        """Turn a parked ``__routing__`` checkpoint back into a real next node.
+
+        The node that wrote it completed; only its router still owes an answer, so the
+        router is re-run against the state that node left. A router that still raises
+        raises here, which is the right outcome — the run cannot proceed — but the
+        completion record survives, so the node is not run twice.
+        """
+        if stored.next_node != _ROUTING_PENDING:
+            return stored.next_node
+        if not stored.completed:  # pragma: no cover - written only after a completion
+            raise GraphValidationError(
+                f"Thread {thread_id!r} is parked mid-routing but records no completed "
+                "node, so there is no router to re-run. The checkpoint is inconsistent."
+            )
+        last = stored.completed[-1]
+        node = self._nodes.get(last)
+        if node is None:
+            raise GraphValidationError(
+                f"Thread {thread_id!r} is parked after node {last!r}, which this graph "
+                f"does not have. Registered nodes: {sorted(self._nodes)}. Resume with the "
+                "graph the run was started with."
+            )
+        return self._next_of(node, state)
+
+    async def _route_after(self, run: _Run[StateT], node: _Node[StateT]) -> None:
+        """Durably record that ``node`` finished, then decide what runs next.
+
+        Two writes rather than one, and in this order, because a router is user code that
+        can raise: a single write after routing would leave a node whose side effect
+        already landed unrecorded, so resume would run it a second time. The first write
+        parks ``next_node`` on a sentinel meaning "``node`` is done, its successor is not
+        yet known"; :meth:`_resume_run` re-runs only the router when it sees one.
+        """
+        run.next_node = _ROUTING_PENDING
+        await self._checkpoint(run, status="running")
+        run.next_node = self._next_of(node, run.state)
+        await self._checkpoint(run, status="running")
 
     def _next_of(self, node: _Node[StateT], state: StateT) -> str:
         """Decide what runs after ``node``, following its edge or asking its router."""

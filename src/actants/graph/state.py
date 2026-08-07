@@ -19,6 +19,7 @@ each pass through a loop adds to what the earlier passes found.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any, Final, Literal, TypeVar
 
 from pydantic import BaseModel
@@ -99,8 +100,10 @@ def merge_update(
 ) -> StateT:
     """Apply one node's update to ``state``, returning a new state.
 
-    Never mutates ``state``: the caller holds the pre-node value while this runs, and a
-    node that fails must leave the state exactly as the last successful node left it.
+    Never mutates ``state``, and never *shares* mutable containers with it: the returned
+    state is independent, so a node that mutates a list in place cannot reach back into
+    the value an earlier node — or a concurrent run — is holding. ``model_copy`` alone is
+    shallow and would leave the two aliased.
 
     Unknown keys are an error rather than being ignored. A node returning a dict cannot
     have its keys checked by a type checker, so this is the only place a typo like
@@ -130,7 +133,9 @@ def merge_update(
     # model_copy(update=...) deliberately skips validation, which would otherwise re-run
     # every validator on every node and turn a field's validator into a per-node cost.
     # The values come from typed node functions, and unknown keys are rejected above.
-    return state.model_copy(update=merged)
+    # deep=True because the shallow form aliases every container the update did not
+    # replace, which is how an in-place mutation in one run reached another run's state.
+    return state.model_copy(update=deepcopy(merged), deep=True)
 
 
 def _as_items(value: Any, *, node: str, field: str) -> list[Any]:

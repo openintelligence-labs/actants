@@ -39,6 +39,9 @@ The hierarchy::
     │   ├── UnknownThreadError          (KeyError)
     │   ├── UnresolvedToolCallError     (RuntimeError)
     │   └── CheckpointSchemaMismatch    (RuntimeError)
+    ├── GraphError
+    │   ├── GraphValidationError        (ValueError)
+    │   └── GraphRecursionError         (RuntimeError)
     └── MCPConnectionError              (RuntimeError)
 """
 
@@ -53,6 +56,9 @@ __all__ = [
     "ActantsError",
     "CheckpointError",
     "CheckpointSchemaMismatch",
+    "GraphError",
+    "GraphRecursionError",
+    "GraphValidationError",
     "MissingAPIKeyError",
     "ModelNotFoundError",
     "ProviderError",
@@ -150,3 +156,30 @@ class CheckpointSchemaMismatch(CheckpointError, RuntimeError):
     Unlike a cache, this is never discarded automatically: the rows are the only record
     of which tool side effects already ran.
     """
+
+
+class GraphError(ActantsError):
+    """A :class:`~actants.graph.state_graph.StateGraph` could not be built or run."""
+
+
+class GraphValidationError(GraphError, ValueError):
+    """A graph's shape is wrong, caught by ``compile()`` before anything runs.
+
+    Every check this reports — an undefined edge target, an unreachable node, a missing
+    entry point — is a structural mistake that would otherwise surface as a confusing
+    failure halfway through a run, after side effects had already happened.
+    """
+
+
+class GraphRecursionError(GraphError, RuntimeError):
+    """A graph ran ``max_iterations`` nodes without reaching END.
+
+    Graphs loop by design, so actants cannot tell a slow convergence from a stuck one;
+    the cap is the backstop. The message names the node the run was executing when the
+    budget ran out, which is nearly always the one whose router never returns END.
+    """
+
+    def __init__(self, message: str, *, node: str, iterations: int) -> None:
+        super().__init__(message)
+        self.node = node
+        self.iterations = iterations

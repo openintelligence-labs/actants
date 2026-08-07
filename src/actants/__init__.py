@@ -27,6 +27,22 @@ _LAZY: dict[str, tuple[str, str]] = {
     "InMemoryCheckpointer": ("actants.agents.checkpoint", "InMemoryCheckpointer"),
     "SqliteCheckpointer": ("actants.agents.checkpoint", "SqliteCheckpointer"),
     "ResumeResolution": ("actants.agents.agent", "ResumeResolution"),
+    # Typed state graphs: branching and looping workflows over a pydantic state model.
+    "StateGraph": ("actants.graph.state_graph", "StateGraph"),
+    "CompiledGraph": ("actants.graph.state_graph", "CompiledGraph"),
+    "GraphResult": ("actants.graph.state_graph", "GraphResult"),
+    "NodeFn": ("actants.graph.state_graph", "NodeFn"),
+    "RouterFn": ("actants.graph.state_graph", "RouterFn"),
+    "END": ("actants.graph.state", "END"),
+    "EndT": ("actants.graph.state", "EndT"),
+    "Append": ("actants.graph.state", "Append"),
+    "agent_node": ("actants.graph.agent_node", "agent_node"),
+    # CompiledGraph.stream() events, the graph-level counterparts of the agent's.
+    "GraphEvent": ("actants.graph.events", "GraphEvent"),
+    "GraphNodeStarted": ("actants.graph.events", "GraphNodeStarted"),
+    "GraphNodeCompleted": ("actants.graph.events", "GraphNodeCompleted"),
+    "GraphInterrupted": ("actants.graph.events", "GraphInterrupted"),
+    "GraphCompleted": ("actants.graph.events", "GraphCompleted"),
     # Agent.stream() events. The LLM-level StreamEvent union and its members are
     # exported below; these are their agent-level counterparts and are what
     # Agent.stream() actually yields, so they belong at the same level.
@@ -84,6 +100,9 @@ _LAZY: dict[str, tuple[str, str]] = {
     "CheckpointSchemaMismatch": ("actants.errors", "CheckpointSchemaMismatch"),
     "UnknownThreadError": ("actants.errors", "UnknownThreadError"),
     "UnresolvedToolCallError": ("actants.errors", "UnresolvedToolCallError"),
+    "GraphError": ("actants.errors", "GraphError"),
+    "GraphValidationError": ("actants.errors", "GraphValidationError"),
+    "GraphRecursionError": ("actants.errors", "GraphRecursionError"),
     # Cache
     "InMemoryCache": ("actants.cache.memory", "InMemoryCache"),
     "CacheBackend": ("actants.cache.protocol", "CacheBackend"),
@@ -193,6 +212,9 @@ if TYPE_CHECKING:
     from actants.errors import ActantsError as ActantsError
     from actants.errors import CheckpointError as CheckpointError
     from actants.errors import CheckpointSchemaMismatch as CheckpointSchemaMismatch
+    from actants.errors import GraphError as GraphError
+    from actants.errors import GraphRecursionError as GraphRecursionError
+    from actants.errors import GraphValidationError as GraphValidationError
     from actants.errors import MissingAPIKeyError as MissingAPIKeyError
     from actants.errors import ModelNotFoundError as ModelNotFoundError
     from actants.errors import ProviderError as ProviderError
@@ -202,6 +224,20 @@ if TYPE_CHECKING:
     from actants.errors import UnknownThreadError as UnknownThreadError
     from actants.errors import UnresolvedToolCallError as UnresolvedToolCallError
     from actants.errors import UnsupportedSchemaError as UnsupportedSchemaError
+    from actants.graph.agent_node import agent_node as agent_node
+    from actants.graph.events import GraphCompleted as GraphCompleted
+    from actants.graph.events import GraphEvent as GraphEvent
+    from actants.graph.events import GraphInterrupted as GraphInterrupted
+    from actants.graph.events import GraphNodeCompleted as GraphNodeCompleted
+    from actants.graph.events import GraphNodeStarted as GraphNodeStarted
+    from actants.graph.state import END as END
+    from actants.graph.state import Append as Append
+    from actants.graph.state import EndT as EndT
+    from actants.graph.state_graph import CompiledGraph as CompiledGraph
+    from actants.graph.state_graph import GraphResult as GraphResult
+    from actants.graph.state_graph import NodeFn as NodeFn
+    from actants.graph.state_graph import RouterFn as RouterFn
+    from actants.graph.state_graph import StateGraph as StateGraph
     from actants.llm.base import BaseLLMProvider as BaseLLMProvider
     from actants.llm.base import ChatMessage as ChatMessage
     from actants.llm.base import CompletionResult as CompletionResult

@@ -17,6 +17,7 @@ pytest tests/
 - `ruff check .` passes
 - `ruff format --check .` passes
 - `pytest tests/` passes
+- `mypy --strict src/` passes — CI checks the whole tree, not just the entry point
 - New public functions have docstrings
 - Tests cover the new behavior
 

@@ -33,8 +33,12 @@ jobs:
       # (tests/test_public_api_typing.py).
       - name: Test
         run: pytest tests/ -q
-      - name: Type-check public API surface
-        run: mypy --strict --no-incremental src/actants/__init__.py
+      # The whole tree, not just the public entry point. This gate used to run against
+      # src/actants/__init__.py alone, so the package shipped py.typed while 93 strict
+      # errors sat in the modules behind it. The single documented exception is the
+      # stubless sqlite-vec import, scoped in pyproject's [[tool.mypy.overrides]].
+      - name: Type-check (strict, whole tree)
+        run: mypy --strict --no-incremental src/
 
   build:
     runs-on: ubuntu-latest

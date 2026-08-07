@@ -83,7 +83,7 @@ dev = [
     "pytest-asyncio>=0.23",
     "pytest-httpx>=0.30",
     "ruff>=0.16,<0.17",  # pin minor: ruff 0.16 began format-checking Markdown code blocks; unpinned CI broke on release day
-    "mypy>=1.11",  # the public API must stay clean under `mypy --strict` for consumers
+    "mypy>=1.11",  # all of src/ must stay clean under `mypy --strict` for consumers
     "build>=1.0",
     "twine>=5.0",
     "click>=8.1",
@@ -107,6 +107,21 @@ actants = ["py.typed"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.mypy]
+strict = true
+
+# sqlite-vec (0.1.9) ships no py.typed marker and has no stub package on PyPI --
+# `types-sqlite-vec` does not exist -- so `import sqlite_vec` cannot resolve under
+# --strict. This is the only third-party import in the tree without types.
+#
+# Deliberately scoped to the dependency's own module, NOT to actants.cache.semantic:
+# the module that imports it stays fully type-checked, and only the unresolvable
+# import is excused. `sqlite_vec.load(conn)` is consequently `Any`, which is the one
+# call this buys. Drop this block if sqlite-vec ever ships types.
+[[tool.mypy.overrides]]
+module = ["sqlite_vec"]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100

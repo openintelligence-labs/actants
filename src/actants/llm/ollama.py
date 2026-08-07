@@ -228,8 +228,8 @@ class OllamaProvider(BaseLLMProvider):
         return payload
 
 
-def _message_to_ollama(m: ChatMessage) -> dict:
-    out: dict = {"role": m.role, "content": m.content}
+def _message_to_ollama(m: ChatMessage) -> dict[str, Any]:
+    out: dict[str, Any] = {"role": m.role, "content": m.content}
     if m.tool_calls:
         out["tool_calls"] = [
             {"id": tc.id, "function": {"name": tc.name, "arguments": tc.arguments}}

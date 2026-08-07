@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from actants.embeddings.base import BaseEmbeddingProvider, EmbeddingResult
@@ -63,9 +65,11 @@ class Embeddings:
     def cosine(a: list[float], b: list[float]) -> float:
         if not a or not b or len(a) != len(b):
             return 0.0
-        dot = sum(x * y for x, y in zip(a, b, strict=False))
-        na = sum(x * x for x in a) ** 0.5
-        nb = sum(y * y for y in b) ** 0.5
+        dot = sum((x * y for x, y in zip(a, b, strict=False)), 0.0)
+        # math.sqrt over `** 0.5`: typeshed types float.__pow__ as Any, which leaked
+        # out of this function's declared `-> float`.
+        na = math.sqrt(sum((x * x for x in a), 0.0))
+        nb = math.sqrt(sum((y * y for y in b), 0.0))
         if na == 0 or nb == 0:
             return 0.0
         return dot / (na * nb)

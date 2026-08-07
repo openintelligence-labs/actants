@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import cast
 
 
 def parse_partial_json(text: str) -> object | None:
@@ -13,14 +14,16 @@ def parse_partial_json(text: str) -> object | None:
     s = _strip_prose(text)
     if not s:
         return None
+    # `json.loads` is typed `Any`; the annotation here is deliberately `object`, so
+    # narrow rather than let the Any leak out into every caller of this function.
     try:
-        return json.loads(s)
+        return cast(object, json.loads(s))
     except json.JSONDecodeError:
         pass
     repaired = _close_open_structures(s)
     if repaired != s:
         try:
-            return json.loads(repaired)
+            return cast(object, json.loads(repaired))
         except json.JSONDecodeError:
             return None
     return None

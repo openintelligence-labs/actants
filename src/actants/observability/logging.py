@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Any, Literal
+from typing import Any, Literal, TextIO
 
 import structlog
+from structlog.typing import Processor
 
 LogFormat = Literal["pretty", "json"]
 LogLevel = Literal["debug", "info", "warning", "error", "critical"]
@@ -14,7 +15,7 @@ def setup_logging(
     *,
     level: LogLevel = "info",
     format: LogFormat = "pretty",  # noqa: A002 — matches stdlib logging idiom
-    stream=None,
+    stream: TextIO | None = None,
 ) -> None:
     """Configure structlog + stdlib logging in one call.
 
@@ -23,7 +24,7 @@ def setup_logging(
     ``json`` emits one JSON object per line for log aggregation.
     """
     timestamper = structlog.processors.TimeStamper(fmt="iso", utc=True)
-    shared = [
+    shared: list[Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
         timestamper,

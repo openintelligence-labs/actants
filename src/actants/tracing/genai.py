@@ -12,6 +12,7 @@ a cost attribute — we don't squat on ``gen_ai.*``.
 from __future__ import annotations
 
 import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -91,7 +92,7 @@ async def chat_span(
     request_temperature: float | None = None,
     request_top_p: float | None = None,
     streaming: bool = False,
-):
+) -> AsyncIterator[Span]:
     """Open a span for one LLM chat call.
 
     Span name: ``"chat <model>"`` per spec. The yielded span has ``record_response()``
@@ -148,7 +149,7 @@ async def execute_tool_span(
     tool_name: str,
     tool_call_id: str | None = None,
     tool_description: str | None = None,
-):
+) -> AsyncIterator[Span]:
     """Open a span for one tool execution. Span kind: INTERNAL."""
     from opentelemetry.trace import SpanKind
 
@@ -168,7 +169,7 @@ async def invoke_agent_span(
     agent_name: str,
     agent_id: str | None = None,
     conversation_id: str | None = None,
-):
+) -> AsyncIterator[Span]:
     """Open a parent span around a full agent run. Children: chat, execute_tool."""
     name = f"invoke_agent {agent_name}"
     tracer = get_tracer()
@@ -186,7 +187,7 @@ async def embeddings_span(
     model: str,
     provider: str,
     input_count: int | None = None,
-):
+) -> AsyncIterator[Span]:
     """Open a span for an embeddings request."""
     name = f"embeddings {model}"
     tracer = get_tracer()

@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import json as _json
 import sys
+from collections.abc import Callable
 from typing import Any
 
 try:
@@ -11,7 +12,7 @@ try:
 except ImportError as exc:
     raise ImportError("actants.cli requires the 'cli' extra: pip install 'actants[cli]'") from exc
 
-from actants.observability.logging import setup_logging
+from actants.observability.logging import LogFormat, LogLevel, setup_logging
 
 console = Console(stderr=False)
 _err_console = Console(stderr=True)
@@ -40,11 +41,15 @@ def make_app(name: str, *, help: str | None = None) -> click.Group:  # noqa: A00
     return app
 
 
-def common_options(func):
+def common_options(func: Callable[..., Any]) -> Callable[..., Any]:
     """Apply standard --debug, --quiet, --json, --log-format flags to a Click command.
 
     Reads them, configures logging, and pops them from kwargs before calling the wrapped
     function. The function still receives a ``json_output: bool`` kwarg if it asks for it.
+
+    Returns `Callable[..., Any]` rather than a signature-preserving type because the
+    Click option decorators below rewrite the parameter list: the returned command takes
+    the flags declared here, which the input signature does not mention.
     """
 
     @click.option("--debug/--no-debug", default=False, help="Verbose logging.")
@@ -57,9 +62,19 @@ def common_options(func):
         help="Log rendering format.",
     )
     @functools.wraps(func)
-    def wrapper(*args, debug: bool, quiet: bool, json_output: bool, log_format: str, **kwargs):
-        level = "debug" if debug else "error" if quiet else "info"
-        setup_logging(level=level, format=log_format)  # type: ignore[arg-type]
+    def wrapper(
+        *args: Any,
+        debug: bool,
+        quiet: bool,
+        json_output: bool,
+        log_format: str,
+        **kwargs: Any,
+    ) -> Any:
+        level: LogLevel = "debug" if debug else "error" if quiet else "info"
+        # click.Choice above constrains this to the two LogFormat values, but that
+        # constraint is runtime-only, so narrow it explicitly instead of asserting.
+        fmt: LogFormat = "json" if log_format == "json" else "pretty"
+        setup_logging(level=level, format=fmt)
         if "json_output" in func.__code__.co_varnames:
             kwargs["json_output"] = json_output
         return func(*args, **kwargs)

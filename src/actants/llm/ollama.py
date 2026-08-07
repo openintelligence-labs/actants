@@ -23,6 +23,7 @@ from actants.llm.base import (
 )
 from actants.llm.errors import raise_for_ollama_error
 from actants.llm.finish_reason import normalize_finish_reason
+from actants.llm.structured import NativeSchemaMode
 
 log = structlog.get_logger(__name__)
 
@@ -35,6 +36,9 @@ class OllamaProvider(BaseLLMProvider):
     name = "ollama"
     supports_tool_calls = True
     supports_streaming_tools = True
+    #: ``format`` takes a whole JSON Schema, not only the string ``"json"``, and
+    #: ``_TOP_LEVEL_FIELDS`` already routes it to the top level of /api/chat.
+    native_schema_mode: NativeSchemaMode = "ollama"
 
     def __init__(
         self,

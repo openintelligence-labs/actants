@@ -49,6 +49,15 @@ _LAZY: dict[str, tuple[str, str]] = {
     "FinishReason": ("actants.llm.finish_reason", "FinishReason"),
     "FINISH_REASONS": ("actants.llm.finish_reason", "FINISH_REASONS"),
     "normalize_finish_reason": ("actants.llm.finish_reason", "normalize_finish_reason"),
+    # Structured output: how extract() asks a provider for schema-valid JSON, and how a
+    # caller tells the native path from the prompt fallback.
+    "SchemaPlan": ("actants.llm.structured", "SchemaPlan"),
+    "NativeSchemaMode": ("actants.llm.structured", "NativeSchemaMode"),
+    "NATIVE_SCHEMA_MODES": ("actants.llm.structured", "NATIVE_SCHEMA_MODES"),
+    "UnsupportedSchemaError": ("actants.errors", "UnsupportedSchemaError"),
+    "build_schema_plan": ("actants.llm.structured", "build_schema_plan"),
+    "to_strict_schema": ("actants.llm.structured", "to_strict_schema"),
+    "to_gemini_schema": ("actants.llm.structured", "to_gemini_schema"),
     "StreamEvent": ("actants.llm.base", "StreamEvent"),
     "TextDelta": ("actants.llm.base", "TextDelta"),
     "TokenUsage": ("actants.llm.base", "TokenUsage"),
@@ -192,6 +201,7 @@ if TYPE_CHECKING:
     from actants.errors import UnknownProviderError as UnknownProviderError
     from actants.errors import UnknownThreadError as UnknownThreadError
     from actants.errors import UnresolvedToolCallError as UnresolvedToolCallError
+    from actants.errors import UnsupportedSchemaError as UnsupportedSchemaError
     from actants.llm.base import BaseLLMProvider as BaseLLMProvider
     from actants.llm.base import ChatMessage as ChatMessage
     from actants.llm.base import CompletionResult as CompletionResult
@@ -209,6 +219,12 @@ if TYPE_CHECKING:
     from actants.llm.finish_reason import FinishReason as FinishReason
     from actants.llm.finish_reason import normalize_finish_reason as normalize_finish_reason
     from actants.llm.ollama import OllamaProvider as OllamaProvider
+    from actants.llm.structured import NATIVE_SCHEMA_MODES as NATIVE_SCHEMA_MODES
+    from actants.llm.structured import NativeSchemaMode as NativeSchemaMode
+    from actants.llm.structured import SchemaPlan as SchemaPlan
+    from actants.llm.structured import build_schema_plan as build_schema_plan
+    from actants.llm.structured import to_gemini_schema as to_gemini_schema
+    from actants.llm.structured import to_strict_schema as to_strict_schema
     from actants.observability.logging import get_logger as get_logger
     from actants.observability.logging import setup_logging as setup_logging
     from actants.policies.fallback import AllProvidersFailedError as AllProvidersFailedError

@@ -59,6 +59,7 @@ __all__ = [
     "ProviderNotInstalledError",
     "ToolCallsNotSupportedError",
     "UnknownProviderError",
+    "UnsupportedSchemaError",
     "UnknownThreadError",
     "UnresolvedToolCallError",
 ]
@@ -94,6 +95,17 @@ class ModelNotFoundError(ProviderError, ValueError):
 
 class ToolCallsNotSupportedError(ProviderError, TypeError):
     """Tools were passed to a provider that declares it cannot call them."""
+
+
+class UnsupportedSchemaError(ProviderError, ValueError):
+    """A schema cannot be expressed in a provider's native structured-output dialect.
+
+    Raised inside the schema translators and handled by
+    :meth:`~actants.llm.client.LLM.extract`, which downgrades that call to the
+    prompt-based path rather than failing — so it does not normally reach a caller.
+    Catch it when calling :func:`~actants.llm.structured.to_strict_schema` or
+    :func:`~actants.llm.structured.to_gemini_schema` directly.
+    """
 
 
 class CheckpointError(ActantsError):

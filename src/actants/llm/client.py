@@ -35,6 +35,12 @@ from actants.llm.errors import (
 )
 from actants.llm.ollama import OllamaProvider
 from actants.llm.partial_json import parse_partial_json
+from actants.llm.structured import (
+    ANTHROPIC_EXTRACT_TOOL,
+    SchemaPlan,
+    build_schema_plan,
+    prompt_schema_guide,
+)
 from actants.policies.retry import RetryPolicy, retry_async
 from actants.tools.base import serialize_tool_result
 from actants.tracing.otel import llm_span
@@ -281,6 +287,7 @@ class LLM:
         self.cost_tracker = cost_tracker
         self.retry_policy = retry_policy
         self.tracing = tracing
+        self._last_schema_plan: SchemaPlan | None = None
 
     async def complete(
         self,
@@ -425,9 +432,13 @@ class LLM:
     ) -> T:
         """Prompt the model and parse the response into the given pydantic model.
 
-        If the first response doesn't parse, retries once with the parser error appended
-        to the conversation so the model can self-correct. Works across all providers
-        since it asks for JSON via prompt rather than provider-specific JSON modes.
+        Where the provider supports provider-native constrained decoding — OpenAI's
+        ``response_format``, a forced tool call on Anthropic, ``responseSchema`` on
+        Gemini, ``format`` on Ollama — the schema is sent on the wire and invalid output
+        is impossible rather than merely unlikely. Everywhere else, and for any schema
+        the provider's dialect cannot express, the schema is described in a system
+        prompt and a failed parse is repaired. Both paths return the same validated
+        instance; :meth:`last_schema_plan` reports which one ran.
 
         ``tag`` is recorded on the CostTracker as in :meth:`complete`. Every attempt is
         recorded under the same tag, including repairs that failed to parse — a repair
@@ -438,15 +449,12 @@ class LLM:
         self-correction after it, for at most two requests. ``max_repairs=0`` disables
         repair entirely. This differs deliberately from ``RetryPolicy.max_attempts`` and
         ``max_steps``, which bound the total; see the note in the class docstring.
+        Its meaning is unchanged on the native path — the repair loop is simply never
+        entered, because a schema-valid response cannot fail to parse.
         """
         _require_pydantic_model(schema)
-        schema_json = json.dumps(schema.model_json_schema(), indent=2)
-        guide = (
-            "Respond with ONLY valid JSON matching this JSON Schema. No prose, no code fences.\n"
-            f"Schema:\n{schema_json}"
-        )
-        effective_system = f"{system}\n\n{guide}" if system else guide
-        messages = self._normalize(prompt, system=effective_system)
+        plan = self._plan_schema(schema)
+        messages = self._normalize(prompt, system=self._extract_system(schema, plan, system))
 
         last_err: Exception | None = None
         for attempt in range(max_repairs + 1):
@@ -456,9 +464,10 @@ class LLM:
                 temperature=temperature,
                 tag=tag,
                 use_cache=False,
+                **plan.request_kwargs,
             )
             try:
-                return schema.model_validate_json(_extract_json(result.content))
+                return schema.model_validate_json(_extract_payload(result, plan))
             except Exception as exc:
                 last_err = exc
                 if attempt >= max_repairs:
@@ -474,6 +483,39 @@ class LLM:
                     )
                 )
         raise ValueError(f"Failed to extract {schema.__name__} from model output: {last_err}")
+
+    def _plan_schema(self, schema: type[BaseModel], *, streaming: bool = False) -> SchemaPlan:
+        """Choose the transport for one extraction and record it for :meth:`last_schema_plan`."""
+        plan = build_schema_plan(schema, self.provider.native_schema_mode, streaming=streaming)
+        self._last_schema_plan = plan
+        return plan
+
+    def last_schema_plan(self) -> SchemaPlan | None:
+        """How the most recent :meth:`extract` / :meth:`extract_stream` call was sent.
+
+        ``None`` before the first call. This is the supported way to tell the native
+        path from the prompt path — the alternative would be a log line on every
+        extraction, which is noise in the overwhelming case where the answer never
+        changes for a given provider and schema.
+
+        Reflects one client's last call, so read it from the same task that made the
+        call: two concurrent extractions on one ``LLM`` overwrite each other's plan.
+        """
+        return self._last_schema_plan
+
+    def _extract_system(
+        self, schema: type[BaseModel], plan: SchemaPlan, system: str | None
+    ) -> str | None:
+        """Append the JSON-Schema instruction to ``system``, unless the wire carries it.
+
+        On the native path the schema is already a hard constraint, so repeating it in
+        the prompt would spend tokens on every call to say something the decoder is
+        enforcing anyway.
+        """
+        if plan.native:
+            return system
+        guide = prompt_schema_guide(schema)
+        return f"{system}\n\n{guide}" if system else guide
 
     async def extract_stream(
         self,
@@ -491,16 +533,17 @@ class LLM:
         Emits a new instance only when the parsed output has changed. The final
         yield is the fully-parsed and validated ``schema`` instance.
 
+        Uses provider-native constrained decoding where the provider has a mode that
+        streams as *text* — every partial parse then comes off a stream that cannot go
+        schema-invalid. Anthropic's forced tool call is excluded: its JSON arrives as
+        tool-call input rather than text deltas, so that provider streams via the prompt
+        path. :meth:`last_schema_plan` reports which ran.
+
         ``tag`` is recorded on the CostTracker as in :meth:`stream_events`.
         """
         _require_pydantic_model(schema)
-        schema_json = json.dumps(schema.model_json_schema(), indent=2)
-        guide = (
-            "Respond with ONLY valid JSON matching this JSON Schema. No prose, no code fences.\n"
-            f"Schema:\n{schema_json}"
-        )
-        effective_system = f"{system}\n\n{guide}" if system else guide
-        messages = self._normalize(prompt, system=effective_system)
+        plan = self._plan_schema(schema, streaming=True)
+        messages = self._normalize(prompt, system=self._extract_system(schema, plan, system))
 
         buf = ""
         last_serialized: str | None = None
@@ -512,6 +555,7 @@ class LLM:
             tools=None,
             op="extract_stream",
             tag=tag,
+            extra=plan.request_kwargs or None,
         ):
             if isinstance(event, TextDelta):
                 buf += event.text
@@ -853,6 +897,26 @@ class LLM:
                     "Wrap plain strings: ChatMessage(role='user', content=...)."
                 )
         return messages
+
+
+def _extract_payload(result: CompletionResult, plan: SchemaPlan) -> str:
+    """Pull the JSON body out of a completion, wherever that provider put it.
+
+    The forced-tool path is the one case where the answer is not in ``content`` at all:
+    the model's whole response is the tool call's ``arguments``. Everything else — the
+    other native modes and the prompt path — returns text, which still goes through
+    :func:`_extract_json` because a native mode guarantees the *schema*, not the absence
+    of a code fence around it.
+    """
+    if plan.native and plan.mode == "anthropic_tool":
+        for call in result.tool_calls:
+            if call.name == ANTHROPIC_EXTRACT_TOOL:
+                return json.dumps(call.arguments)
+        raise ValueError(
+            f"Provider was required to call {ANTHROPIC_EXTRACT_TOOL!r} and did not. "
+            f"Got {len(result.tool_calls)} tool call(s) and content {result.content[:200]!r}."
+        )
+    return _extract_json(result.content)
 
 
 def _extract_json(text: str) -> str:

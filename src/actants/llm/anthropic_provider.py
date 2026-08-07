@@ -19,6 +19,7 @@ from actants.llm.base import (
     UsageDelta,
 )
 from actants.llm.finish_reason import normalize_finish_reason
+from actants.llm.structured import NativeSchemaMode
 
 if TYPE_CHECKING:
     from anthropic import AsyncAnthropic
@@ -28,6 +29,9 @@ class AnthropicProvider(BaseLLMProvider):
     name = "anthropic"
     supports_tool_calls = True
     supports_streaming_tools = True
+    #: The Messages API has no ``response_format``; a forced single tool call whose
+    #: ``input_schema`` is the target schema is the constrained-decoding path.
+    native_schema_mode: NativeSchemaMode = "anthropic_tool"
 
     def __init__(
         self,

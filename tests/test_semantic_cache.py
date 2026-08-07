@@ -135,3 +135,53 @@ async def test_sqlite_vec_cache_clear(tmp_path):
     await cache.clear()
     assert len(cache) == 0
     cache.close()
+
+
+# --------------------------------------------------------------------------------------
+# ``path`` and ``embedder`` are snapshotted into the connection, so they must be
+# read-only: assigning them changed nothing about where the cache actually read and
+# wrote, while describe() and repr() went on reporting the new value.
+# --------------------------------------------------------------------------------------
+
+
+def test_path_is_read_only(tmp_path):
+    cache = SqliteVecCache(tmp_path / "cache.db", StubEmbedder())
+    with pytest.raises(AttributeError):
+        cache.path = "/somewhere/else.db"  # type: ignore[misc]
+    cache.close()
+
+
+def test_embedder_is_read_only(tmp_path):
+    cache = SqliteVecCache(tmp_path / "cache.db", StubEmbedder())
+    with pytest.raises(AttributeError):
+        cache.embedder = StubEmbedder()  # type: ignore[misc]
+    cache.close()
+
+
+def test_path_still_readable_and_reported(tmp_path):
+    """Read-only must not mean invisible: describe() and repr() still surface it."""
+    db = tmp_path / "cache.db"
+    cache = SqliteVecCache(db, StubEmbedder())
+    assert cache.path == str(db)
+    assert cache.describe()["path"] == str(db)
+    assert str(db) in repr(cache)
+    cache.close()
+
+
+def test_embedder_still_readable(tmp_path):
+    embedder = StubEmbedder()
+    cache = SqliteVecCache(tmp_path / "cache.db", embedder)
+    assert cache.embedder is embedder
+    cache.close()
+
+
+@pytest.mark.asyncio
+async def test_describe_matches_the_connection_after_use(tmp_path):
+    """describe() must keep telling the truth once the connection is open."""
+    db = tmp_path / "cache.db"
+    cache = SqliteVecCache(db, StubEmbedder(), default_ttl=None)
+    await cache.set_request(_req([ChatMessage(role="user", content="a")], model="m"), _result())
+    described = cache.describe()
+    assert described["path"] == str(db)
+    assert described["entries"] == 1
+    cache.close()

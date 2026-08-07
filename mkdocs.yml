@@ -152,6 +152,7 @@ nav:
       - Config: api/config.md
       - Testing: api/testing.md
   - Reference:
+      - Stability policy: reference/stability.md
       - Differentiation: reference/differentiation.md
       - OTel GenAI: reference/otel.md
       - FAQ: reference/faq.md

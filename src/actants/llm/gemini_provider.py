@@ -23,6 +23,7 @@ from actants.llm.base import (
     ToolSpec,
     UsageDelta,
 )
+from actants.llm.finish_reason import normalize_finish_reason
 
 log = structlog.get_logger(__name__)
 
@@ -131,7 +132,8 @@ class GeminiProvider(BaseLLMProvider):
             usage=usage,
             cost_usd=estimate_cost(self.name, model, prompt_tokens, completion_tokens),
             latency_ms=latency_ms,
-            finish_reason=finish_reason,
+            finish_reason=normalize_finish_reason(self.name, finish_reason),
+            raw_finish_reason=finish_reason,
             tool_calls=tool_calls,
         )
 
@@ -196,7 +198,7 @@ class GeminiProvider(BaseLLMProvider):
             usage=usage,
             cost_usd=estimate_cost(self.name, model, prompt_tokens, completion_tokens),
         )
-        yield FinishDelta(reason=finish_reason)
+        yield FinishDelta.from_provider(self.name, finish_reason)
 
     def _build_payload(
         self,

@@ -257,10 +257,11 @@ shuffled between rounds.
 
 `actants` has the smallest install and the lowest per-call overhead of the
 frameworks tested — statistically tied with hand-written raw HTTP — and
-**loses on tool ergonomics**: registering one tool takes 20 lines against
-LangChain's 10, because released 0.5.3 requires a hand-written JSON Schema.
-(Annotation-based schema inference has since landed on `main`; the table
-measures the released package and will be regenerated when it ships.)
+**loses on tool ergonomics**: registering one tool took 20 lines against
+LangChain's 10, because 0.5.3 — the version measured — required a hand-written
+JSON Schema. Annotation-based schema inference ships in 1.0, so that row is now
+pessimistic; the table has not yet been re-run against 1.0 and still reports
+what was actually measured rather than what is expected.
 
 Model time dominates all wall-clock differences; these overheads are ~5 ms on
 top of a ~150 ms model call. Single machine, small samples, no retrieval or
@@ -281,11 +282,22 @@ Provider        Ollama, OpenAI, Anthropic, Gemini, Groq, Mistral
 Opt-in modules: `mcp`, `a2a`, `embeddings`, `storage`, `cli`, `tracing`,
 `observability`, `config`, `testing`.
 
-## Status
+## Stability
 
-`actants` is pre-1.0. The public API listed in `actants.__all__` is
-documented; everything else is implementation detail and may change. The
-package emits no telemetry.
+`actants` is **1.0**. Within the 1.x series, code using only the public API —
+exactly what `actants.__all__` exports — keeps working and keeps meaning the
+same thing. Names starting with `_` are private. The `mcp`, `a2a`, and `bench`
+modules are provisional because the specs they track are still moving.
+
+Deprecations get a `DeprecationWarning` plus at least two minor releases and
+six months before removal, which never happens outside a major version. Run
+`python -W error::DeprecationWarning -m pytest` against your suite to find out
+whether an upgrade affects you before it does.
+
+Full policy — what semver covers here, what is explicitly not promised, and how
+it is enforced in CI: **[Stability policy](https://actants.openintelligence-labs.org/reference/stability/)**.
+
+The package emits no telemetry.
 
 ## Links
 

@@ -15,7 +15,6 @@ from actants.agents.events import (
 )
 from actants.agents.hooks import AgentHooks
 from actants.agents.memory import ConversationMemory  # noqa: TC001 — runtime use
-from actants.cost.tracker import CostTracker  # noqa: TC001 — runtime use in signatures
 from actants.llm.base import (
     ChatMessage,
     CompletionResult,
@@ -337,12 +336,11 @@ class Agent:
         specs = self.tools.as_specs() if self.tools else None
 
         model = self.llm.settings.model
-        cost_tracker = self.llm.cost_tracker
 
         try:
             async with self._turn(prompt) as turn:
                 async for event in self._stream_turn(
-                    turn, limit=limit, specs=specs, model=model, cost_tracker=cost_tracker, tag=tag
+                    turn, limit=limit, specs=specs, model=model, tag=tag
                 ):
                     yield event
         except Exception as exc:
@@ -357,7 +355,6 @@ class Agent:
         limit: int,
         specs: list[ToolSpec] | None,
         model: str,
-        cost_tracker: CostTracker | None,
         tag: str | None,
     ) -> AsyncIterator[AgentEvent]:
         """The step loop for :meth:`stream`, factored out so the turn scope wraps it."""
@@ -372,11 +369,15 @@ class Agent:
             last_cost = 0.0
 
             # Through the LLM layer, not the provider: this is what gives a streamed
-            # run the same retry, tracing, and per-call override semantics as run().
+            # run the same retry, tracing, cost-tracking, and per-call override semantics
+            # as run(). ``tag`` goes with it, so a tagged streamed agent run is
+            # attributed exactly as a tagged run() is — and is recorded *there*, once,
+            # rather than again below.
             async for event in self.llm.stream_events(
                 msgs,
                 max_tokens=None,
                 tools=specs,
+                tag=tag,
             ):
                 if isinstance(event, TextDelta):
                     step_text.append(event.text)
@@ -397,8 +398,9 @@ class Agent:
                 cost_usd=last_cost,
                 tool_calls=step_tool_calls,
             )
-            if cost_tracker is not None:
-                cost_tracker.record(completion, tag=tag)
+            # No cost_tracker.record() here: LLM.stream_events already recorded this
+            # step's UsageDelta under ``tag``. Recording again would double every
+            # streamed agent run's reported spend.
 
             if self.hooks.after_step is not None:
                 await self.hooks.after_step(step_idx, completion)

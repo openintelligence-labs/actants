@@ -19,6 +19,7 @@ from actants.llm.base import (
     ToolSpec,
     UsageDelta,
 )
+from actants.llm.finish_reason import normalize_finish_reason
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
@@ -101,7 +102,11 @@ class OpenAIProvider(BaseLLMProvider):
             usage=usage,
             cost_usd=estimate_cost(self.name, model, usage.prompt_tokens, usage.completion_tokens),
             latency_ms=latency_ms,
-            finish_reason=choice.finish_reason,
+            # Subclasses (Groq, Mistral, xAI, ...) pass their own ``name`` here; none of
+            # them has a table, so all of them resolve to the OpenAI vocabulary — which
+            # is correct, because they return OpenAI's response shape verbatim.
+            finish_reason=normalize_finish_reason(self.name, choice.finish_reason),
+            raw_finish_reason=choice.finish_reason,
             tool_calls=tool_calls,
         )
 
@@ -169,7 +174,7 @@ class OpenAIProvider(BaseLLMProvider):
                         tool_call=ToolCall(id=slot["id"] or "", name=slot["name"], arguments=args)
                     )
                 pending.clear()
-        yield FinishDelta(reason=finish_reason)
+        yield FinishDelta.from_provider(self.name, finish_reason)
 
 
 def _message_to_openai(m: ChatMessage) -> dict:

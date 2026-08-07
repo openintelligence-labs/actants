@@ -6,6 +6,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
+from actants.llm.finish_reason import FinishReason
+
 Role = Literal["system", "user", "assistant", "tool"]
 
 
@@ -36,7 +38,16 @@ class CompletionResult(BaseModel):
     usage: TokenUsage = Field(default_factory=TokenUsage)
     cost_usd: float = 0.0
     latency_ms: float = 0.0
-    finish_reason: str | None = None
+    #: Why generation stopped, normalized across providers — see
+    #: :data:`~actants.llm.finish_reason.FinishReason`. Safe to branch on: every provider
+    #: maps onto the same six values, and an unrecognized or absent provider value
+    #: becomes ``"unknown"`` rather than leaking through or raising.
+    finish_reason: FinishReason = "unknown"
+    #: The provider's own stop-reason string, exactly as it came off the wire
+    #: (``"end_turn"``, ``"MAX_TOKENS"``, ``"tool_calls"``, ...), or ``None`` if the
+    #: provider reported none. Nothing is lost by normalization; use this for logging or
+    #: a provider-specific workaround, and :attr:`finish_reason` for control flow.
+    raw_finish_reason: str | None = None
     tool_calls: list[ToolCall] = Field(default_factory=list)
 
 
@@ -68,8 +79,32 @@ class UsageDelta(BaseModel):
 
 
 class FinishDelta(BaseModel):
+    """The terminal event of a stream, carrying why generation stopped.
+
+    ``reason`` is normalized the same way as
+    :attr:`CompletionResult.finish_reason`, so a streamed run and a completed one can be
+    branched on identically; ``raw_reason`` preserves the provider's own string.
+
+    A provider may construct this with either — ``FinishDelta(reason="stop")`` in a
+    hand-written provider, or via :meth:`from_provider` to normalize a raw wire value.
+    """
+
     type: Literal["finish"] = "finish"
-    reason: str | None = None
+    reason: FinishReason = "unknown"
+    #: The provider's own stop-reason string, verbatim. See
+    #: :attr:`CompletionResult.raw_finish_reason`.
+    raw_reason: str | None = None
+
+    @classmethod
+    def from_provider(cls, provider: str, raw: str | None) -> FinishDelta:
+        """Build a ``FinishDelta`` from a provider's raw stop-reason string.
+
+        This is what every built-in provider uses, so normalization happens in exactly
+        one place per provider and the raw value is never dropped on the way.
+        """
+        from actants.llm.finish_reason import normalize_finish_reason
+
+        return cls(reason=normalize_finish_reason(provider, raw), raw_reason=raw)
 
 
 StreamEvent = TextDelta | ToolCallDelta | UsageDelta | FinishDelta

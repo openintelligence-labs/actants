@@ -2,9 +2,123 @@
 
 ## [Unreleased]
 
-Architectural defects found by adversarial review, plus the API-surface questions
-left open for the 1.0 freeze. Each changes an API or a protocol, so each lands
-before the freeze rather than after.
+## [1.0.0] - 2026-08-06
+
+**The API is now stable.** See the
+[stability policy](https://actants.openintelligence-labs.org/reference/stability/) for
+what that covers: `actants.__all__` is the public API, 1.x will not break it, and
+anything provisional (`mcp`, `a2a`, `bench`, the cache file format, OTel attribute
+names) says so explicitly.
+
+The honest version of how this release came about: 1.0 was not reached by adding
+features. It was reached by an adversarial review of the existing code that found a
+row of defects sharing one property — **they were all silent**. Tools passed to a
+provider that could not call them were dropped, and the model answered as though no
+tools existed. The semantic cache collided across requests that differed in
+`max_tokens`, so a 4096-token answer could be served to a request capped at 16. Every
+streamed run reported a cost of $0.00. A fallback mid-stream spliced two completions
+into one response. `seed=42` type-checked, looked like it worked, and set no seed.
+None of these raised; each one just returned a plausible wrong answer. Fixing them is
+the substance of this release, and it is why the version number moved.
+
+The API hardening that follows was the second half: a 1.0 promise is only worth making
+about a surface that is worth freezing, so anything that would have been painful to
+live with for the life of 1.x — an unnormalized provider string in a
+provider-agnostic type, a cost tag that vanished on the streaming path, mutable
+attributes that lied after assignment — was fixed *before* the freeze rather than
+deprecated after it.
+
+Also in 1.0: **13 providers** (Ollama, OpenAI, Anthropic, Gemini, plus nine
+OpenAI-compatible hosts behind one generated adapter), **corrected pricing with honest
+unknown-cost reporting** — an unpriced model now surfaces in
+`CostTracker.untracked_models` and flags the total as a lower bound, instead of
+contributing $0.00 to a total that looked authoritative — a **published benchmark**
+with full methodology and reproduction commands, and documentation whose every code
+block is executed as a test.
+
+### Added
+
+- **`tag` on every path that spends money.** `LLM.stream`, `LLM.stream_events`,
+  `LLM.extract`, `LLM.extract_stream`, and `LLM.run_agent_stream` now accept `tag`,
+  matching `LLM.complete` and `Agent.run` / `Agent.stream`. Cost attribution
+  previously vanished the moment a user switched a tagged `complete()` call to
+  streaming: the spend still reached `total_usd`, so nothing looked wrong, but
+  `by_tag` quietly stopped adding up.
+
+  Streamed spend is recorded once per request, when the provider reports its
+  `UsageDelta`, through the same `CostTracker.record()` that `complete()` uses — so an
+  unpriced model streamed under a tag also lands in `untracked_models`, exactly as a
+  completion does. A stream abandoned before the usage event records nothing, because
+  actants never saw what it cost. Recording now happens in one place for all streaming
+  entry points; `Agent.stream` no longer records separately, which also removes a
+  latent double-count.
+
+- **`CompletionResult.raw_finish_reason`** preserves the provider's own stop-reason
+  string verbatim, alongside the normalized `finish_reason`. Nothing is lost by
+  normalization.
+
+- **`FinishReason`, `FINISH_REASONS`, and `normalize_finish_reason`** are exported at
+  top level, since `FinishReason` is now the type of a public field.
+
+### Changed (breaking)
+
+- **`finish_reason` is normalized across providers.** It was `str | None` carrying
+  whatever the provider said — `"stop"` from OpenAI, `"end_turn"` from Anthropic,
+  `"STOP"` from Gemini, `"done"`-style values from Ollama — inside a deliberately
+  provider-agnostic result type, so callers could not branch on it portably without
+  writing the union of every provider's vocabulary. It is now
+  `Literal["stop", "length", "tool_calls", "content_filter", "error", "unknown"]`,
+  mapped explicitly for every provider, with the raw string preserved on
+  `raw_finish_reason`. `FinishDelta` gains the same treatment (`reason` normalized,
+  `raw_reason` verbatim) so streamed and completed runs can be branched on identically.
+
+  This had to land before 1.0 rather than after: a field can be *widened* in a minor
+  release, but never narrowed, so `str | None` would have been permanent.
+
+  An unrecognized provider value maps to `"unknown"` and keeps its raw string — it is
+  never an exception. Providers extend these enums without notice (Gemini alone has
+  added `MALFORMED_FUNCTION_CALL`, `BLOCKLIST`, `SPII`, and `IMAGE_SAFETY` since
+  launch), and a completion that already succeeded must not be turned into a crash by
+  a string actants has not seen before. `FinishReason` is an **open** set: new
+  canonical values may be added in a minor release, so give it a default branch.
+
+  Migration: `result.finish_reason == "stop"` keeps working for OpenAI-family
+  providers and now *also* works for Anthropic, Gemini, and Ollama. Code matching a
+  provider-native spelling (`== "end_turn"`, `== "MAX_TOKENS"`) should either switch to
+  the canonical value or read `raw_finish_reason`. The field is no longer `None` when
+  absent — it is `"unknown"`.
+
+- **`SqliteVecCache.path` and `.embedder` are read-only properties.** Both were plain
+  attributes, but both are snapshotted into the sqlite connection on first use, so
+  assigning them moved nothing while `describe()` and `repr()` went on reporting the
+  new value — the cache would claim to be a file it was not using. Swapping the
+  embedder was worse than a no-op: vectors from two embedders are not comparable, so
+  it would have compared a new model's vectors against an old model's index. Assigning
+  either now raises `AttributeError`. Construct a new cache instead.
+
+### Documentation
+
+- **A stability policy** (`docs_site/reference/stability.md`, linked from the README)
+  states what the 1.0 guarantee covers: the public API is exactly `actants.__all__`,
+  what each semver level permits, which surfaces are provisional and why, what is
+  explicitly *not* promised (model output, costs for a given prompt, cache hit rates,
+  exception message wording), and the deprecation process — `DeprecationWarning` plus
+  at least two minor releases and six months before any removal, which only ever
+  happens in a major version.
+
+- **`max_repairs` counting is documented against `max_attempts` and `max_steps`.** The
+  three were compared and the difference is deliberate, not an off-by-one:
+  `max_attempts` and `max_steps` bound the **total**, while `max_repairs` bounds the
+  **extras** — the initial completion always happens, plus at most `N` self-corrections
+  after it. A repair is not a retry; it sends a new, longer conversation containing the
+  model's bad output and the parser error. Naming it `max_attempts` would have implied
+  `1` allows one self-correction when it would in fact allow none. The `LLM` class
+  docstring now states all three conventions in one place, and tests pin the counts.
+
+---
+
+The remainder of this entry covers the correctness and API work done in the run-up to
+the freeze, all of it released here for the first time.
 
 ### Changed (breaking)
 

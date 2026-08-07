@@ -22,6 +22,7 @@ from actants.llm.base import (
     UsageDelta,
 )
 from actants.llm.errors import raise_for_ollama_error
+from actants.llm.finish_reason import normalize_finish_reason
 
 log = structlog.get_logger(__name__)
 
@@ -110,7 +111,8 @@ class OllamaProvider(BaseLLMProvider):
             usage=usage,
             cost_usd=0.0,
             latency_ms=latency_ms,
-            finish_reason=data.get("done_reason"),
+            finish_reason=normalize_finish_reason(self.name, data.get("done_reason")),
+            raw_finish_reason=data.get("done_reason"),
             tool_calls=tool_calls,
         )
 
@@ -176,7 +178,7 @@ class OllamaProvider(BaseLLMProvider):
             ),
             cost_usd=0.0,
         )
-        yield FinishDelta(reason=finish_reason)
+        yield FinishDelta.from_provider(self.name, finish_reason)
 
     def _build_payload(
         self,

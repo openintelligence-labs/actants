@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-__version__ = "0.5.3"
+__version__ = "1.0.0"
 
 # Public-attribute name → (module path, source attribute name).
 _LAZY: dict[str, tuple[str, str]] = {
@@ -35,6 +35,12 @@ _LAZY: dict[str, tuple[str, str]] = {
     "ChatMessage": ("actants.llm.base", "ChatMessage"),
     "CompletionResult": ("actants.llm.base", "CompletionResult"),
     "FinishDelta": ("actants.llm.base", "FinishDelta"),
+    # The canonical vocabulary CompletionResult.finish_reason is drawn from. Exported
+    # because it is the type of a public field: a consumer writing
+    # `def handle(r: FinishReason) -> ...` needs to be able to name it.
+    "FinishReason": ("actants.llm.finish_reason", "FinishReason"),
+    "FINISH_REASONS": ("actants.llm.finish_reason", "FINISH_REASONS"),
+    "normalize_finish_reason": ("actants.llm.finish_reason", "normalize_finish_reason"),
     "StreamEvent": ("actants.llm.base", "StreamEvent"),
     "TextDelta": ("actants.llm.base", "TextDelta"),
     "TokenUsage": ("actants.llm.base", "TokenUsage"),
@@ -176,6 +182,9 @@ if TYPE_CHECKING:
     from actants.llm.base import UsageDelta as UsageDelta
     from actants.llm.client import LLM as LLM
     from actants.llm.client import LLMSettings as LLMSettings
+    from actants.llm.finish_reason import FINISH_REASONS as FINISH_REASONS
+    from actants.llm.finish_reason import FinishReason as FinishReason
+    from actants.llm.finish_reason import normalize_finish_reason as normalize_finish_reason
     from actants.llm.ollama import OllamaProvider as OllamaProvider
     from actants.observability.logging import get_logger as get_logger
     from actants.observability.logging import setup_logging as setup_logging

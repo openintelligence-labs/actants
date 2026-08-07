@@ -107,8 +107,8 @@ class SqliteVecCache:
                 "Example: SqliteVecCache(path, embedder, on_schema_mismatch='error')."
             )
         self._sqlite3 = sqlite3
-        self.path = str(path)
-        self.embedder = embedder
+        self._path = str(path)
+        self._embedder = embedder
         self.similarity_threshold = similarity_threshold
         self.default_ttl = default_ttl
         self.on_schema_mismatch: SchemaMismatchAction = on_schema_mismatch
@@ -116,6 +116,31 @@ class SqliteVecCache:
         self._conn: sqlite3.Connection | None = None
         self._sqlite_vec = sqlite_vec
         self._dim: int | None = None
+
+    @property
+    def path(self) -> str:
+        """The database file this cache is bound to. **Read-only.**
+
+        Assigning it would have been a no-op with a misleading result: the path is
+        snapshotted into the sqlite connection the first time the cache is used, so a
+        reassignment moved nothing, while :meth:`describe` and :meth:`__repr__` went on
+        reporting the new value — the cache would claim to be somewhere it was not. To
+        use a different file, construct a new ``SqliteVecCache``.
+        """
+        return self._path
+
+    @property
+    def embedder(self) -> Embedder:
+        """The embedder used to vectorize requests. **Read-only.**
+
+        Every stored vector was produced by this embedder, and vectors from two different
+        embedders are not comparable — swapping it mid-flight would silently compare a
+        new model's vectors against an old model's index and return nonsense neighbours
+        within the similarity threshold. The dimension is also fixed in the vec0 table at
+        first connect, so a differently-sized embedder would fail at the sqlite layer
+        instead. Construct a new ``SqliteVecCache`` for a different embedder.
+        """
+        return self._embedder
 
     def _connect(self, dim: int) -> sqlite3.Connection:
         if self._conn is not None:

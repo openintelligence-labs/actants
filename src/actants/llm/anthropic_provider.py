@@ -18,6 +18,7 @@ from actants.llm.base import (
     ToolSpec,
     UsageDelta,
 )
+from actants.llm.finish_reason import normalize_finish_reason
 
 if TYPE_CHECKING:
     from anthropic import AsyncAnthropic
@@ -151,7 +152,8 @@ class AnthropicProvider(BaseLLMProvider):
             usage=usage,
             cost_usd=estimate_cost(self.name, model, usage.prompt_tokens, usage.completion_tokens),
             latency_ms=latency_ms,
-            finish_reason=r.stop_reason,
+            finish_reason=normalize_finish_reason(self.name, r.stop_reason),
+            raw_finish_reason=r.stop_reason,
             tool_calls=tool_calls,
         )
 
@@ -240,4 +242,4 @@ class AnthropicProvider(BaseLLMProvider):
                     final_usage.completion_tokens,
                 ),
             )
-        yield FinishDelta(reason=stop_reason)
+        yield FinishDelta.from_provider(self.name, stop_reason)

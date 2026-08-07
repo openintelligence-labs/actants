@@ -216,6 +216,26 @@ class LLM:
     ``base_url`` are read once, to build :attr:`provider`; assigning them later does
     nothing. Build a new ``LLM`` to change provider, or pass a provider instance
     directly.
+
+    Counting conventions
+    --------------------
+    Three parameters bound how many times actants will go back to the model, and they do
+    not all count the same thing. The rule is that a name saying *attempts* or *steps*
+    bounds the **total**, and a name saying *repairs* bounds the **extras**:
+
+    * ``RetryPolicy(max_attempts=N)`` — at most ``N`` requests in total. ``N=1`` means no
+      retry.
+    * ``max_steps=N`` (:meth:`run_agent`, :meth:`run_agent_stream`, ``Agent.run``) — at
+      most ``N`` LLM round-trips in the loop, in total.
+    * ``max_repairs=N`` (:meth:`extract`) — the initial completion, plus at most ``N``
+      self-correction attempts after it: ``N + 1`` requests in total. ``N=0`` disables
+      repair, and is the analogue of ``max_attempts=1``.
+
+    ``max_repairs`` counts differently on purpose, because a repair is not a retry. A
+    retry re-sends the same request after a transport failure; a repair sends a *new,
+    longer* conversation containing the model's bad output and the parser error, so the
+    model can correct itself. Naming it ``max_attempts`` would suggest ``1`` allows one
+    self-correction, when it would in fact allow none.
     """
 
     def __init__(
@@ -396,6 +416,7 @@ class LLM:
         model: str | None = None,
         temperature: float | None = None,
         system: str | None = None,
+        tag: str | None = None,
         max_repairs: int = 1,
     ) -> T:
         """Prompt the model and parse the response into the given pydantic model.
@@ -403,6 +424,16 @@ class LLM:
         If the first response doesn't parse, retries once with the parser error appended
         to the conversation so the model can self-correct. Works across all providers
         since it asks for JSON via prompt rather than provider-specific JSON modes.
+
+        ``tag`` is recorded on the CostTracker as in :meth:`complete`. Every attempt is
+        recorded under the same tag, including repairs that failed to parse — a repair
+        costs real tokens, so hiding it would understate what the extraction spent.
+
+        ``max_repairs`` counts *repair* attempts, not total attempts: the initial
+        completion always happens, and ``max_repairs=1`` (the default) allows one
+        self-correction after it, for at most two requests. ``max_repairs=0`` disables
+        repair entirely. This differs deliberately from ``RetryPolicy.max_attempts`` and
+        ``max_steps``, which bound the total; see the note in the class docstring.
         """
         _require_pydantic_model(schema)
         schema_json = json.dumps(schema.model_json_schema(), indent=2)
@@ -419,6 +450,7 @@ class LLM:
                 messages,
                 model=model,
                 temperature=temperature,
+                tag=tag,
                 use_cache=False,
             )
             try:
@@ -447,12 +479,15 @@ class LLM:
         model: str | None = None,
         temperature: float | None = None,
         system: str | None = None,
+        tag: str | None = None,
     ) -> AsyncIterator[T]:
         """Yield progressively-complete pydantic objects as the model streams JSON.
 
         Each yielded instance represents the best parse of the bytes seen so far.
         Emits a new instance only when the parsed output has changed. The final
         yield is the fully-parsed and validated ``schema`` instance.
+
+        ``tag`` is recorded on the CostTracker as in :meth:`stream_events`.
         """
         _require_pydantic_model(schema)
         schema_json = json.dumps(schema.model_json_schema(), indent=2)
@@ -472,6 +507,7 @@ class LLM:
             max_tokens=None,
             tools=None,
             op="extract_stream",
+            tag=tag,
         ):
             if isinstance(event, TextDelta):
                 buf += event.text
@@ -505,9 +541,14 @@ class LLM:
         temperature: float | None = None,
         max_tokens: int | None = None,
         system: str | None = None,
+        tag: str | None = None,
         **extra: Any,
     ) -> AsyncIterator[str]:
         """Stream plain text chunks, with the client's retry and tracing applied.
+
+        ``tag`` is recorded on the CostTracker exactly as in :meth:`complete`, so cost
+        attribution survives the switch from ``complete()`` to streaming. The spend is
+        recorded once, when the provider reports usage — see :meth:`stream_events`.
 
         Extra keyword arguments are provider-specific parameters, forwarded verbatim —
         see :meth:`complete`.
@@ -520,6 +561,7 @@ class LLM:
             max_tokens=max_tokens,
             tools=None,
             op="stream",
+            tag=tag,
             extra=extra,
         ):
             if isinstance(event, TextDelta):
@@ -533,6 +575,7 @@ class LLM:
         temperature: float | None = None,
         max_tokens: int | None = None,
         system: str | None = None,
+        tag: str | None = None,
         tools: list[ToolSpec] | None = None,
         **extra: Any,
     ) -> AsyncIterator[StreamEvent]:
@@ -541,6 +584,12 @@ class LLM:
         Applies the same retry and tracing layers as :meth:`complete`, and honours the
         same per-call ``model`` / ``temperature`` overrides. Extra keyword arguments are
         provider-specific parameters, forwarded verbatim — see :meth:`complete`.
+
+        ``tag`` is recorded on the CostTracker just as in :meth:`complete`. A stream
+        reports its spend in a single :class:`~actants.llm.base.UsageDelta` near the end,
+        so the tracker is credited once per streamed request, at that point — a stream
+        the consumer abandons before the usage event therefore records nothing, because
+        actants never saw what it cost.
         """
         _require_tool_specs(tools)
         self._require_tool_support(tools, streaming=True)
@@ -552,6 +601,7 @@ class LLM:
             max_tokens=max_tokens,
             tools=tools,
             op="stream_events",
+            tag=tag,
             extra=extra,
         ):
             yield event
@@ -565,15 +615,24 @@ class LLM:
         max_tokens: int | None,
         tools: list[ToolSpec] | None,
         op: str,
+        tag: str | None = None,
+        record_cost: bool = True,
         extra: dict[str, Any] | None = None,
     ) -> AsyncIterator[StreamEvent]:
         """The single path every stream in actants goes through.
 
-        Applies per-call model/temperature overrides, tracing, and retry, so a streamed
-        run behaves like a non-streamed one. Retry is deliberately limited to failures
-        that happen *before the first event reaches the consumer*: restarting after
-        chunks have been yielded would splice two completions into one response, the
-        same defect that was fixed in ``FallbackProvider.stream``.
+        Applies per-call model/temperature overrides, tracing, retry, and cost tracking,
+        so a streamed run behaves like a non-streamed one. Retry is deliberately limited
+        to failures that happen *before the first event reaches the consumer*: restarting
+        after chunks have been yielded would splice two completions into one response,
+        the same defect that was fixed in ``FallbackProvider.stream``.
+
+        Cost is recorded here rather than in each caller so that every streaming entry
+        point — :meth:`stream`, :meth:`stream_events`, :meth:`extract_stream`,
+        :meth:`run_agent_stream` — attributes spend to ``tag`` through the same code
+        ``complete`` uses. ``record_cost=False`` is for the one caller that records its
+        own :class:`~actants.llm.base.CompletionResult` (:meth:`Agent.stream`), which
+        would otherwise double-count.
         """
         effective_model = model or self.settings.model
         effective_temp = temperature if temperature is not None else self.settings.temperature
@@ -608,6 +667,21 @@ class LLM:
                         if isinstance(event, UsageDelta):
                             usage = event.usage
                             cost_usd = event.cost_usd
+                            # Recorded the moment the provider reports usage, through the
+                            # same CostTracker.record() that complete() calls — so a
+                            # tagged streamed run lands under its tag, and an unpriced
+                            # model still registers in `untracked_models`.
+                            if record_cost and self.cost_tracker is not None:
+                                self.cost_tracker.record(
+                                    CompletionResult(
+                                        content="",
+                                        model=effective_model,
+                                        provider=self.provider.name,
+                                        usage=usage,
+                                        cost_usd=cost_usd,
+                                    ),
+                                    tag=tag,
+                                )
                         yield event
                     break
                 except Exception as exc:
@@ -639,9 +713,13 @@ class LLM:
         temperature: float | None = None,
         max_steps: int = 6,
         system: str | None = None,
+        tag: str | None = None,
     ) -> AsyncIterator[StreamEvent]:
         """Streaming agent loop. Yields text deltas while the model is thinking,
-        dispatches tool calls as they complete, and loops until a final text answer."""
+        dispatches tool calls as they complete, and loops until a final text answer.
+
+        ``tag`` is recorded on the CostTracker for every step of the loop, matching
+        :meth:`run_agent`."""
         _require_registry(tools)
         messages = self._normalize(prompt, system=system)
         specs = tools.as_specs()
@@ -659,6 +737,7 @@ class LLM:
                 max_tokens=None,
                 tools=specs,
                 op="run_agent_stream",
+                tag=tag,
             ):
                 if isinstance(event, TextDelta):
                     step_text_parts.append(event.text)

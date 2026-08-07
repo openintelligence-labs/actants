@@ -125,6 +125,75 @@ async for event in agent.stream("explain transformers in one paragraph"):
             print()
 ```
 
+## Durable execution
+
+A run given a `checkpointer` and a `thread_id` persists its state after every LLM
+completion and after each individual tool result, so a dead process can be
+picked back up:
+
+```python
+from actants import Agent, LLM, SqliteCheckpointer, ToolRegistry
+
+agent = Agent(
+    llm=LLM(model="llama3.2"),
+    tools=ToolRegistry(),
+    checkpointer=SqliteCheckpointer("runs.db"),
+    interrupt_before=["send_email"],
+)
+
+result = await agent.run("email the customer an apology", thread_id="job-7")
+if result.interrupted:  # paused in front of send_email
+    result = await agent.resume("job-7", approve=True)
+```
+
+The guarantee is narrow and stated rather than implied: resume is **at-most-once
+for every tool call whose result was recorded**, and **at-least-once for the single
+call that was in flight when the process died**. That one call is the irreducible
+ambiguity — the process died before the tool could report — so actants surfaces it
+rather than guessing. Tools registered `idempotent=False` are never auto-replayed;
+they raise `UnresolvedToolCallError` and you resume with `resolve="retry"` or
+`resolve="skip"`.
+
+`interrupt_before` pauses in front of the named tools instead of dispatching them.
+The pending call lives in the checkpoint, so the approval can come from another
+process entirely.
+
+Durability is opt-in per run: no `thread_id` means no storage is touched.
+[Durability](https://actants.openintelligence-labs.org/concepts/durability/) has the
+full contract, and
+[StateGraph](https://actants.openintelligence-labs.org/concepts/graph/) applies the
+same guarantee at node granularity for workflows that branch and loop.
+
+## Record and replay
+
+Wrap a provider to record a real run to JSONL, then replay it offline — no
+network, no key, no server:
+
+```python
+from actants import Agent, LLM, OllamaProvider, ToolRegistry
+from actants.testing import Recording, ReplayProvider, RunRecorder
+
+recorder = RunRecorder("runs/booking.jsonl")
+agent = Agent(llm=LLM(provider=recorder.wrap(OllamaProvider())), tools=ToolRegistry())
+await agent.run("book a flight to Berlin")
+recorder.close()
+
+replayed = Agent(
+    llm=LLM(provider=ReplayProvider(Recording.load("runs/booking.jsonl"))),
+    tools=ToolRegistry(),
+)
+await replayed.run("book a flight to Berlin")  # identical, in milliseconds
+```
+
+Tool results are deliberately **not** replayed — the agent re-dispatches every call
+against your real registry, so a bug in a tool's own logic cannot replay green. Point
+tools at a fixture when replaying.
+
+`EvalSuite` scores runs against cases and diffs two runs' cost, latency, and pass
+rate, with trajectory scorers that catch what a final-answer check cannot — a refund
+agent answering "done!" after calling `refund(cents=100000)` on a $10 order. See
+[Testing agents](https://actants.openintelligence-labs.org/concepts/testing/).
+
 ## Switching providers
 
 ```python

@@ -2467,6 +2467,10 @@ Cosine similarity helper provided for convenience::</p>
 result = await emb.embed([&quot;hello&quot;, &quot;world&quot;])
 score = Embeddings.cosine(result.vectors[0], result.vectors[1])
 </code></pre></div>
+<p><code>settings</code> is copied at construction, so mutating the object you passed in has no
+effect on this client. Of the copy's own fields, only <code>model</code> is re-read per call;
+<code>provider</code> and <code>base_url</code> select the provider once, at construction. To change
+those, build a new <code>Embeddings</code>.</p>
 
 
 

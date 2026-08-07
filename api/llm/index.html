@@ -3008,7 +3008,16 @@ print(r.content, r.cost_usd)</p>
 </blockquote>
 </blockquote>
 </blockquote>
-</details>
+</details>        <h4 id="actants.llm.client.LLM--settings-lifetime">Settings lifetime<a class="headerlink" href="#actants.llm.client.LLM--settings-lifetime" title="Permanent link">&para;</a></h4>
+<p><code>settings</code> is <strong>copied</strong> at construction, so mutating the object you passed in
+afterwards has no effect on this client — and a settings object shared between two
+clients cannot have one client's <code>model=</code> override leak into the other.</p>
+<p>Of the copy's own fields, <code>model</code> and <code>temperature</code> are re-read on every call, so
+assigning <code>llm.settings.model</code> does change subsequent requests. <code>provider</code> and
+<code>base_url</code> are read once, to build :attr:<code>provider</code>; assigning them later does
+nothing. Build a new <code>LLM</code> to change provider, or pass a provider instance
+directly.</p>
+
 
 
 
@@ -3925,7 +3934,7 @@ bypassed and the two would silently disagree. Put your implementation in
 
 
 <a href="#actants.llm.ollama.OllamaProvider" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">OllamaProvider</span><span class="p">(</span><span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;http://localhost:11434&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">120.0</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">AsyncClient</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">OllamaProvider</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;http://localhost:11434&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">120.0</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">AsyncClient</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">

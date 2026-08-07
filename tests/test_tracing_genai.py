@@ -7,7 +7,9 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
+from actants.llm.base import CompletionResult, TokenUsage
 from actants.tracing import genai as genai_mod
+from actants.tracing import otel as otel_mod
 from actants.tracing.genai import (
     KNOWN_PROVIDERS,
     chat_span,
@@ -16,6 +18,7 @@ from actants.tracing.genai import (
     invoke_agent_span,
     record_response,
 )
+from actants.tracing.otel import instrument_llm
 
 
 @pytest.fixture
@@ -123,3 +126,86 @@ async def test_record_response_skips_none_attributes(exporter):
     # Things we didn't set should not appear.
     assert "gen_ai.response.model" not in attrs
     assert "actants.cost.usd" not in attrs
+
+
+@pytest.fixture
+def otel_exporter(monkeypatch):
+    """Same injection as `exporter`, but against `tracing.otel`'s own get_tracer."""
+    provider = TracerProvider()
+    exp = InMemorySpanExporter()
+    provider.add_span_processor(SimpleSpanProcessor(exp))
+    monkeypatch.setattr(otel_mod, "get_tracer", lambda: provider.get_tracer("actants"))
+    yield exp
+    exp.clear()
+
+
+@pytest.mark.asyncio
+async def test_instrument_llm_records_attributes_from_a_full_result(otel_exporter):
+    @instrument_llm
+    async def call():
+        return CompletionResult(
+            content="hi",
+            model="llama3.2",
+            provider="ollama",
+            usage=TokenUsage(prompt_tokens=7, completion_tokens=3, total_tokens=10),
+            cost_usd=0.5,
+        )
+
+    result = await call()
+    assert result.content == "hi"
+
+    attrs = dict(otel_exporter.get_finished_spans()[0].attributes)
+    assert attrs["llm.prompt_tokens"] == 7
+    assert attrs["llm.completion_tokens"] == 3
+    assert attrs["llm.cost_usd"] == 0.5
+    assert attrs["llm.model"] == "llama3.2"
+    assert attrs["llm.provider"] == "ollama"
+
+
+@pytest.mark.asyncio
+async def test_instrument_llm_survives_a_result_with_usage_but_no_cost(otel_exporter):
+    """Regression: the guard checked only `usage`, then read four more attributes.
+
+    `instrument_llm` is public and can wrap any coroutine. A result carrying `usage`
+    but no `cost_usd`/`model`/`provider` used to raise AttributeError out of the
+    tracing layer, failing a call that had already succeeded.
+    """
+
+    class PartialResult:
+        usage = TokenUsage(prompt_tokens=4, completion_tokens=1, total_tokens=5)
+
+    @instrument_llm
+    async def call():
+        return PartialResult()
+
+    result = await call()  # must not raise
+    assert isinstance(result, PartialResult)
+
+    attrs = dict(otel_exporter.get_finished_spans()[0].attributes)
+    assert attrs["llm.prompt_tokens"] == 4
+    assert attrs["llm.completion_tokens"] == 1
+    # Absent attributes are simply not recorded.
+    assert "llm.cost_usd" not in attrs
+    assert "llm.model" not in attrs
+
+
+@pytest.mark.asyncio
+async def test_instrument_llm_passes_through_a_result_with_no_usage(otel_exporter):
+    @instrument_llm
+    async def call():
+        return "plain string"
+
+    assert await call() == "plain string"
+    attrs = dict(otel_exporter.get_finished_spans()[0].attributes)
+    assert "llm.prompt_tokens" not in attrs
+
+
+@pytest.mark.asyncio
+async def test_instrument_llm_preserves_the_wrapped_name_and_arguments(otel_exporter):
+    @instrument_llm
+    async def named_call(a, *, b):
+        return a + b
+
+    assert named_call.__name__ == "named_call"
+    assert await named_call(1, b=2) == 3
+    assert otel_exporter.get_finished_spans()[0].name == "named_call"

@@ -27,7 +27,7 @@ _PY_TO_JSON_TYPE: dict[type, str] = {
 }
 
 
-def _validate_input_schema(name: str, schema: dict) -> None:
+def _validate_input_schema(name: str, schema: dict[str, Any]) -> None:
     """Reject schemas the LLM providers will silently choke on."""
     if "type" not in schema:
         raise ValueError(
@@ -49,7 +49,7 @@ def _validate_input_schema(name: str, schema: dict) -> None:
         )
 
 
-def _schema_from_signature(name: str, handler: Callable[..., Awaitable[Any]]) -> dict:
+def _schema_from_signature(name: str, handler: Callable[..., Awaitable[Any]]) -> dict[str, Any]:
     """Derive a JSON Schema from an async handler's type annotations.
 
     Raises if a parameter is un-annotated — an un-annotated tool is invisible to the
@@ -131,7 +131,7 @@ class ToolRegistry:
         description: str,
         handler: Callable[..., Awaitable[Any]],
         *,
-        input_schema: dict | None = None,
+        input_schema: dict[str, Any] | None = None,
         requires_permission: bool = False,
     ) -> Tool:
         """Register an async function as a tool.

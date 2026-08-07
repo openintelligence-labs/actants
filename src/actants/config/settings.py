@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any, Self
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -41,7 +42,7 @@ class AppSettings(BaseSettings):
         )
 
     @classmethod
-    def load(cls, *, env_file: str | Path | None = None, **overrides):
+    def load(cls, *, env_file: str | Path | None = None, **overrides: Any) -> Self:
         """Load settings, optionally from a specific env file. Overrides win."""
         if env_file is not None:
             return cls(_env_file=str(env_file), **overrides)  # type: ignore[call-arg]

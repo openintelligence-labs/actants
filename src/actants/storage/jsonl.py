@@ -32,7 +32,7 @@ class JsonlAppender:
     def __enter__(self) -> JsonlAppender:
         return self
 
-    def __exit__(self, *exc) -> None:
+    def __exit__(self, *exc: object) -> None:
         self.close()
 
 

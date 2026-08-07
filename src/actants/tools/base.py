@@ -6,9 +6,11 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from actants.errors import ActantsError
 
-class ToolError(Exception):
-    pass
+
+class ToolError(ActantsError):
+    """A tool could not be registered, or refused to run."""
 
 
 class ToolResult(BaseModel):

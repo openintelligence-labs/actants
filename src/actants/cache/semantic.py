@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import structlog
 
 from actants.cache.request import KEY_VERSION, CacheRequest
+from actants.errors import ActantsError
 from actants.llm.base import ChatMessage, CompletionResult
 
 if TYPE_CHECKING:
@@ -47,7 +48,7 @@ def _fingerprint(messages: list[ChatMessage]) -> str:
     return "\n".join(parts)
 
 
-class CacheSchemaMismatch(RuntimeError):
+class CacheSchemaMismatch(ActantsError, RuntimeError):
     """Raised when an on-disk cache was written by an incompatible schema version.
 
     Only raised when the cache was constructed with ``on_schema_mismatch="error"``; the

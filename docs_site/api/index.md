@@ -8,6 +8,7 @@ to a specific module.
 | [Agent](agent.md) | `actants.agents` |
 | [LLM](llm.md) | `actants.llm` |
 | [Tools](tools.md) | `actants.tools` |
+| [Errors](errors.md) | `actants.errors` |
 | [Embeddings](embeddings.md) | `actants.embeddings` |
 | [Storage](storage.md) | `actants.storage` |
 | [Cache](cache.md) | `actants.cache` |
@@ -25,5 +26,6 @@ actants is pre-1.0. Public symbols listed in
 `actants.__all__` are documented; everything else is implementation detail
 and may change without notice.
 
-The API surface is intentionally small — about **50 public symbols** across
-the entire framework.
+The API surface is intentionally small — about **60 public symbols** across
+the entire framework, a third of which are the [error classes](errors.md) you
+catch rather than call.

@@ -5,6 +5,7 @@ from typing import Any
 
 import structlog
 
+from actants.errors import ProviderError
 from actants.llm.base import (
     BaseLLMProvider,
     ChatMessage,
@@ -16,8 +17,12 @@ from actants.llm.base import (
 log = structlog.get_logger(__name__)
 
 
-class AllProvidersFailedError(RuntimeError):
-    """Raised when every provider in a FallbackProvider chain fails."""
+class AllProvidersFailedError(ProviderError, RuntimeError):
+    """Raised when every provider in a FallbackProvider chain fails.
+
+    Carries the per-provider failures in ``errors`` so a caller can inspect why each
+    link gave up, not just that the chain did.
+    """
 
     def __init__(self, errors: list[tuple[str, BaseException]]) -> None:
         self.errors = errors

@@ -4,8 +4,10 @@ import contextlib
 from contextlib import asynccontextmanager
 from typing import Any
 
+from actants.errors import ActantsError
 
-class MCPConnectionError(RuntimeError):
+
+class MCPConnectionError(ActantsError, RuntimeError):
     """An MCP server could not be started or reached."""
 
 

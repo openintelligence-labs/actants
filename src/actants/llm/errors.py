@@ -1,8 +1,13 @@
-"""Actionable exceptions for common provider failures.
+"""Actionable messages for common provider failures.
 
 Every error raised here names the exact problem and the exact fix. The rule is:
 if a user can hit it in their first ten minutes, the message must tell them what
 to type next.
+
+The exception *classes* live in :mod:`actants.errors` and are re-exported here, so
+``from actants.llm.errors import ProviderError`` keeps working; new code should prefer
+``from actants import ProviderError``. What is defined in this module is the logic that
+builds the messages.
 """
 
 from __future__ import annotations
@@ -10,6 +15,28 @@ from __future__ import annotations
 import contextlib
 
 import httpx
+
+from actants.errors import (
+    ActantsError as ActantsError,
+)
+from actants.errors import (
+    MissingAPIKeyError as MissingAPIKeyError,
+)
+from actants.errors import (
+    ModelNotFoundError as ModelNotFoundError,
+)
+from actants.errors import (
+    ProviderError as ProviderError,
+)
+from actants.errors import (
+    ProviderNotInstalledError as ProviderNotInstalledError,
+)
+from actants.errors import (
+    ToolCallsNotSupportedError as ToolCallsNotSupportedError,
+)
+from actants.errors import (
+    UnknownProviderError as UnknownProviderError,
+)
 
 __all__ = [
     "ActantsError",
@@ -28,34 +55,6 @@ __all__ = [
 #: rather than imported from the client to avoid a cycle (``llm.client`` imports this
 #: module).
 _TOOL_CAPABLE_PROVIDERS = ("ollama", "openai", "anthropic", "gemini", "groq", "mistral")
-
-
-class ActantsError(Exception):
-    """Base class for actants errors that carry a suggested fix."""
-
-
-class ProviderError(ActantsError):
-    """A provider could not be reached or returned an unusable response."""
-
-
-class UnknownProviderError(ProviderError, ValueError):
-    """The requested provider name is not one actants knows about."""
-
-
-class ProviderNotInstalledError(ProviderError, ImportError):
-    """The provider's optional extra is not installed."""
-
-
-class MissingAPIKeyError(ProviderError, ValueError):
-    """The provider needs an API key and none was found."""
-
-
-class ModelNotFoundError(ProviderError, ValueError):
-    """The server is reachable but does not have the requested model."""
-
-
-class ToolCallsNotSupportedError(ProviderError, TypeError):
-    """Tools were passed to a provider that declares it cannot call them."""
 
 
 def tool_calls_not_supported(

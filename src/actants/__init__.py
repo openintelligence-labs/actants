@@ -36,9 +36,18 @@ _LAZY: dict[str, tuple[str, str]] = {
     "OllamaProvider": ("actants.llm.ollama", "OllamaProvider"),
     # Tools
     "Tool": ("actants.tools.base", "Tool"),
-    "ToolError": ("actants.tools.base", "ToolError"),
     "ToolResult": ("actants.tools.base", "ToolResult"),
     "ToolRegistry": ("actants.tools.registry", "ToolRegistry"),
+    # Errors — users are expected to catch these, so they belong at the top level.
+    "ActantsError": ("actants.errors", "ActantsError"),
+    "ProviderError": ("actants.errors", "ProviderError"),
+    "UnknownProviderError": ("actants.errors", "UnknownProviderError"),
+    "ProviderNotInstalledError": ("actants.errors", "ProviderNotInstalledError"),
+    "MissingAPIKeyError": ("actants.errors", "MissingAPIKeyError"),
+    "ModelNotFoundError": ("actants.errors", "ModelNotFoundError"),
+    "ToolCallsNotSupportedError": ("actants.errors", "ToolCallsNotSupportedError"),
+    "ToolError": ("actants.tools.base", "ToolError"),
+    "CacheSchemaMismatch": ("actants.cache.semantic", "CacheSchemaMismatch"),
     # Cache
     "InMemoryCache": ("actants.cache.memory", "InMemoryCache"),
     "CacheBackend": ("actants.cache.protocol", "CacheBackend"),
@@ -113,6 +122,7 @@ if TYPE_CHECKING:
     from actants.cache.protocol import CacheBackend as CacheBackend
     from actants.cache.protocol import RequestCacheBackend as RequestCacheBackend
     from actants.cache.request import CacheRequest as CacheRequest
+    from actants.cache.semantic import CacheSchemaMismatch as CacheSchemaMismatch
     from actants.config.paths import app_cache_dir as app_cache_dir
     from actants.config.paths import app_config_dir as app_config_dir
     from actants.config.paths import app_data_dir as app_data_dir
@@ -125,6 +135,13 @@ if TYPE_CHECKING:
     from actants.embeddings.client import Embeddings as Embeddings
     from actants.embeddings.client import EmbeddingSettings as EmbeddingSettings
     from actants.embeddings.ollama import OllamaEmbeddingProvider as OllamaEmbeddingProvider
+    from actants.errors import ActantsError as ActantsError
+    from actants.errors import MissingAPIKeyError as MissingAPIKeyError
+    from actants.errors import ModelNotFoundError as ModelNotFoundError
+    from actants.errors import ProviderError as ProviderError
+    from actants.errors import ProviderNotInstalledError as ProviderNotInstalledError
+    from actants.errors import ToolCallsNotSupportedError as ToolCallsNotSupportedError
+    from actants.errors import UnknownProviderError as UnknownProviderError
     from actants.llm.base import BaseLLMProvider as BaseLLMProvider
     from actants.llm.base import ChatMessage as ChatMessage
     from actants.llm.base import CompletionResult as CompletionResult

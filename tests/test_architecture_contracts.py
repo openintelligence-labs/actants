@@ -1252,3 +1252,123 @@ def test_llm_complete_exposes_passthrough_kwargs() -> None:
     var_kw = [p for p in params.values() if p.kind is inspect.Parameter.VAR_KEYWORD]
     assert var_kw, "LLM.complete must accept provider-specific passthrough kwargs"
     assert var_kw[0].name == "extra"
+
+
+# ---------------------------------------------------------------------------
+# 9. The error hierarchy is public, unified, and back-compatible
+# ---------------------------------------------------------------------------
+
+_PUBLIC_ERRORS = (
+    "ActantsError",
+    "ProviderError",
+    "UnknownProviderError",
+    "ProviderNotInstalledError",
+    "MissingAPIKeyError",
+    "ModelNotFoundError",
+    "ToolCallsNotSupportedError",
+    "ToolError",
+    "AllProvidersFailedError",
+    "CacheSchemaMismatch",
+)
+
+
+@pytest.mark.parametrize("name", _PUBLIC_ERRORS)
+def test_errors_are_importable_from_the_top_level(name: str) -> None:
+    """Users are told to catch these, so `from actants import X` must work."""
+    import actants
+
+    assert name in actants.__all__, f"{name} is missing from actants.__all__"
+    assert isinstance(getattr(actants, name), type)
+
+
+@pytest.mark.parametrize("name", _PUBLIC_ERRORS)
+def test_every_public_error_inherits_actants_error(name: str) -> None:
+    """`except ActantsError` must be a complete catch for actants' own failures."""
+    import actants
+
+    assert issubclass(getattr(actants, name), actants.ActantsError)
+
+
+def test_mcp_connection_error_also_inherits_actants_error() -> None:
+    """Not exported at top level (optional extra), but part of the same hierarchy."""
+    pytest.importorskip("mcp")
+    from actants import ActantsError
+    from actants.mcp.transports import MCPConnectionError
+
+    assert issubclass(MCPConnectionError, ActantsError)
+
+
+def test_no_actants_exception_escapes_the_hierarchy() -> None:
+    """Guard against a new error class being added outside ActantsError.
+
+    The value of `except ActantsError` is that it is exhaustive; a class added
+    later without that base silently erodes the guarantee.
+    """
+    import importlib
+    import pkgutil
+
+    import actants
+    from actants.errors import ActantsError
+
+    optional = {"mcp", "a2a"}  # need extras that may not be installed
+    stray: list[str] = []
+    for mod in pkgutil.walk_packages(actants.__path__, prefix="actants."):
+        if any(f".{o}." in mod.name or mod.name.endswith(f".{o}") for o in optional):
+            continue
+        try:
+            module = importlib.import_module(mod.name)
+        except Exception:  # noqa: BLE001 - optional dependency missing
+            continue
+        for attr in vars(module).values():
+            if (
+                isinstance(attr, type)
+                and issubclass(attr, Exception)
+                and attr.__module__.startswith("actants.")
+                and not issubclass(attr, ActantsError)
+            ):
+                stray.append(f"{attr.__module__}.{attr.__qualname__}")
+    assert not stray, (
+        f"these actants exceptions do not inherit ActantsError: {sorted(set(stray))}. "
+        "Add it as a base so `except ActantsError` stays exhaustive."
+    )
+
+
+def test_old_error_import_path_returns_the_same_class() -> None:
+    """`actants.llm.errors` was the documented location; it must keep working."""
+    import actants
+    import actants.llm.errors as legacy
+
+    for name in (
+        "ActantsError",
+        "ProviderError",
+        "UnknownProviderError",
+        "ProviderNotInstalledError",
+        "MissingAPIKeyError",
+        "ModelNotFoundError",
+        "ToolCallsNotSupportedError",
+    ):
+        assert getattr(legacy, name) is getattr(actants, name), f"{name} diverged"
+
+
+def test_errors_keep_their_builtin_bases() -> None:
+    """Existing `except ValueError` / `except TypeError` handlers must still fire."""
+    import actants
+
+    assert issubclass(actants.UnknownProviderError, ValueError)
+    assert issubclass(actants.MissingAPIKeyError, ValueError)
+    assert issubclass(actants.ModelNotFoundError, ValueError)
+    assert issubclass(actants.ProviderNotInstalledError, ImportError)
+    assert issubclass(actants.ToolCallsNotSupportedError, TypeError)
+    assert issubclass(actants.AllProvidersFailedError, RuntimeError)
+    assert issubclass(actants.CacheSchemaMismatch, RuntimeError)
+
+
+@pytest.mark.asyncio
+async def test_catching_actants_error_catches_a_real_failure() -> None:
+    """End-to-end: the base class actually catches what the framework raises."""
+    from actants import ActantsError
+
+    llm = LLM(provider=NoToolsProvider(), model="m", tracing=False)
+    spec = ToolSpec(name="add", description="Add", parameters={"type": "object"})
+    with pytest.raises(ActantsError):
+        await llm.complete("hi", tools=[spec])

@@ -140,6 +140,7 @@ nav:
       - Agent: api/agent.md
       - LLM: api/llm.md
       - Tools: api/tools.md
+      - Errors: api/errors.md
       - Embeddings: api/embeddings.md
       - Storage: api/storage.md
       - Cache: api/cache.md

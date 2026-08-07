@@ -42,6 +42,11 @@ The hierarchy::
     ├── GraphError
     │   ├── GraphValidationError        (ValueError)
     │   └── GraphRecursionError         (RuntimeError)
+    ├── RecordingError
+    │   ├── RecordingFormatError        (ValueError)
+    │   └── RecordingMissError          (RuntimeError)
+    ├── EvalError
+    │   └── ScorerError                 (ValueError)
     └── MCPConnectionError              (RuntimeError)
 """
 
@@ -56,6 +61,7 @@ __all__ = [
     "ActantsError",
     "CheckpointError",
     "CheckpointSchemaMismatch",
+    "EvalError",
     "GraphError",
     "GraphRecursionError",
     "GraphValidationError",
@@ -63,6 +69,10 @@ __all__ = [
     "ModelNotFoundError",
     "ProviderError",
     "ProviderNotInstalledError",
+    "RecordingError",
+    "RecordingFormatError",
+    "RecordingMissError",
+    "ScorerError",
     "ToolCallsNotSupportedError",
     "UnknownProviderError",
     "UnsupportedSchemaError",
@@ -183,3 +193,47 @@ class GraphRecursionError(GraphError, RuntimeError):
         super().__init__(message)
         self.node = node
         self.iterations = iterations
+
+
+class RecordingError(ActantsError):
+    """A recorded run could not be written, read, or replayed."""
+
+
+class RecordingFormatError(RecordingError, ValueError):
+    """A recording file cannot be read by this build of actants.
+
+    A wrong format version, a missing header, or a truncated line. Never downgraded to a
+    partial read: a recording is a regression baseline, and one that silently drops the
+    exchanges it could not parse would report a passing replay of a run that never
+    happened.
+    """
+
+
+class RecordingMissError(RecordingError, RuntimeError):
+    """A replay asked for an LLM response the recording does not contain.
+
+    Either the run under test takes more steps than the recorded one did, or — under
+    ``match="request"`` — it asked a question that was never recorded. Both mean the
+    behaviour changed, which is the thing a replay exists to detect, so this is raised
+    rather than papered over with an invented answer.
+
+    :attr:`request_index` is the position in *this* run's sequence of LLM calls, so a
+    handler can point at the step that diverged.
+    """
+
+    def __init__(self, message: str, *, request_index: int) -> None:
+        super().__init__(message)
+        self.request_index = request_index
+
+
+class EvalError(ActantsError):
+    """An evaluation suite could not be built or run."""
+
+
+class ScorerError(EvalError, ValueError):
+    """A scorer was misconfigured, or a predicate scorer itself raised.
+
+    A scorer that raises is a bug in the *test*, not a failing case, so it is surfaced as
+    an error rather than being recorded as a failure — which would quietly turn a broken
+    assertion into a red case someone spends an afternoon debugging.
+    """

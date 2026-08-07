@@ -52,6 +52,30 @@ _LAZY: dict[str, tuple[str, str]] = {
     "AgentToolCallCompleted": ("actants.agents.events", "AgentToolCallCompleted"),
     "AgentStepCompleted": ("actants.agents.events", "AgentStepCompleted"),
     "AgentRunCompleted": ("actants.agents.events", "AgentRunCompleted"),
+    # Record & replay: turn one real run into an offline regression baseline.
+    "RunRecorder": ("actants.testing.recording", "RunRecorder"),
+    "RecordingProvider": ("actants.testing.recording", "RecordingProvider"),
+    "ReplayProvider": ("actants.testing.recording", "ReplayProvider"),
+    "Recording": ("actants.testing.recording", "Recording"),
+    "RecordingHeader": ("actants.testing.recording", "RecordingHeader"),
+    "RecordedExchange": ("actants.testing.recording", "RecordedExchange"),
+    "RecordedRequest": ("actants.testing.recording", "RecordedRequest"),
+    "MatchMode": ("actants.testing.recording", "MatchMode"),
+    "iter_exchanges": ("actants.testing.recording", "iter_exchanges"),
+    # Evaluation: score runs against cases, and diff two runs' cost and correctness.
+    "EvalSuite": ("actants.testing.evals", "EvalSuite"),
+    "EvalCase": ("actants.testing.evals", "EvalCase"),
+    "EvalReport": ("actants.testing.evals", "EvalReport"),
+    "CaseResult": ("actants.testing.evals", "CaseResult"),
+    "ReportDelta": ("actants.testing.evals", "ReportDelta"),
+    "RunOutcome": ("actants.testing.evals", "RunOutcome"),
+    "Score": ("actants.testing.evals", "Score"),
+    "Scorer": ("actants.testing.evals", "Scorer"),
+    "ExactMatch": ("actants.testing.evals", "ExactMatch"),
+    "Contains": ("actants.testing.evals", "Contains"),
+    "Predicate": ("actants.testing.evals", "Predicate"),
+    "ToolCalled": ("actants.testing.evals", "ToolCalled"),
+    "ToolsCalledInOrder": ("actants.testing.evals", "ToolsCalledInOrder"),
     # LLM core
     "LLM": ("actants.llm.client", "LLM"),
     "LLMSettings": ("actants.llm.client", "LLMSettings"),
@@ -103,6 +127,11 @@ _LAZY: dict[str, tuple[str, str]] = {
     "GraphError": ("actants.errors", "GraphError"),
     "GraphValidationError": ("actants.errors", "GraphValidationError"),
     "GraphRecursionError": ("actants.errors", "GraphRecursionError"),
+    "RecordingError": ("actants.errors", "RecordingError"),
+    "RecordingFormatError": ("actants.errors", "RecordingFormatError"),
+    "RecordingMissError": ("actants.errors", "RecordingMissError"),
+    "EvalError": ("actants.errors", "EvalError"),
+    "ScorerError": ("actants.errors", "ScorerError"),
     # Cache
     "InMemoryCache": ("actants.cache.memory", "InMemoryCache"),
     "CacheBackend": ("actants.cache.protocol", "CacheBackend"),
@@ -212,6 +241,7 @@ if TYPE_CHECKING:
     from actants.errors import ActantsError as ActantsError
     from actants.errors import CheckpointError as CheckpointError
     from actants.errors import CheckpointSchemaMismatch as CheckpointSchemaMismatch
+    from actants.errors import EvalError as EvalError
     from actants.errors import GraphError as GraphError
     from actants.errors import GraphRecursionError as GraphRecursionError
     from actants.errors import GraphValidationError as GraphValidationError
@@ -219,6 +249,10 @@ if TYPE_CHECKING:
     from actants.errors import ModelNotFoundError as ModelNotFoundError
     from actants.errors import ProviderError as ProviderError
     from actants.errors import ProviderNotInstalledError as ProviderNotInstalledError
+    from actants.errors import RecordingError as RecordingError
+    from actants.errors import RecordingFormatError as RecordingFormatError
+    from actants.errors import RecordingMissError as RecordingMissError
+    from actants.errors import ScorerError as ScorerError
     from actants.errors import ToolCallsNotSupportedError as ToolCallsNotSupportedError
     from actants.errors import UnknownProviderError as UnknownProviderError
     from actants.errors import UnknownThreadError as UnknownThreadError
@@ -270,6 +304,28 @@ if TYPE_CHECKING:
     from actants.storage.jsonl import JsonlAppender as JsonlAppender
     from actants.storage.jsonl import read_jsonl as read_jsonl
     from actants.storage.sqlite import open_sqlite as open_sqlite
+    from actants.testing.evals import CaseResult as CaseResult
+    from actants.testing.evals import Contains as Contains
+    from actants.testing.evals import EvalCase as EvalCase
+    from actants.testing.evals import EvalReport as EvalReport
+    from actants.testing.evals import EvalSuite as EvalSuite
+    from actants.testing.evals import ExactMatch as ExactMatch
+    from actants.testing.evals import Predicate as Predicate
+    from actants.testing.evals import ReportDelta as ReportDelta
+    from actants.testing.evals import RunOutcome as RunOutcome
+    from actants.testing.evals import Score as Score
+    from actants.testing.evals import Scorer as Scorer
+    from actants.testing.evals import ToolCalled as ToolCalled
+    from actants.testing.evals import ToolsCalledInOrder as ToolsCalledInOrder
+    from actants.testing.recording import MatchMode as MatchMode
+    from actants.testing.recording import RecordedExchange as RecordedExchange
+    from actants.testing.recording import RecordedRequest as RecordedRequest
+    from actants.testing.recording import Recording as Recording
+    from actants.testing.recording import RecordingHeader as RecordingHeader
+    from actants.testing.recording import RecordingProvider as RecordingProvider
+    from actants.testing.recording import ReplayProvider as ReplayProvider
+    from actants.testing.recording import RunRecorder as RunRecorder
+    from actants.testing.recording import iter_exchanges as iter_exchanges
     from actants.tools.base import Tool as Tool
     from actants.tools.base import ToolError as ToolError
     from actants.tools.base import ToolResult as ToolResult

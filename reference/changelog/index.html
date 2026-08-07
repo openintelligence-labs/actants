@@ -2290,11 +2290,76 @@
 <p>This page mirrors the most recent releases for offline reading.</p>
 <h1 id="changelog_1">Changelog<a class="headerlink" href="#changelog_1" title="Permanent link">&para;</a></h1>
 <h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
-<p>Four architectural defects found by adversarial review. Each changes an API or a
-protocol, so each lands before the 1.0 freeze rather than after.</p>
+<p>Architectural defects found by adversarial review, plus the API-surface questions
+left open for the 1.0 freeze. Each changes an API or a protocol, so each lands
+before the freeze rather than after.</p>
 <h3 id="changed-breaking">Changed (breaking)<a class="headerlink" href="#changed-breaking" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Cache backends are now keyed by a <code>CacheRequest</code>.</strong> The semantic-cache protocol
+<li><strong><code>stream_events</code> is the single streaming primitive a provider implements.</strong>
+  <code>LLM.stream()</code> filters <code>stream_events</code> rather than calling <code>provider.stream()</code>, so a
+  third-party provider that overrode only <code>stream()</code> was silently never called — it
+  appeared to stream nothing. <code>stream</code> is now a concrete helper the base class derives
+  from <code>stream_events</code>, and <code>BaseLLMProvider.__init_subclass__</code> rejects a subclass that
+  overrides <code>stream</code> without <code>stream_events</code>, naming the rename. <code>stream_events</code> is
+  deliberately not abstract, so a completion-only provider needs no streaming stub;
+  the default raises <code>NotImplementedError</code> only if something tries to stream.</li>
+</ul>
+<p>Custom providers overriding <code>stream()</code> must rename it to <code>stream_events()</code> and yield
+  <code>TextDelta</code> / <code>FinishDelta</code> instead of plain strings. Every built-in provider's
+  <code>stream()</code> was identical boilerplate and has been removed in favour of the helper.</p>
+<ul>
+<li><strong>The exception hierarchy moved to <code>actants.errors</code> and is exported at top level.</strong>
+  <code>from actants import ActantsError, ModelNotFoundError, ToolCallsNotSupportedError</code>
+  now works; the classes were previously reachable only via <code>actants.llm.errors</code>.
+  <code>ToolError</code>, <code>AllProvidersFailedError</code>, <code>CacheSchemaMismatch</code>, and
+  <code>MCPConnectionError</code> now inherit <code>ActantsError</code> too, so <code>except ActantsError</code> is an
+  exhaustive catch for actants' own failures — it previously missed all four. Every
+  class keeps its builtin base (<code>UnknownProviderError</code> is still a <code>ValueError</code>,
+  <code>ToolCallsNotSupportedError</code> still a <code>TypeError</code>), and <code>actants.llm.errors</code>
+  re-exports the identical class objects, so existing imports and <code>except</code> clauses are
+  unaffected.</li>
+</ul>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Provider-specific parameters pass through and reach the cache key.</strong> <code>complete</code>,
+  <code>stream</code>, and <code>stream_events</code> accept arbitrary keyword arguments — <code>seed</code>, <code>top_p</code>,
+  <code>stop</code> — forward them verbatim to the provider, and fold them into
+  <code>CacheRequest.extra</code> so a <code>seed=1</code> answer is never served to a <code>seed=2</code> request.
+  <code>extra</code> was documented and hashed but populated by nobody, which armed the collision
+  for whenever passthrough was added.</li>
+</ul>
+<p>The providers needed fixing too: all of them already accepted <code>**kwargs</code> and
+  discarded it, so <code>provider.complete(..., seed=42)</code> type-checked, looked like it
+  worked, and never set a seed. Ollama and Gemini now route passthrough into <code>options</code>
+  / <code>generationConfig</code> with their genuinely top-level fields handled separately;
+  OpenAI and Anthropic forward it flat.</p>
+<ul>
+<li>
+<p><code>Agent(concurrency=...)</code> and <code>SqliteVecCache(on_schema_mismatch=...)</code> are typed
+  <code>Literal</code> (<code>ConcurrencyMode</code>, <code>SchemaMismatchAction</code>) rather than bare <code>str</code>, so a
+  typo is caught by the type checker at the call site instead of at construction.
+  Matches how the rest of the API spells a closed string set (<code>Role</code>, <code>LogFormat</code>,
+  <code>LogLevel</code>). The runtime check remains for callers without a type checker, and both
+  messages now name the valid values.</p>
+</li>
+<li>
+<p><code>docs_site/api/errors.md</code> documents the exception hierarchy and how to handle it —
+  the errors had no documentation at all.</p>
+</li>
+</ul>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong><code>FallbackProvider</code> capability flags are derived from the chain on every access.</strong>
+  <code>supports_tool_calls</code> / <code>supports_streaming_tools</code> were computed once in <code>__init__</code>,
+  so a provider that set its flag afterwards was invisible: a stale <code>False</code> refused
+  tools the chain could serve, and a stale <code>True</code> handed tools to a provider that
+  dropped them. Both are now read-only properties; assigning to them raises and points
+  at the member provider to set instead. <code>FallbackProvider.stream</code> is gone — the base
+  class derives it from <code>stream_events</code>, which already implements the same fail-over.</p>
+</li>
+<li>
+<p><strong>Cache backends are now keyed by a <code>CacheRequest</code>.</strong> The semantic-cache protocol
   (<code>get_by_messages</code> / <code>set_by_messages</code>) only ever received messages, model, and
   temperature, so <code>SqliteVecCache</code> collided across requests that differed in
   <code>max_tokens</code>, provider, tool definitions, or response format — a 4096-token answer
@@ -2303,7 +2368,8 @@ protocol, so each lands before the 1.0 freeze rather than after.</p>
   implement <code>CacheBackend</code> and receive <code>CacheRequest.key()</code>; semantic backends implement
   the new <code>RequestCacheBackend</code> and receive the whole request, matching message content
   by embedding distance and everything else exactly (<code>CacheRequest.scope_hash()</code>).
-  <code>make_key()</code> keeps its signature and now delegates to <code>CacheRequest</code>.</li>
+  <code>make_key()</code> keeps its signature and now delegates to <code>CacheRequest</code>.</p>
+</li>
 </ul>
 <p>Custom cache backends implementing <code>get_by_messages</code> / <code>set_by_messages</code> must rename
   them to <code>get_request</code> / <code>set_request</code> and read the fields off the request.</p>
@@ -2323,7 +2389,7 @@ protocol, so each lands before the 1.0 freeze rather than after.</p>
   runs queue on a lock and each sees every turn committed before it.</p>
 </li>
 </ul>
-<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>LLM</code> now checks <code>supports_tool_calls</code> / <code>supports_streaming_tools</code> before sending
   tools to a provider. Tools passed to a provider that cannot use them were silently
@@ -2352,7 +2418,7 @@ protocol, so each lands before the 1.0 freeze rather than after.</p>
   reachable from the mkdocs nav.</li>
 </ul>
 <h2 id="053-2026-07-29">[0.5.3] - 2026-07-29<a class="headerlink" href="#053-2026-07-29" title="Permanent link">&para;</a></h2>
-<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_2">Fixed<a class="headerlink" href="#fixed_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Pinned <code>mcp&gt;=1.0,&lt;2</code> in the <code>mcp</code>, <code>all</code>, and <code>dev</code> extras. The MCP Python
   SDK 2.0.0 removed <code>mcp.server.fastmcp</code> (used by <code>actants.mcp.serve</code> /
@@ -2469,7 +2535,7 @@ See 0.5.2.)</p>
 <li><code>[all]</code> extra now includes <code>[cli]</code> deps.</li>
 </ul>
 <h2 id="030-unreleased">[0.3.0] - unreleased<a class="headerlink" href="#030-unreleased" title="Permanent link">&para;</a></h2>
-<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Streaming with tool calls.</strong> <code>provider.stream_events()</code> + <code>LLM.stream_events()</code> yield typed <code>TextDelta</code> / <code>ToolCallDelta</code> / <code>UsageDelta</code> / <code>FinishDelta</code> events. <code>LLM.run_agent_stream()</code> streams a full agent loop.</li>
 <li><strong>Partial-JSON streaming.</strong> <code>LLM.extract_stream(prompt, PydanticModel)</code> yields progressively-complete pydantic instances as JSON arrives. Forgiving parser tolerates truncated output.</li>
@@ -2484,7 +2550,7 @@ See 0.5.2.)</p>
 <li><code>BaseLLMProvider</code> gained <code>stream_events()</code> (default wraps <code>stream()</code>) and <code>supports_streaming_tools</code> flag.</li>
 </ul>
 <h2 id="020">[0.2.0]<a class="headerlink" href="#020" title="Permanent link">&para;</a></h2>
-<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
+<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>LLM.run_agent()</code> — tool-calling agent loop across Ollama / OpenAI / Anthropic.</li>
 <li><code>LLM.extract()</code> — structured output into any pydantic model with self-repair.</li>
@@ -2505,7 +2571,7 @@ See 0.5.2.)</p>
 <li><code>BaseLLMProvider.complete</code> gained a <code>tools</code> parameter; providers declare <code>supports_tool_calls</code>.</li>
 </ul>
 <h2 id="010">[0.1.0]<a class="headerlink" href="#010" title="Permanent link">&para;</a></h2>
-<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
+<h3 id="added_3">Added<a class="headerlink" href="#added_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Initial release</li>
 <li><code>OllamaProvider</code> with chat, streaming, and health check</li>

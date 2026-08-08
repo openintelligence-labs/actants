@@ -10,12 +10,18 @@ pin that down so the promise cannot silently regress.
 from __future__ import annotations
 
 import ast
-import shutil
+import importlib.util
 import subprocess
+import sys
 import textwrap
 from pathlib import Path
 
 import pytest
+
+# Invoked as `sys.executable -m mypy`, not the `mypy` script, so this finds it in a venv
+# whose bin/ is not on PATH. Probing with shutil.which("mypy") instead made both tests
+# below skip silently in exactly the checkout layout CI and contributors use.
+_HAS_MYPY = importlib.util.find_spec("mypy") is not None
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INIT_PATH = REPO_ROOT / "src" / "actants" / "__init__.py"
@@ -105,7 +111,7 @@ CONSUMER = textwrap.dedent(
 )
 
 
-@pytest.mark.skipif(shutil.which("mypy") is None, reason="mypy not installed")
+@pytest.mark.skipif(not _HAS_MYPY, reason="mypy not installed")
 def test_consumer_script_passes_mypy_strict(tmp_path: Path):
     """A `mypy --strict` consumer of the public API must type-check cleanly.
 
@@ -117,6 +123,8 @@ def test_consumer_script_passes_mypy_strict(tmp_path: Path):
     script.write_text(CONSUMER, encoding="utf-8")
     proc = subprocess.run(
         [
+            sys.executable,
+            "-m",
             "mypy",
             "--strict",
             "--no-incremental",
@@ -157,7 +165,7 @@ SUBPACKAGE_CONSUMER = textwrap.dedent(
 )
 
 
-@pytest.mark.skipif(shutil.which("mypy") is None, reason="mypy not installed")
+@pytest.mark.skipif(not _HAS_MYPY, reason="mypy not installed")
 def test_subpackage_imports_pass_mypy_strict(tmp_path: Path):
     """Subpackage imports must type-check too, not just the top-level ones.
 
@@ -171,6 +179,8 @@ def test_subpackage_imports_pass_mypy_strict(tmp_path: Path):
     script.write_text(SUBPACKAGE_CONSUMER, encoding="utf-8")
     proc = subprocess.run(
         [
+            sys.executable,
+            "-m",
             "mypy",
             "--strict",
             "--no-incremental",

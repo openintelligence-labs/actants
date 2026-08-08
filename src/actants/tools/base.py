@@ -47,6 +47,19 @@ class Tool(BaseModel):
     description: str
     input_schema: dict[str, Any] = Field(default_factory=dict)
     requires_permission: bool = False
+    #: Whether re-running this tool with the same arguments is harmless.
+    #:
+    #: Only consulted on :meth:`~actants.agents.agent.Agent.resume`, and only for the
+    #: single call that was in flight when a run died — every call with a recorded
+    #: result is replayed from the checkpoint and never re-dispatched. For that one
+    #: ambiguous call, ``True`` means actants may re-dispatch it; ``False`` means it
+    #: raises :class:`~actants.errors.UnresolvedToolCallError` and lets the caller
+    #: decide.
+    #:
+    #: **The default is wrong for anything that writes.** It is ``True`` because most
+    #: tools are reads, not because re-running is generally safe: mark ``send_email``,
+    #: ``charge_card``, and every other externally-visible write ``idempotent=False``.
+    idempotent: bool = True
     handler: Callable[..., Awaitable[Any]] | None = None
 
     model_config = {"arbitrary_types_allowed": True}

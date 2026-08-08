@@ -24,6 +24,7 @@ from actants.llm.base import (
     UsageDelta,
 )
 from actants.llm.finish_reason import normalize_finish_reason
+from actants.llm.structured import NativeSchemaMode
 
 log = structlog.get_logger(__name__)
 
@@ -41,6 +42,9 @@ class GeminiProvider(BaseLLMProvider):
 
     name = "gemini"
     supports_tool_calls = True
+    #: ``responseMimeType`` + ``responseSchema``, both inside ``generationConfig`` —
+    #: which is where ``_build_payload`` already routes unrecognised kwargs.
+    native_schema_mode: NativeSchemaMode = "gemini"
 
     def __init__(
         self,

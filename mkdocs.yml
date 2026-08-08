@@ -116,6 +116,9 @@ nav:
       - Tools: concepts/tools.md
       - Streaming: concepts/streaming.md
       - ReAct loop: concepts/react.md
+      - Durability: concepts/durability.md
+      - StateGraph: concepts/graph.md
+      - Testing agents: concepts/testing.md
       - Embeddings: concepts/embeddings.md
       - Storage: concepts/storage.md
       - Observability: concepts/observability.md
@@ -138,6 +141,8 @@ nav:
   - API reference:
       - Overview: api/index.md
       - Agent: api/agent.md
+      - Durability: api/durability.md
+      - StateGraph: api/graph.md
       - LLM: api/llm.md
       - Tools: api/tools.md
       - Errors: api/errors.md

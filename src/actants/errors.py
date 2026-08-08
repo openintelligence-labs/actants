@@ -20,8 +20,8 @@ caller wants to be precise::
     except ActantsError as exc:
         print(f"actants refused: {exc}")
 
-This module has no imports from the rest of actants, so any subpackage can raise from
-it without risking an import cycle.
+This module has no *runtime* imports from the rest of actants, so any subpackage can
+raise from it without risking an import cycle.
 
 The hierarchy::
 
@@ -35,19 +35,49 @@ The hierarchy::
     │   └── AllProvidersFailedError     (RuntimeError)
     ├── ToolError
     ├── CacheSchemaMismatch             (RuntimeError)
+    ├── CheckpointError
+    │   ├── UnknownThreadError          (KeyError)
+    │   ├── UnresolvedToolCallError     (RuntimeError)
+    │   └── CheckpointSchemaMismatch    (RuntimeError)
+    ├── GraphError
+    │   ├── GraphValidationError        (ValueError)
+    │   └── GraphRecursionError         (RuntimeError)
+    ├── RecordingError
+    │   ├── RecordingFormatError        (ValueError)
+    │   └── RecordingMissError          (RuntimeError)
+    ├── EvalError
+    │   └── ScorerError                 (ValueError)
     └── MCPConnectionError              (RuntimeError)
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from actants.llm.base import ToolCall
+
 __all__ = [
     "ActantsError",
+    "CheckpointError",
+    "CheckpointSchemaMismatch",
+    "EvalError",
+    "GraphError",
+    "GraphRecursionError",
+    "GraphValidationError",
     "MissingAPIKeyError",
     "ModelNotFoundError",
     "ProviderError",
     "ProviderNotInstalledError",
+    "RecordingError",
+    "RecordingFormatError",
+    "RecordingMissError",
+    "ScorerError",
     "ToolCallsNotSupportedError",
     "UnknownProviderError",
+    "UnsupportedSchemaError",
+    "UnknownThreadError",
+    "UnresolvedToolCallError",
 ]
 
 
@@ -81,3 +111,129 @@ class ModelNotFoundError(ProviderError, ValueError):
 
 class ToolCallsNotSupportedError(ProviderError, TypeError):
     """Tools were passed to a provider that declares it cannot call them."""
+
+
+class UnsupportedSchemaError(ProviderError, ValueError):
+    """A schema cannot be expressed in a provider's native structured-output dialect.
+
+    Raised inside the schema translators and handled by
+    :meth:`~actants.llm.client.LLM.extract`, which downgrades that call to the
+    prompt-based path rather than failing — so it does not normally reach a caller.
+    Catch it when calling :func:`~actants.llm.structured.to_strict_schema` or
+    :func:`~actants.llm.structured.to_gemini_schema` directly.
+    """
+
+
+class CheckpointError(ActantsError):
+    """A durable agent run could not be persisted, found, or resumed."""
+
+
+class UnknownThreadError(CheckpointError, KeyError):
+    """No checkpoint exists for the requested ``thread_id``.
+
+    Either the thread never ran under a checkpointer, or its state was deleted. Also a
+    ``KeyError``, since the checkpointer is a keyed store.
+    """
+
+    def __str__(self) -> str:
+        # KeyError.__str__ reprs its argument, which would turn a carefully worded
+        # message into a quoted blob with escaped newlines.
+        return str(self.args[0]) if self.args else ""
+
+
+class UnresolvedToolCallError(CheckpointError, RuntimeError):
+    """Resume hit an in-flight call to a tool that declared ``idempotent=False``.
+
+    The process died while this call was executing, so actants cannot know whether the
+    side effect happened. Re-dispatching could duplicate it; skipping could drop it.
+    Rather than guess, resume raises this and hands the decision back — see
+    :meth:`~actants.agents.agent.Agent.resume` for the ``resolve=`` options.
+
+    The unresolved call is on :attr:`call`, and the thread it belongs to on
+    :attr:`thread_id`, so a handler can present it to a human or look it up in a
+    vendor's API by :attr:`ToolCall.id <actants.llm.base.ToolCall.id>`.
+    """
+
+    def __init__(self, message: str, *, thread_id: str, call: ToolCall) -> None:
+        super().__init__(message)
+        self.thread_id = thread_id
+        self.call = call
+
+
+class CheckpointSchemaMismatch(CheckpointError, RuntimeError):
+    """An on-disk checkpoint store was written by an incompatible schema version.
+
+    Unlike a cache, this is never discarded automatically: the rows are the only record
+    of which tool side effects already ran.
+    """
+
+
+class GraphError(ActantsError):
+    """A :class:`~actants.graph.state_graph.StateGraph` could not be built or run."""
+
+
+class GraphValidationError(GraphError, ValueError):
+    """A graph's shape is wrong, caught by ``compile()`` before anything runs.
+
+    Every check this reports — an undefined edge target, an unreachable node, a missing
+    entry point — is a structural mistake that would otherwise surface as a confusing
+    failure halfway through a run, after side effects had already happened.
+    """
+
+
+class GraphRecursionError(GraphError, RuntimeError):
+    """A graph ran ``max_iterations`` nodes without reaching END.
+
+    Graphs loop by design, so actants cannot tell a slow convergence from a stuck one;
+    the cap is the backstop. The message names the node the run was executing when the
+    budget ran out, which is nearly always the one whose router never returns END.
+    """
+
+    def __init__(self, message: str, *, node: str, iterations: int) -> None:
+        super().__init__(message)
+        self.node = node
+        self.iterations = iterations
+
+
+class RecordingError(ActantsError):
+    """A recorded run could not be written, read, or replayed."""
+
+
+class RecordingFormatError(RecordingError, ValueError):
+    """A recording file cannot be read by this build of actants.
+
+    A wrong format version, a missing header, or a truncated line. Never downgraded to a
+    partial read: a recording is a regression baseline, and one that silently drops the
+    exchanges it could not parse would report a passing replay of a run that never
+    happened.
+    """
+
+
+class RecordingMissError(RecordingError, RuntimeError):
+    """A replay asked for an LLM response the recording does not contain.
+
+    Either the run under test takes more steps than the recorded one did, or — under
+    ``match="request"`` — it asked a question that was never recorded. Both mean the
+    behaviour changed, which is the thing a replay exists to detect, so this is raised
+    rather than papered over with an invented answer.
+
+    :attr:`request_index` is the position in *this* run's sequence of LLM calls, so a
+    handler can point at the step that diverged.
+    """
+
+    def __init__(self, message: str, *, request_index: int) -> None:
+        super().__init__(message)
+        self.request_index = request_index
+
+
+class EvalError(ActantsError):
+    """An evaluation suite could not be built or run."""
+
+
+class ScorerError(EvalError, ValueError):
+    """A scorer was misconfigured, or a predicate scorer itself raised.
+
+    A scorer that raises is a bug in the *test*, not a failing case, so it is surfaced as
+    an error rather than being recorded as a failure — which would quietly turn a broken
+    assertion into a red case someone spends an afternoon debugging.
+    """

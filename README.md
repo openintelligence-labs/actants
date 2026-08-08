@@ -125,6 +125,75 @@ async for event in agent.stream("explain transformers in one paragraph"):
             print()
 ```
 
+## Durable execution
+
+A run given a `checkpointer` and a `thread_id` persists its state after every LLM
+completion and after each individual tool result, so a dead process can be
+picked back up:
+
+```python
+from actants import Agent, LLM, SqliteCheckpointer, ToolRegistry
+
+agent = Agent(
+    llm=LLM(model="llama3.2"),
+    tools=ToolRegistry(),
+    checkpointer=SqliteCheckpointer("runs.db"),
+    interrupt_before=["send_email"],
+)
+
+result = await agent.run("email the customer an apology", thread_id="job-7")
+if result.interrupted:  # paused in front of send_email
+    result = await agent.resume("job-7", approve=True)
+```
+
+The guarantee is narrow and stated rather than implied: resume is **at-most-once
+for every tool call whose result was recorded**, and **at-least-once for the single
+call that was in flight when the process died**. That one call is the irreducible
+ambiguity — the process died before the tool could report — so actants surfaces it
+rather than guessing. Tools registered `idempotent=False` are never auto-replayed;
+they raise `UnresolvedToolCallError` and you resume with `resolve="retry"` or
+`resolve="skip"`.
+
+`interrupt_before` pauses in front of the named tools instead of dispatching them.
+The pending call lives in the checkpoint, so the approval can come from another
+process entirely.
+
+Durability is opt-in per run: no `thread_id` means no storage is touched.
+[Durability](https://actants.openintelligence-labs.org/concepts/durability/) has the
+full contract, and
+[StateGraph](https://actants.openintelligence-labs.org/concepts/graph/) applies the
+same guarantee at node granularity for workflows that branch and loop.
+
+## Record and replay
+
+Wrap a provider to record a real run to JSONL, then replay it offline — no
+network, no key, no server:
+
+```python
+from actants import Agent, LLM, OllamaProvider, ToolRegistry
+from actants.testing import Recording, ReplayProvider, RunRecorder
+
+recorder = RunRecorder("runs/booking.jsonl")
+agent = Agent(llm=LLM(provider=recorder.wrap(OllamaProvider())), tools=ToolRegistry())
+await agent.run("book a flight to Berlin")
+recorder.close()
+
+replayed = Agent(
+    llm=LLM(provider=ReplayProvider(Recording.load("runs/booking.jsonl"))),
+    tools=ToolRegistry(),
+)
+await replayed.run("book a flight to Berlin")  # identical, in milliseconds
+```
+
+Tool results are deliberately **not** replayed — the agent re-dispatches every call
+against your real registry, so a bug in a tool's own logic cannot replay green. Point
+tools at a fixture when replaying.
+
+`EvalSuite` scores runs against cases and diffs two runs' cost, latency, and pass
+rate, with trajectory scorers that catch what a final-answer check cannot — a refund
+agent answering "done!" after calling `refund(cents=100000)` on a $10 order. See
+[Testing agents](https://actants.openintelligence-labs.org/concepts/testing/).
+
 ## Switching providers
 
 ```python
@@ -142,21 +211,55 @@ Agent(llm=LLM(provider="xai", model="grok-4"))  # XAI_API_KEY
 Agent(llm=LLM(provider="deepseek", model="deepseek-chat"))  # DEEPSEEK_API_KEY
 ```
 
-| Provider | API key env var | Notes |
-|---|---|---|
-| `ollama` | *(none)* | Default. Local, no key. |
-| `openai` | `OPENAI_API_KEY` | |
-| `anthropic` | `ANTHROPIC_API_KEY` | |
-| `gemini` | `GEMINI_API_KEY` | |
-| `groq` | `GROQ_API_KEY` | OpenAI-compatible |
-| `mistral` | `MISTRAL_API_KEY` | OpenAI-compatible |
-| `xai` | `XAI_API_KEY` | OpenAI-compatible |
-| `deepseek` | `DEEPSEEK_API_KEY` | OpenAI-compatible |
-| `together` | `TOGETHER_API_KEY` | OpenAI-compatible |
-| `fireworks` | `FIREWORKS_API_KEY` | OpenAI-compatible |
-| `openrouter` | `OPENROUTER_API_KEY` | OpenAI-compatible |
-| `cerebras` | `CEREBRAS_API_KEY` | OpenAI-compatible |
-| `perplexity` | `PERPLEXITY_API_KEY` | OpenAI-compatible |
+| Provider | API key env var | Notes | Verification |
+|---|---|---|---|
+| `ollama` | *(none)* | Default. Local, no key. | Live-verified |
+| `openai` | `OPENAI_API_KEY` | | Unit-tested only |
+| `anthropic` | `ANTHROPIC_API_KEY` | | Unit-tested only |
+| `gemini` | `GEMINI_API_KEY` | | Unit-tested only |
+| `groq` | `GROQ_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `mistral` | `MISTRAL_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `xai` | `XAI_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `deepseek` | `DEEPSEEK_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `together` | `TOGETHER_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `fireworks` | `FIREWORKS_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `openrouter` | `OPENROUTER_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `cerebras` | `CEREBRAS_API_KEY` | OpenAI-compatible | Unit-tested only |
+| `perplexity` | `PERPLEXITY_API_KEY` | OpenAI-compatible | Unit-tested only |
+
+### What "verified" means here
+
+actants supports 13 providers. That is a claim about code paths, not about how many
+have been pointed at a live endpoint — so the table above says which is which, and
+this section says exactly what was measured.
+
+**Live-verified** means every one of these ran green against a real endpoint:
+non-streaming completion, streaming (with usage reported at stream end and the
+concatenated deltas matching the completed content), a tool call round-trip, a nested
+structured-output extraction on the provider's *native* schema path, and a cost figure
+that matches the provider's own reported token usage times the published price in
+`actants.cost.PRICING`.
+
+**Unit-tested only** means the provider is covered by the test suite against mocked
+HTTP responses. Those mocks encode what actants *believes* the provider's wire format
+is. That belief is derived from provider documentation and has not been confirmed
+against the live API — so a provider marked this way may work perfectly, or may fail
+on a detail the documentation did not describe. It is not a claim that it is broken;
+it is a refusal to claim that it works.
+
+Reproduce or extend the matrix — providers with no key present skip rather than fail,
+so it is useful with a single key:
+
+```bash
+python -m verification.run                    # free providers only, no paid calls
+python -m verification.run --yes              # every provider with a key present
+python -m verification.run --only openai --yes
+```
+
+Paid APIs are never called without `--yes`, and the estimated spend is printed first.
+See [`verification/`](verification/) for the harness and
+[`docs/PROVIDER_VERIFICATION.md`](docs/PROVIDER_VERIFICATION.md) for the last recorded
+run.
 
 Cost tracking covers the models actants has verified prices for. A model with no
 published price in `actants.cost.PRICING` is reported as *unknown*, not as `$0.00` —

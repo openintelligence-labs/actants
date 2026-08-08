@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from actants.llm.openai_provider import OpenAIProvider
+from actants.llm.structured import NativeSchemaMode
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
@@ -12,9 +13,14 @@ class GroqProvider(OpenAIProvider):
     """Groq via its OpenAI-compatible endpoint. Requires ``pip install actants[openai]``.
 
     Groq serves Llama/Mixtral/Qwen etc. at extremely low latency.
+
+    Structured output uses the prompt path: Groq honours ``strict`` only on the gpt-oss
+    models and silently ignores it elsewhere, so claiming the native path would report a
+    guarantee it does not deliver.
     """
 
     name = "groq"
+    native_schema_mode: NativeSchemaMode = "none"
 
     def __init__(
         self,

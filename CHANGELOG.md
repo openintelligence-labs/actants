@@ -2,6 +2,79 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Durable execution for `Agent.run()`.** `Agent(checkpointer=...)` plus
+  `run(prompt, thread_id=...)` persists the run's state after every LLM completion and
+  after *each individual tool result*; `agent.resume(thread_id)` continues it.
+
+  The guarantee is deliberately narrow and stated rather than implied: resume is
+  **at-most-once for every tool call whose result was recorded**, and **at-least-once for
+  the single call that was in flight when the process died**. That one call is the
+  irreducible ambiguity — the process died before the tool could report — so actants
+  surfaces it instead of guessing. Tools registered `idempotent=False` are never
+  auto-replayed; they raise `UnresolvedToolCallError`, and the caller resumes with
+  `resolve="retry"` or `resolve="skip"`.
+
+- **Human-in-the-loop.** `Agent(interrupt_before=["send_email"])` pauses the run before
+  those tools rather than dispatching them, returning an `AgentResult` with
+  `.interrupted` and `.pending_call`. `resume(thread_id, approve=True)` dispatches it;
+  `approve=False` appends a tool result recording the rejection, so the model responds to
+  the refusal instead of the run dying. The pending call lives in the checkpoint, so this
+  works across processes.
+
+- `Checkpointer` protocol with `InMemoryCheckpointer` and `SqliteCheckpointer`
+  implementations, plus `Checkpoint`, `StepRecord`, `CheckpointStatus`, and
+  `ResumeResolution`.
+
+- `Tool(idempotent=...)` / `register_function(..., idempotent=...)`. Defaults to `True`
+  because most tools are reads — which is the wrong default for anything that writes, and
+  the docs say so.
+
+- `CheckpointError`, `CheckpointSchemaMismatch`, `UnknownThreadError`, and
+  `UnresolvedToolCallError`, all under `ActantsError`.
+
+Durability is opt-in per run: an `Agent` built without a `checkpointer`, or a `run()`
+called without a `thread_id`, behaves exactly as it did before and touches no storage.
+`stream()` is not yet checkpointed.
+
+### Fixed
+
+- **A graph node's completion is no longer lost when its router raises.** `_next_of()`
+  ran between the node executing and the checkpoint, so a router returning an unmapped
+  key threw *after* the node's side effect had landed but *before* it was recorded —
+  and resume then ran that node a second time. Node completion is now checkpointed
+  before routing, and the routing decision separately, so a routing failure can never
+  un-record finished work. Resume re-runs only the router.
+
+- **Concurrent `resume()` of one `thread_id` in one process no longer double-dispatches
+  a non-idempotent tool.** The checkpointer's lock serialized individual `put()` calls
+  but not the read-decide-dispatch sequence, so two concurrent resumes both dispatched
+  the in-flight call. Resumes of a thread id now queue on a per-thread in-process lock.
+  Cross-*process* concurrency on one thread id remains undefined, as documented — no
+  in-process lock can close that.
+
+- **A renamed or removed tool no longer discards the `idempotent=False` safety net.**
+  `ToolRegistry.get` raises for a missing tool and the suppressed error left the
+  in-flight call marked idempotent, so instead of `UnresolvedToolCallError` the run
+  completed and told the model "Unknown tool" — i.e. that the side effect had *not*
+  happened, when it may well have. An unknown tool on the ambiguous in-flight call is
+  now treated as non-idempotent.
+
+- **Strict-mode extraction no longer produces provider-valid output that pydantic
+  rejects.** A field with a non-null default (`priority: int = 3`) is widened to
+  `["integer", "null"]` and marked required, because strict mode cannot express "may be
+  absent" — so a conforming provider could answer `null` and `extract()` would fail
+  after burning a repair. A `null` for a field the rewrite *made* nullable is now read
+  as the absence it stands for, and the field's default applies. Fields genuinely
+  declared `X | None` keep `null` as a real value.
+
+- **`merge_update` no longer shares mutable containers with the state it copied.**
+  `model_copy(update=...)` is shallow, so `s1.items is s2.items` — two runs seeded from
+  one state object corrupted each other, and in-place node mutations reached another
+  run's state. The merged state is now independent, and `invoke()` deep-copies the state
+  it is given, so one seed object can start several concurrent runs.
+
 ## [1.0.0] - 2026-08-06
 
 **The API is now stable.** See the

@@ -54,6 +54,20 @@ _CLASS_NAMES: dict[str, str] = {
     "openrouter": "OpenRouterProvider",
 }
 
+#: Providers in this family that do **not** implement ``response_format`` with
+#: ``type: "json_schema"``, mapped to why. They inherit ``"none"`` and use the prompt
+#: path; everything not listed here inherits OpenAI's ``"openai_json_schema"``.
+#:
+#: Speaking the OpenAI wire format is not the same as implementing every parameter in
+#: it, and the two failure modes differ: DeepSeek rejects the request outright, while
+#: Groq accepts ``strict`` and then ignores it on most models — which is worse, because
+#: it fails open. An extraction that is silently unconstrained while reporting itself as
+#: native is exactly the guarantee this feature exists to provide, so both decline.
+NO_NATIVE_SCHEMA: dict[str, str] = {
+    "deepseek": "response_format accepts only 'text' and 'json_object', not 'json_schema'",
+    "groq": "strict is honoured only on the gpt-oss models and silently ignored elsewhere",
+}
+
 
 def openai_compatible_provider(name: str, base_url: str, description: str) -> type[OpenAIProvider]:
     """Build an :class:`OpenAIProvider` subclass pinned to ``base_url``.
@@ -75,6 +89,12 @@ def openai_compatible_provider(name: str, base_url: str, description: str) -> ty
     ) -> None:
         OpenAIProvider.__init__(self, api_key=api_key, client=client, base_url=base_url)
 
+    declines = NO_NATIVE_SCHEMA.get(name)
+    schema_note = (
+        f"\n\nStructured output uses the prompt path: {declines}."
+        if declines
+        else "\n\nSupports native ``json_schema`` structured output."
+    )
     cls_name = _CLASS_NAMES.get(name, f"{name.title()}Provider")
     cls = type(
         cls_name,
@@ -84,10 +104,12 @@ def openai_compatible_provider(name: str, base_url: str, description: str) -> ty
                 f"{description}, via its OpenAI-compatible endpoint.\n\n"
                 f"Requires ``pip install 'actants[{name}]'`` (the OpenAI SDK).\n"
                 f"Defaults to ``base_url={default_base_url!r}``."
+                f"{schema_note}"
             ),
             "__module__": __name__,
             "__init__": __init__,
             "name": name,
+            "native_schema_mode": "none" if declines else "openai_json_schema",
         },
     )
     return cls
@@ -108,6 +130,7 @@ PerplexityProvider = openai_compatible_provider(
 )
 
 __all__ = [
+    "NO_NATIVE_SCHEMA",
     "OPENAI_COMPATIBLE_PROVIDERS",
     "CerebrasProvider",
     "DeepSeekProvider",

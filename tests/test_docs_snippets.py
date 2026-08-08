@@ -31,8 +31,12 @@ DOC_PATHS = sorted(
     [REPO_ROOT / "README.md", *(REPO_ROOT / "docs_site").rglob("*.md")],
 )
 
+# A directive comment may be separated from its fence by blank lines: MkDocs renders
+# `<!-- ... -->` immediately above a fence as part of the preceding paragraph, so the
+# docs put a blank line between them. Requiring them to be adjacent silently detached
+# every directive, which left `docs-test: run` collecting nothing at all.
 FENCE_RE = re.compile(
-    r"(?P<directives>(?:^[ \t]*<!--[^\n]*-->[ \t]*\n)*)"
+    r"(?P<directives>(?:^[ \t]*<!--[^\n]*-->[ \t]*\n(?:[ \t]*\n)*)*)"
     r"^```(?P<lang>python|py)[ \t]*\n(?P<code>.*?)^```",
     re.MULTILINE | re.DOTALL,
 )
@@ -127,7 +131,15 @@ _ALLOW_TOP_LEVEL_AWAIT = ast.PyCF_ALLOW_TOP_LEVEL_AWAIT
 
 
 def _compile(snippet: Snippet):
-    return compile(snippet.code, snippet.id, "exec", flags=_ALLOW_TOP_LEVEL_AWAIT)
+    # dont_inherit: this module has `from __future__ import annotations`, and compile()
+    # otherwise passes it down to the snippet. That stringifies the snippet's annotations,
+    # which pydantic cannot resolve from an exec namespace that is not a real module — so
+    # `Annotated[list[str], Append]` silently lost its metadata and the reducer appeared
+    # not to work. A reader pasting the same code into a file is unaffected; only the
+    # harness saw it.
+    return compile(
+        snippet.code, snippet.id, "exec", flags=_ALLOW_TOP_LEVEL_AWAIT, dont_inherit=True
+    )
 
 
 @pytest.mark.parametrize("snippet", CHECKED, ids=lambda s: s.id)

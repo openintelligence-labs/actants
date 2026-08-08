@@ -20,6 +20,7 @@ from actants.llm.base import (
     UsageDelta,
 )
 from actants.llm.finish_reason import normalize_finish_reason
+from actants.llm.structured import NativeSchemaMode
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
@@ -29,6 +30,9 @@ class OpenAIProvider(BaseLLMProvider):
     name = "openai"
     supports_tool_calls = True
     supports_streaming_tools = True
+    #: Subclasses in :mod:`actants.llm.openai_compatible` override this per provider —
+    #: speaking the OpenAI wire format does not imply implementing ``json_schema``.
+    native_schema_mode: NativeSchemaMode = "openai_json_schema"
 
     def __init__(
         self,

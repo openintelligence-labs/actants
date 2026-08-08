@@ -58,11 +58,11 @@ ConcurrencyMode = Literal["isolated", "serialized"]
 #: callers who are not running a type checker.
 _CONCURRENCY_MODES: tuple[ConcurrencyMode, ...] = ("isolated", "serialized")
 
-#: What :meth:`Agent.resume` should do about a tool call that was in flight when the
-#: process died, for a tool declared ``idempotent=False``. See :meth:`Agent.resume`.
+#: What `resume` should do about a tool call that was in flight when the
+#: process died, for a tool declared ``idempotent=False``. See `resume`.
 ResumeResolution = Literal["abort", "retry", "skip"]
 
-#: Runtime mirror of :data:`ResumeResolution`.
+#: Runtime mirror of `ResumeResolution`.
 _RESUME_RESOLUTIONS: tuple[ResumeResolution, ...] = ("abort", "retry", "skip")
 
 #: The tool result recorded for a call a human rejected at an ``interrupt_before`` pause,
@@ -123,7 +123,7 @@ class _Interrupted(ActantsError):
     """Carries an interrupted run's result out through the turn scope.
 
     Private, and never reaches a caller: ``run``/``resume`` catch it and return
-    :attr:`result`. It exists so a pause unwinds ``_turn`` instead of returning through
+    `result`. It exists so a pause unwinds ``_turn`` instead of returning through
     it, leaving the half-written turn uncommitted. It still inherits ``ActantsError``, so
     the "every actants exception is catchable as one" invariant holds even for a class
     nobody is expected to catch.
@@ -138,10 +138,10 @@ class _Interrupted(ActantsError):
 class AgentResult:
     """What one ``run()`` or ``resume()`` produced.
 
-    A run that stopped at an ``interrupt_before`` tool sets :attr:`interrupted` and
-    :attr:`pending_call` and leaves :attr:`final` holding the completion that *asked* for
+    A run that stopped at an ``interrupt_before`` tool sets `interrupted` and
+    `pending_call` and leaves `final` holding the completion that *asked* for
     that call — the model's last word before it was paused. Call
-    :meth:`Agent.resume` with the thread id to continue.
+    `resume` with the thread id to continue.
     """
 
     final: CompletionResult
@@ -151,7 +151,7 @@ class AgentResult:
     #: than producing a final answer.
     interrupted: bool = False
     #: The call the run stopped in front of and did *not* dispatch. Set only when
-    #: :attr:`interrupted`.
+    #: `interrupted`.
     pending_call: ToolCall | None = None
     #: The durable thread this run was checkpointed under, if any.
     thread_id: str | None = None
@@ -214,7 +214,7 @@ class Agent:
         result = await agent.resume("job-42")   # picks up where it left off
 
     ``interrupt_before=["send_email"]`` pauses the run in front of those tools instead of
-    dispatching them; :meth:`resume` with ``approve=True`` or ``approve=False`` decides.
+    dispatching them; `resume` with ``approve=True`` or ``approve=False`` decides.
 
     Both default to None, and a run without a ``thread_id`` never touches the
     checkpointer — durability is opt-in per run, not a mode the agent is in.
@@ -351,7 +351,7 @@ class Agent:
 
         Pass ``thread_id`` — with a ``checkpointer`` on the agent — to make the run
         durable. Its state is persisted after every LLM completion and after *each*
-        individual tool result, so :meth:`resume` can continue it after a crash without
+        individual tool result, so `resume` can continue it after a crash without
         re-running the tools that already finished. ``thread_id`` without a checkpointer
         is a ``ValueError``; a checkpointer without a ``thread_id`` simply persists
         nothing, which is what keeps un-threaded runs exactly as they were.
@@ -400,7 +400,7 @@ class Agent:
         because the process died before it could say so. For a tool declared
         ``idempotent=True`` (the default) that call is re-dispatched, making resume
         at-least-once for it; for ``idempotent=False`` it is surfaced as
-        :class:`~actants.errors.UnresolvedToolCallError` instead of being guessed at. A
+        `UnresolvedToolCallError` instead of being guessed at. A
         tool this Agent's registry no longer has — renamed or removed since the run
         started — counts as non-idempotent, because an unknown tool is precisely the case
         where actants cannot establish that repeating it is safe.
@@ -417,7 +417,7 @@ class Agent:
         Resuming a thread that already completed returns its stored result without
         re-running anything. Resuming one that failed re-raises a description of the
         original failure. An unknown ``thread_id`` raises
-        :class:`~actants.errors.UnknownThreadError`.
+        `UnknownThreadError`.
 
         Concurrent resumes of one ``thread_id`` **within this process** are serialized on
         a per-thread lock, so the read-decide-dispatch sequence cannot interleave and the
@@ -453,7 +453,7 @@ class Agent:
         max_steps: int | None,
         resolve: ResumeResolution,
     ) -> AgentResult:
-        """The body of :meth:`resume`, run while holding that thread's resume lock."""
+        """The body of `resume`, run while holding that thread's resume lock."""
         if self.checkpointer is None:
             raise ValueError(
                 f"resume({thread_id!r}) needs a checkpointer to read from, and this "
@@ -518,11 +518,11 @@ class Agent:
         return result
 
     async def _run_steps(self, turn: _Turn, state: _RunState, *, start_step: int) -> AgentResult:
-        """The step loop shared by :meth:`run` and :meth:`resume`.
+        """The step loop shared by `run` and `resume`.
 
         ``start_step`` is the next step needing an LLM call; a fresh run passes 0 and the
         loop is the original one. A resumed run's half-finished step has already been
-        completed by :meth:`_resolve_pending_step` before this is entered, so every step
+        completed by `_resolve_pending_step` before this is entered, so every step
         this loop sees starts at its LLM call.
         """
         specs = self.tools.as_specs() if self.tools else None
@@ -586,7 +586,7 @@ class Agent:
     ) -> None:
         """Run one step's tool calls, checkpointing after each result lands.
 
-        Raises :class:`_Interrupted` if a call named in ``interrupt_before`` is reached.
+        Raises `_Interrupted` if a call named in ``interrupt_before`` is reached.
         ``start_index`` skips the calls a resumed step already has results for.
         """
         if self.tools is None:
@@ -728,7 +728,7 @@ class Agent:
     ) -> int:
         """Finish the step the crash or pause landed in the middle of.
 
-        Returns the step index :meth:`_run_steps` should start its next LLM call at. The
+        Returns the step index `_run_steps` should start its next LLM call at. The
         half-done step is completed *here* rather than by re-entering the loop, because
         re-entering would issue a fresh completion for a step whose completion is already
         recorded — paying for the LLM twice and letting the model contradict the tool

@@ -169,7 +169,7 @@ class BaseLLMProvider(ABC):
     supports_streaming_tools: bool = False
 
     #: How this provider constrains output to a JSON Schema on the wire, if it can.
-    #: :meth:`~actants.llm.client.LLM.extract` reads this to build the right request —
+    #: `extract` reads this to build the right request —
     #: ``response_format`` for OpenAI, a forced tool call for Anthropic, and so on — and
     #: falls back to describing the schema in a system prompt when it is ``"none"``.
     #:

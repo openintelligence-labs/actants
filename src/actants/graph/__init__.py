@@ -1,4 +1,4 @@
-"""Typed, durable state graphs — see :mod:`actants.graph.state_graph`."""
+"""Typed, durable state graphs — see `state_graph`."""
 
 from __future__ import annotations
 

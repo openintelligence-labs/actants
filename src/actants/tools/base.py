@@ -49,11 +49,11 @@ class Tool(BaseModel):
     requires_permission: bool = False
     #: Whether re-running this tool with the same arguments is harmless.
     #:
-    #: Only consulted on :meth:`~actants.agents.agent.Agent.resume`, and only for the
+    #: Only consulted on `resume`, and only for the
     #: single call that was in flight when a run died — every call with a recorded
     #: result is replayed from the checkpoint and never re-dispatched. For that one
     #: ambiguous call, ``True`` means actants may re-dispatch it; ``False`` means it
-    #: raises :class:`~actants.errors.UnresolvedToolCallError` and lets the caller
+    #: raises `UnresolvedToolCallError` and lets the caller
     #: decide.
     #:
     #: **The default is wrong for anything that writes.** It is ``True`` because most

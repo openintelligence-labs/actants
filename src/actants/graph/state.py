@@ -7,7 +7,7 @@ the state the next node will see.
 The default is replace-per-field, which is what a plain assignment would do. The one
 alternative worth building in is accumulation, because a graph that loops almost always
 has a field it appends to (a message list, a scratchpad of findings). It is spelled with
-:data:`Append` inside a :class:`typing.Annotated`::
+`Append` inside a `Annotated`::
 
     class State(BaseModel):
         question: str
@@ -32,7 +32,7 @@ from actants.errors import GraphValidationError
 #: Spelled as a ``Literal`` string rather than an object sentinel so it survives a JSON
 #: round-trip into a checkpoint unchanged, and so a router's return type can be written
 #: ``str`` without a union. The double underscores make a collision with a real node
-#: name implausible, and :func:`~actants.graph.state_graph.StateGraph.add_node` rejects
+#: name implausible, and `add_node` rejects
 #: it outright.
 END: Final = "__end__"
 
@@ -59,7 +59,7 @@ Append: Final = _AppendReducer()
 
 
 def append_fields(state_type: type[BaseModel]) -> frozenset[str]:
-    """Return the names of ``state_type``'s fields marked :data:`Append`.
+    """Return the names of ``state_type``'s fields marked `Append`.
 
     Read off pydantic's own field metadata, so the annotation is the single source of
     truth — there is no parallel registry of reducers to fall out of sync with the model.
@@ -72,7 +72,7 @@ def append_fields(state_type: type[BaseModel]) -> frozenset[str]:
 
 
 def validate_append_fields(state_type: type[BaseModel]) -> None:
-    """Reject :data:`Append` on a field that cannot accumulate.
+    """Reject `Append` on a field that cannot accumulate.
 
     Checked at compile time rather than on the first update, because a scalar marked
     ``Append`` is a mistake in the model definition and there is no reason to let a

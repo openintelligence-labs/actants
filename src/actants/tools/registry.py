@@ -143,7 +143,7 @@ class ToolRegistry:
         receive a tool with no visible arguments.
 
         Pass ``idempotent=False`` for anything with an externally-visible side effect —
-        see :attr:`Tool.idempotent <actants.tools.base.Tool.idempotent>`, which the
+        see `idempotent>`, which the
         default of ``True`` is wrong for.
         """
         if not callable(handler):

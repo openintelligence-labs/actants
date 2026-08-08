@@ -1,6 +1,6 @@
 """Typed, durable state graphs for workflows that branch and loop.
 
-:class:`~actants.agents.agent.Agent` is a linear loop: think, call tools, repeat until
+`Agent` is a linear loop: think, call tools, repeat until
 done. A graph is for the shape that loop cannot express — a router that picks one of
 three branches, a critic that sends work back for another pass, a pipeline whose stages
 each need their own prompt.
@@ -35,14 +35,14 @@ your state does not have is a type error rather than a runtime surprise::
 
 Durability
 ----------
-Pass a ``checkpointer`` to :meth:`StateGraph.compile` and a ``thread_id`` to
-:meth:`CompiledGraph.invoke`, and the state is persisted after *every* node completes.
-:meth:`CompiledGraph.resume` continues from the last completed node, and a node that
+Pass a ``checkpointer`` to `compile` and a ``thread_id`` to
+`invoke`, and the state is persisted after *every* node completes.
+`resume` continues from the last completed node, and a node that
 already ran is never re-run — the same at-most-once guarantee
-:meth:`~actants.agents.agent.Agent.resume` gives for completed tool calls, applied at
+`resume` gives for completed tool calls, applied at
 node granularity.
 
-This reuses the :class:`~actants.agents.checkpoint.Checkpointer` protocol the agent
+This reuses the `Checkpointer` protocol the agent
 uses, so one store — and one SQLite file — holds both agent runs and graph runs.
 """
 
@@ -110,7 +110,7 @@ _STATE_ROLE: Role = "system"
 #: ``next_node`` value meaning "the last entry of ``completed`` finished, but its router
 #: has not yet produced a successor". Only ever observed by a resume that follows a
 #: failure inside a router; resume re-runs that router, which is safe because a router is
-#: pure by construction (see :data:`RouterFn`).
+#: pure by construction (see `RouterFn`).
 _ROUTING_PENDING = "__routing__"
 
 
@@ -133,10 +133,10 @@ class _Node[StateT: BaseModel]:
 class GraphResult[StateT: BaseModel]:
     """What one ``invoke()`` or ``resume()`` produced.
 
-    A run that stopped in front of an ``interrupt_before`` node sets :attr:`interrupted`
-    and :attr:`pending_node`, and :attr:`state` holds the state as it stood *before* that
+    A run that stopped in front of an ``interrupt_before`` node sets `interrupted`
+    and `pending_node`, and `state` holds the state as it stood *before* that
     node ran. Deliberately the same shape and vocabulary as
-    :class:`~actants.agents.agent.AgentResult`, so code that handles a paused agent
+    `AgentResult`, so code that handles a paused agent
     handles a paused graph the same way.
     """
 
@@ -145,7 +145,7 @@ class GraphResult[StateT: BaseModel]:
     #: reaching END.
     interrupted: bool = False
     #: The node the run stopped in front of and did *not* run. Set only when
-    #: :attr:`interrupted`.
+    #: `interrupted`.
     pending_node: str | None = None
     #: The durable thread this run was checkpointed under, if any.
     thread_id: str | None = None
@@ -176,8 +176,8 @@ class StateGraph[StateT: BaseModel]:
     """A typed state graph, built node by node and then compiled.
 
     ``state_type`` is the pydantic model that flows through the graph; every node and
-    router is typed against it. Nothing runs until :meth:`compile`, which is where the
-    structural checks happen — see :meth:`compile` for exactly what it rejects.
+    router is typed against it. Nothing runs until `compile`, which is where the
+    structural checks happen — see `compile` for exactly what it rejects.
 
     Example::
 
@@ -212,8 +212,8 @@ class StateGraph[StateT: BaseModel]:
         """Register ``fn`` under ``name``.
 
         ``fn`` must be an async callable taking the graph's state and returning a partial
-        update, a whole state, or None. An :class:`~actants.agents.agent.Agent` is usable
-        here by wrapping it — see :func:`~actants.graph.agent_node.agent_node`.
+        update, a whole state, or None. An `Agent` is usable
+        here by wrapping it — see `agent_node`.
         """
         if name == END:
             raise GraphValidationError(
@@ -248,7 +248,7 @@ class StateGraph[StateT: BaseModel]:
     def add_edge(self, start: str, end: str) -> StateGraph[StateT]:
         """Always go from ``start`` to ``end`` after ``start`` completes.
 
-        ``end`` may be :data:`~actants.graph.state.END` to finish the run.
+        ``end`` may be `END` to finish the run.
         """
         node = self._nodes.get(start)
         if node is None:
@@ -281,7 +281,7 @@ class StateGraph[StateT: BaseModel]:
         """Route out of ``start`` by what ``router(state)`` returns.
 
         ``router`` returns a key of ``mapping``; the mapped value is the next node, or
-        :data:`~actants.graph.state.END`. The indirection through ``mapping`` is what
+        `END`. The indirection through ``mapping`` is what
         makes the branch inspectable: ``compile`` can check every reachable target
         exists, which it could not do if the router returned node names directly.
         """
@@ -339,7 +339,7 @@ class StateGraph[StateT: BaseModel]:
         ``max_iterations`` caps how many nodes one run may execute. Graphs loop by
         design, so there is no structural way to tell a slow convergence from an
         infinite one; exceeding the cap raises
-        :class:`~actants.errors.GraphRecursionError` naming the node that was running.
+        `GraphRecursionError` naming the node that was running.
         """
         if not self._nodes:
             raise GraphValidationError(
@@ -455,10 +455,10 @@ class StateGraph[StateT: BaseModel]:
 
 
 class CompiledGraph[StateT: BaseModel]:
-    """A validated graph, ready to run. Built by :meth:`StateGraph.compile`.
+    """A validated graph, ready to run. Built by `compile`.
 
-    Runs are driven by :meth:`invoke` (await the final state), :meth:`stream` (watch
-    node-by-node), and :meth:`resume` (continue a checkpointed run).
+    Runs are driven by `invoke` (await the final state), `stream` (watch
+    node-by-node), and `resume` (continue a checkpointed run).
     """
 
     def __init__(
@@ -494,7 +494,7 @@ class CompiledGraph[StateT: BaseModel]:
         """Run the graph from its entry point until END, or until a pause.
 
         Pass ``thread_id`` — with a ``checkpointer`` on the compiled graph — to make the
-        run durable. State is persisted after every node completes, so :meth:`resume`
+        run durable. State is persisted after every node completes, so `resume`
         can continue it without re-running the nodes that already finished. A
         ``thread_id`` without a checkpointer is a ``ValueError``; a checkpointer without
         a ``thread_id`` persists nothing, so durability stays opt-in per run.
@@ -578,11 +578,11 @@ class CompiledGraph[StateT: BaseModel]:
         ``approve`` answers a run paused by ``interrupt_before``: ``True`` runs the
         pending node and continues, ``False`` skips it and routes onward as though it had
         run without changing the state. Mirrors
-        :meth:`~actants.agents.agent.Agent.resume`.
+        `resume`.
 
         Resuming a thread that already completed returns its stored state without
         re-running anything. An unknown ``thread_id`` raises
-        :class:`~actants.errors.UnknownThreadError`.
+        `UnknownThreadError`.
 
         Two processes resuming the same ``thread_id`` concurrently is undefined; actants
         does not lock a thread across processes.
@@ -604,7 +604,7 @@ class CompiledGraph[StateT: BaseModel]:
         *,
         approve: bool | None = None,
     ) -> AsyncIterator[GraphEvent[StateT]]:
-        """Streaming form of :meth:`resume`; yields the same events as :meth:`stream`."""
+        """Streaming form of `resume`; yields the same events as `stream`."""
         resumption = await self._resume_run(thread_id, approve)
         if resumption.finished:
             yield GraphCompleted(state=resumption.run.state)
@@ -780,7 +780,7 @@ class CompiledGraph[StateT: BaseModel]:
         can raise: a single write after routing would leave a node whose side effect
         already landed unrecorded, so resume would run it a second time. The first write
         parks ``next_node`` on a sentinel meaning "``node`` is done, its successor is not
-        yet known"; :meth:`_resume_run` re-runs only the router when it sees one.
+        yet known"; `_resume_run` re-runs only the router when it sees one.
         """
         run.next_node = _ROUTING_PENDING
         await self._checkpoint(run, status="running")

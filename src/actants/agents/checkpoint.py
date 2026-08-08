@@ -1,12 +1,12 @@
-"""Durable checkpoints for :class:`~actants.agents.agent.Agent` runs.
+"""Durable checkpoints for `Agent` runs.
 
 A checkpoint is the whole conversation state of one in-flight run, keyed by a
 caller-chosen ``thread_id``. Writing one after every tool result is what lets
-:meth:`~actants.agents.agent.Agent.resume` pick a crashed run back up without paying
+`resume` pick a crashed run back up without paying
 for the LLM calls again and — more importantly — without re-running side effects that
 already happened.
 
-See :meth:`~actants.agents.agent.Agent.resume` for the exact replay guarantee.
+See `resume` for the exact replay guarantee.
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ CheckpointStatus = Literal["running", "interrupted", "completed", "failed"]
 
 
 class StepRecord(BaseModel):
-    """One :class:`~actants.agents.agent.AgentStep`, in a form that survives a round-trip.
+    """One `AgentStep`, in a form that survives a round-trip.
 
     ``AgentStep`` is a dataclass holding pydantic models; this is the pydantic mirror of
     it, so the whole checkpoint serializes with a single ``model_dump_json``.
@@ -85,18 +85,18 @@ class Checkpoint(BaseModel):
 
 @runtime_checkable
 class Checkpointer(Protocol):
-    """Where :class:`~actants.agents.agent.Agent` persists and reads run state.
+    """Where `Agent` persists and reads run state.
 
     Four async methods, keyed by ``thread_id``. Implement this against any store —
     Redis, Postgres, an object store — and pass it as ``Agent(checkpointer=...)``.
 
     ``put`` must be a full overwrite of the thread's state, not an append: the agent
-    always hands over the complete :class:`Checkpoint`, and resume only ever reads the
+    always hands over the complete `Checkpoint`, and resume only ever reads the
     latest one.
 
     Concurrent access to *different* thread_ids must be safe. Two writers on the *same*
     thread_id is undefined — see the note on
-    :meth:`~actants.agents.agent.Agent.resume`.
+    `resume`.
     """
 
     async def put(self, checkpoint: Checkpoint) -> None:
@@ -120,7 +120,7 @@ class InMemoryCheckpointer:
     """Process-local checkpointer: durable across a crash of the *run*, not the process.
 
     Useful for tests and for interrupt/approve flows inside one process. Use
-    :class:`SqliteCheckpointer` for anything that must survive the interpreter exiting.
+    `SqliteCheckpointer` for anything that must survive the interpreter exiting.
     """
 
     def __init__(self) -> None:
@@ -150,13 +150,13 @@ class SqliteCheckpointer:
     """Checkpointer backed by a SQLite file, safe to open from several processes.
 
     Each call opens its own connection through
-    :func:`~actants.storage.sqlite.open_sqlite`, so a checkpointer instance carries no
+    `open_sqlite`, so a checkpointer instance carries no
     connection state and separate processes writing *different* thread_ids coexist on
     WAL. Nothing is cached in memory, which is the point: a resume in a fresh process
     reads exactly what the crashed one committed.
 
     The file records its schema version in ``PRAGMA user_version``; opening one written
-    by an incompatible actants raises :class:`~actants.errors.CheckpointSchemaMismatch`
+    by an incompatible actants raises `CheckpointSchemaMismatch`
     rather than resetting, because these rows are the only record of which side effects
     already ran.
     """
@@ -278,7 +278,7 @@ class SqliteCheckpointer:
 
 
 def step_to_record(step: AgentStep) -> StepRecord:
-    """Convert a live :class:`~actants.agents.agent.AgentStep` into its persisted form."""
+    """Convert a live `AgentStep` into its persisted form."""
     return StepRecord(
         index=step.index,
         completion=step.completion,
@@ -288,7 +288,7 @@ def step_to_record(step: AgentStep) -> StepRecord:
 
 
 def record_to_step(record: StepRecord) -> AgentStep:
-    """Rebuild an :class:`~actants.agents.agent.AgentStep` from its persisted form."""
+    """Rebuild an `AgentStep` from its persisted form."""
     from actants.agents.agent import AgentStep
 
     return AgentStep(

@@ -27,7 +27,7 @@ Replay, with no network at all::
     result = await agent.run("book a flight to Berlin")   # identical, offline
 
 Tool calls are *not* served from the recording: the agent re-dispatches them against the
-real registry, and :class:`ReplayProvider` records what it saw so a replayed run can be
+real registry, and `ReplayProvider` records what it saw so a replayed run can be
 compared against the original trajectory. That is deliberate — replaying tool results
 too would mean a change in a tool's own logic could never be caught, which is half of
 what this exists to detect.
@@ -66,7 +66,7 @@ from actants.storage.jsonl import JsonlAppender
 #: Bumped whenever the shape of a line changes. A recording is a regression baseline
 #: whose whole value is that it means the same thing tomorrow as it did when it was
 #: recorded, so a mismatch is always an error — never a best-effort read. See
-#: :meth:`Recording.load`.
+#: `load`.
 FORMAT_VERSION = 1
 
 #: How a replay decides which recorded exchange answers a request.
@@ -96,7 +96,7 @@ class RecordedRequest(BaseModel):
         """A stable identity for ``match="request"`` lookups.
 
         Canonical JSON of every field that can change the answer — the same principle as
-        :class:`~actants.cache.request.CacheRequest`, computed here rather than reused
+        `CacheRequest`, computed here rather than reused
         because a recording must keep meaning the same thing when the cache key version
         moves for cache reasons.
         """
@@ -139,7 +139,7 @@ class RecordingHeader(BaseModel):
 class Recording(BaseModel):
     """A recorded run: a header plus every LLM exchange, in order.
 
-    Load one with :meth:`load`, serve it with :class:`ReplayProvider`. A recording is
+    Load one with `load`, serve it with `ReplayProvider`. A recording is
     immutable in spirit — nothing in actants mutates a loaded one — so the same object can
     seed several replays.
     """
@@ -168,7 +168,7 @@ class Recording(BaseModel):
         """Every tool call the recorded model asked for, in order, as ``(name, args)``.
 
         This is the recorded *trajectory* — what a
-        :class:`~actants.testing.evals.ToolCalled` assertion is checked against.
+        `ToolCalled` assertion is checked against.
         """
         return [(c.name, dict(c.arguments)) for e in self.exchanges for c in e.response.tool_calls]
 
@@ -176,7 +176,7 @@ class Recording(BaseModel):
     def load(cls, path: str | Path) -> Recording:
         """Read a recording from a JSONL file.
 
-        Raises :class:`~actants.errors.RecordingFormatError` for a file this build cannot
+        Raises `RecordingFormatError` for a file this build cannot
         read: a wrong format version, a missing header, or a line that does not parse.
         Never a partial read — a recording is a regression baseline, and one that silently
         drops the exchanges it could not understand would report a passing replay of a run
@@ -243,7 +243,7 @@ class Recording(BaseModel):
 class RunRecorder:
     """Captures every LLM exchange a run makes, to a JSONL file or to memory.
 
-    Wrap any provider with :meth:`wrap` and use the result exactly as you would the
+    Wrap any provider with `wrap` and use the result exactly as you would the
     original: it delegates every call through and writes down what happened. The run
     behaves identically — recording is observation, never interception.
 
@@ -255,7 +255,7 @@ class RunRecorder:
         recorder.close()
 
     ``path=None`` records to memory only, which is what a test that never wants a file
-    wants; :attr:`recording` is available either way.
+    wants; `recording` is available either way.
     """
 
     def __init__(self, path: str | Path | None = None, *, label: str | None = None) -> None:
@@ -328,7 +328,7 @@ class RunRecorder:
 class RecordingProvider(BaseLLMProvider):
     """A provider that delegates every call and writes down what happened.
 
-    Built by :meth:`RunRecorder.wrap`. Capability flags mirror the wrapped provider's, so
+    Built by `wrap`. Capability flags mirror the wrapped provider's, so
     wrapping cannot change what the client believes the provider can do.
     """
 
@@ -391,7 +391,7 @@ class RecordingProvider(BaseLLMProvider):
     ) -> AsyncIterator[StreamEvent]:
         """Pass events through, assembling the completion they add up to.
 
-        A streamed exchange is recorded as the :class:`CompletionResult` it produced, not
+        A streamed exchange is recorded as the `CompletionResult` it produced, not
         as a list of deltas: the replay serves whole completions and re-derives deltas from
         them, so one recording drives both a streamed and a non-streamed replay.
         """
@@ -444,7 +444,7 @@ class RecordingProvider(BaseLLMProvider):
 
 
 class ReplayProvider(BaseLLMProvider):
-    """Serves a :class:`Recording` back in place of a real provider. **No network.**
+    """Serves a `Recording` back in place of a real provider. **No network.**
 
     This is the piece that turns a recorded run into an offline regression suite: an agent
     built on one behaves exactly as it did when recorded, in microseconds, with no server
@@ -457,7 +457,7 @@ class ReplayProvider(BaseLLMProvider):
       request will not match, and the point is to see what the rest of the system does
       with the same model answers.
     * ``match="request"`` looks each request up by content and raises
-      :class:`~actants.errors.RecordingMissError` on a request that was never recorded.
+      `RecordingMissError` on a request that was never recorded.
       Use it for a **determinism check**: it proves the run asked the same questions, not
       merely the same number of them.
 
@@ -672,7 +672,7 @@ def _build_request(
 def iter_exchanges(path: str | Path) -> Iterator[RecordedExchange]:
     """Stream a recording's exchanges without holding the whole file in memory.
 
-    For the case :meth:`Recording.load` is wrong for: a long run being scanned for one
+    For the case `load` is wrong for: a long run being scanned for one
     thing. Validates the header first, so a bad file still fails on the first line.
     """
     return _iter_exchanges(Path(path))

@@ -439,7 +439,7 @@ class LLM:
         is impossible rather than merely unlikely. Everywhere else, and for any schema
         the provider's dialect cannot express, the schema is described in a system
         prompt and a failed parse is repaired. Both paths return the same validated
-        instance; :meth:`last_schema_plan` reports which one ran.
+        instance; `last_schema_plan` reports which one ran.
 
         ``tag`` is recorded on the CostTracker as in `complete`. Every attempt is
         recorded under the same tag, including repairs that failed to parse — a repair
@@ -493,13 +493,13 @@ class LLM:
         raise ValueError(f"Failed to extract {schema.__name__} from model output: {last_err}")
 
     def _plan_schema(self, schema: type[BaseModel], *, streaming: bool = False) -> SchemaPlan:
-        """Choose the transport for one extraction and record it for :meth:`last_schema_plan`."""
+        """Choose the transport for one extraction and record it for `last_schema_plan`."""
         plan = build_schema_plan(schema, self.provider.native_schema_mode, streaming=streaming)
         self._last_schema_plan = plan
         return plan
 
     def last_schema_plan(self) -> SchemaPlan | None:
-        """How the most recent :meth:`extract` / :meth:`extract_stream` call was sent.
+        """How the most recent `extract` / `extract_stream` call was sent.
 
         ``None`` before the first call. This is the supported way to tell the native
         path from the prompt path — the alternative would be a log line on every
@@ -915,7 +915,7 @@ def _extract_payload(result: CompletionResult, plan: SchemaPlan) -> str:
     The forced-tool path is the one case where the answer is not in ``content`` at all:
     the model's whole response is the tool call's ``arguments``. Everything else — the
     other native modes and the prompt path — returns text, which still goes through
-    :func:`_extract_json` because a native mode guarantees the *schema*, not the absence
+    `_extract_json` because a native mode guarantees the *schema*, not the absence
     of a code fence around it.
     """
     if plan.native and plan.mode == "anthropic_tool":

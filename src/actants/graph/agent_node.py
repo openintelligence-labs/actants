@@ -1,4 +1,4 @@
-"""Use an :class:`~actants.agents.agent.Agent` as a graph node.
+"""Use an `Agent` as a graph node.
 
 An Agent is a linear ReAct loop; a graph is the control flow *around* such loops. Making
 one a node of the other is the point where the two halves of the framework meet, so it
@@ -9,7 +9,7 @@ should cost one line::
 
 ``prompt`` reads the state to build the agent's user turn, and ``output`` names the state
 field its answer lands in. If that field is annotated
-:data:`~actants.graph.state.Append`, the answers accumulate across loop passes for free —
+`Append`, the answers accumulate across loop passes for free —
 which is what makes an agent usable inside a retry or critique cycle.
 """
 

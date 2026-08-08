@@ -30,7 +30,7 @@ class OpenAIProvider(BaseLLMProvider):
     name = "openai"
     supports_tool_calls = True
     supports_streaming_tools = True
-    #: Subclasses in :mod:`actants.llm.openai_compatible` override this per provider —
+    #: Subclasses in `openai_compatible` override this per provider —
     #: speaking the OpenAI wire format does not imply implementing ``json_schema``.
     native_schema_mode: NativeSchemaMode = "openai_json_schema"
 

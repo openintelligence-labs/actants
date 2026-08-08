@@ -1,6 +1,6 @@
 """Streaming event taxonomy for ``CompiledGraph.stream()``.
 
-The graph-level counterpart of :mod:`actants.agents.events`: same dataclass shape, same
+The graph-level counterpart of `events`: same dataclass shape, same
 ``match``-friendly ergonomics, named for graph vocabulary (nodes and iterations) rather
 than agent vocabulary (steps and tool calls).
 """

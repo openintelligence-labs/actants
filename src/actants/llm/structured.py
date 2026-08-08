@@ -1,15 +1,15 @@
-"""Provider-native constrained decoding for :meth:`~actants.llm.client.LLM.extract`.
+"""Provider-native constrained decoding for `extract`.
 
 Every provider that can guarantee schema-valid output does it differently — OpenAI
 takes a ``response_format`` block, Anthropic has no such parameter and instead needs a
 forced single tool call, Gemini nests the schema under ``generationConfig``, Ollama
 takes it as ``format``. What they share is the JSON Schema itself, so a provider
-declares :attr:`~actants.llm.base.BaseLLMProvider.native_schema_mode` and this module
+declares `native_schema_mode` and this module
 turns one pydantic model into the request that mode needs.
 
 The prompt-based path is not going away: it is what runs when a provider has no native
 mode, and what runs when a schema cannot be expressed in the provider's dialect.
-:class:`SchemaPlan` records which of the two happened so a caller can assert on it.
+`SchemaPlan` records which of the two happened so a caller can assert on it.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ from actants.errors import UnsupportedSchemaError as UnsupportedSchemaError
 
 #: How a provider asks the model for schema-valid output on the wire.
 #:
-#: ``"none"`` means it cannot, and :meth:`~actants.llm.client.LLM.extract` falls back to
+#: ``"none"`` means it cannot, and `extract` falls back to
 #: describing the schema in a system prompt.
 NativeSchemaMode = Literal["none", "openai_json_schema", "anthropic_tool", "gemini", "ollama"]
 
@@ -125,7 +125,7 @@ def build_schema_plan(
     not for a particular transport.
 
     ``streaming`` excludes modes that cannot produce incremental text.
-    :meth:`~actants.llm.client.LLM.extract_stream` yields progressively-complete objects
+    `extract_stream` yields progressively-complete objects
     parsed from a text stream, and the Anthropic tool path emits its JSON as tool-call
     input deltas rather than text — so that path is declined for streams instead of
     silently yielding nothing.
@@ -227,7 +227,7 @@ def to_strict_schema(
     ``priority: int = 3`` becomes ``["integer", "null"]``, and a conforming provider is
     then entitled to return null. ``widened`` collects the paths of exactly those fields
     so the caller can read a null back as "the field was absent, use its default"; see
-    :attr:`SchemaPlan.nulls_mean_default`.
+    `nulls_mean_default`.
 
     Raises:
         UnsupportedSchemaError: The schema uses something with no strict equivalent —

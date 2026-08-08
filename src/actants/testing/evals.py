@@ -30,7 +30,7 @@ Example::
     print(candidate.compare(baseline).summary())
 
 Every scorer is a plain object with a ``score()`` method, so a bespoke one is a class with
-one method — or, for the common case, :class:`Predicate` wrapping a lambda.
+one method — or, for the common case, `Predicate` wrapping a lambda.
 """
 
 from __future__ import annotations
@@ -58,8 +58,8 @@ if TYPE_CHECKING:
 class RunOutcome:
     """What one case's run produced, in the vocabulary every scorer reads.
 
-    Deliberately not an :class:`~actants.agents.agent.AgentResult` or a
-    :class:`~actants.graph.state_graph.GraphResult`: a scorer written against this works
+    Deliberately not an `AgentResult` or a
+    `GraphResult`: a scorer written against this works
     on both, which is what lets one suite evaluate an agent today and the graph it grows
     into tomorrow.
     """
@@ -419,7 +419,7 @@ class CaseResult:
 
 @dataclass(frozen=True)
 class ReportDelta:
-    """The difference between two :class:`EvalReport` runs.
+    """The difference between two `EvalReport` runs.
 
     The number that actually answers "should I switch models": what the swap did to
     correctness, to spend, and to latency, all at once. A cheaper model that costs 40%
@@ -489,7 +489,7 @@ class ReportDelta:
 class EvalReport:
     """The result of running a suite: per-case verdicts plus the aggregates.
 
-    :meth:`summary` is for a human, :meth:`to_dict` for CI. :meth:`compare` against an
+    `summary` is for a human, `to_dict` for CI. `compare` against an
     earlier report is what turns this from a test result into a decision.
     """
 
@@ -588,7 +588,7 @@ class EvalReport:
         }
 
     def to_json(self, *, indent: int | None = 2) -> str:
-        """:meth:`to_dict` as a JSON string, for writing straight to a CI artifact."""
+        """`to_dict` as a JSON string, for writing straight to a CI artifact."""
         return json.dumps(self.to_dict(), indent=indent, default=str)
 
     def compare(self, baseline: EvalReport) -> ReportDelta:
@@ -624,7 +624,7 @@ class EvalSuite:
     """A named set of cases, runnable against an Agent or a CompiledGraph.
 
     ``concurrency`` runs cases in parallel; the default of 1 is sequential, which is what
-    a suite sharing one :class:`~actants.agents.agent.Agent` needs — every case is an
+    a suite sharing one `Agent` needs — every case is an
     independent question, so the agent's conversation is reset between them.
 
     Example::
@@ -669,8 +669,8 @@ class EvalSuite:
     async def run(self, target: Agent | CompiledGraph[Any]) -> EvalReport:
         """Run every case against ``target`` and score the results.
 
-        Accepts an :class:`~actants.agents.agent.Agent` or a
-        :class:`~actants.graph.state_graph.CompiledGraph`; the difference is confined to
+        Accepts an `Agent` or a
+        `CompiledGraph`; the difference is confined to
         how one case is executed, so the same suite scores both.
         """
         runner = _make_runner(target, self.max_steps)
@@ -696,7 +696,7 @@ class EvalSuite:
         return f"EvalSuite(name={self.name!r}, cases={len(self.cases)})"
 
 
-#: How one case is executed. Returned by :func:`_make_runner`, which is the only place
+#: How one case is executed. Returned by `_make_runner`, which is the only place
 #: that knows an Agent from a CompiledGraph.
 type _Runner = Callable[[EvalCase], Awaitable[RunOutcome]]
 

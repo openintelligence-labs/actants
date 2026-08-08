@@ -117,10 +117,10 @@ class UnsupportedSchemaError(ProviderError, ValueError):
     """A schema cannot be expressed in a provider's native structured-output dialect.
 
     Raised inside the schema translators and handled by
-    :meth:`~actants.llm.client.LLM.extract`, which downgrades that call to the
+    `extract`, which downgrades that call to the
     prompt-based path rather than failing — so it does not normally reach a caller.
-    Catch it when calling :func:`~actants.llm.structured.to_strict_schema` or
-    :func:`~actants.llm.structured.to_gemini_schema` directly.
+    Catch it when calling `to_strict_schema` or
+    `to_gemini_schema` directly.
     """
 
 
@@ -147,11 +147,11 @@ class UnresolvedToolCallError(CheckpointError, RuntimeError):
     The process died while this call was executing, so actants cannot know whether the
     side effect happened. Re-dispatching could duplicate it; skipping could drop it.
     Rather than guess, resume raises this and hands the decision back — see
-    :meth:`~actants.agents.agent.Agent.resume` for the ``resolve=`` options.
+    `resume` for the ``resolve=`` options.
 
-    The unresolved call is on :attr:`call`, and the thread it belongs to on
-    :attr:`thread_id`, so a handler can present it to a human or look it up in a
-    vendor's API by :attr:`ToolCall.id <actants.llm.base.ToolCall.id>`.
+    The unresolved call is on `call`, and the thread it belongs to on
+    `thread_id`, so a handler can present it to a human or look it up in a
+    vendor's API by `id>`.
     """
 
     def __init__(self, message: str, *, thread_id: str, call: ToolCall) -> None:
@@ -169,7 +169,7 @@ class CheckpointSchemaMismatch(CheckpointError, RuntimeError):
 
 
 class GraphError(ActantsError):
-    """A :class:`~actants.graph.state_graph.StateGraph` could not be built or run."""
+    """A `StateGraph` could not be built or run."""
 
 
 class GraphValidationError(GraphError, ValueError):
@@ -217,7 +217,7 @@ class RecordingMissError(RecordingError, RuntimeError):
     behaviour changed, which is the thing a replay exists to detect, so this is raised
     rather than papered over with an invented answer.
 
-    :attr:`request_index` is the position in *this* run's sequence of LLM calls, so a
+    `request_index` is the position in *this* run's sequence of LLM calls, so a
     handler can point at the step that diverged.
     """
 

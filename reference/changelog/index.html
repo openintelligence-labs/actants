@@ -2469,7 +2469,7 @@
 <a href="https://github.com/openintelligence-labs/actants/blob/main/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
 <p>This page mirrors the most recent releases for offline reading.</p>
 <h1 id="changelog_1">Changelog<a class="headerlink" href="#changelog_1" title="Permanent link">&para;</a></h1>
-<h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h2 id="110-2026-08-08">[1.1.0] - 2026-08-08<a class="headerlink" href="#110-2026-08-08" title="Permanent link">&para;</a></h2>
 <h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Durable execution for <code>Agent.run()</code>.</strong> <code>Agent(checkpointer=...)</code> plus
@@ -2506,18 +2506,15 @@
 <p><code>CheckpointError</code>, <code>CheckpointSchemaMismatch</code>, <code>UnknownThreadError</code>, and
   <code>UnresolvedToolCallError</code>, all under <code>ActantsError</code>.</p>
 </li>
-</ul>
-<p>Durability is opt-in per run: an <code>Agent</code> built without a <code>checkpointer</code>, or a <code>run()</code>
-called without a <code>thread_id</code>, behaves exactly as it did before and touches no storage.
-<code>stream()</code> is not yet checkpointed.</p>
-<ul>
-<li><strong>An explicit opt-in for resuming a <code>failed</code> thread.</strong> <code>Agent.resume()</code>,
+<li>
+<p><strong>An explicit opt-in for resuming a <code>failed</code> thread.</strong> <code>Agent.resume()</code>,
   <code>CompiledGraph.resume()</code>, and <code>CompiledGraph.resume_stream()</code> take
   <code>resume_failed=RESUME_FAILED_ACKNOWLEDGED</code>, which continues a thread the default still
   refuses. The refusal is right in general — a silent retry of an unknown failure is how
   a side effect gets repeated — but an ordinary exception like a network timeout is far
   more common than a vanished process, and every completed stage was already sitting in
-  the checkpoint with no way to get it back.</li>
+  the checkpoint with no way to get it back.</p>
+</li>
 </ul>
 <p>The opt-in is the literal string <code>"i-know-the-failure-may-have-half-run"</code> rather than a
   boolean, so it cannot arrive from a generic retry wrapper forwarding flags or from a
@@ -2529,6 +2526,10 @@ called without a <code>thread_id</code>, behaves exactly as it did before and to
 <p>A resumed thread returns to <code>running</code>, and the failure it was resumed past moves to the
   new <code>Checkpoint.prior_errors</code> instead of being overwritten — a thread that fails again
   keeps the original failure alongside the new one.</p>
+<p>Everything above is additive and opt-in. An <code>Agent</code> built without a <code>checkpointer</code>, or a
+<code>run()</code> called without a <code>thread_id</code>, behaves exactly as it did in 1.0 and touches no
+storage; <code>extract()</code> falls back to the prompt path wherever a provider cannot constrain
+decoding. <code>Agent.stream()</code> is not yet checkpointed.</p>
 <h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
 <ul>
 <li>

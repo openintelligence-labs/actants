@@ -999,6 +999,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Thread states">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resuming-a-failure-anyway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resuming a failure anyway
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2660,6 +2677,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Thread states">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resuming-a-failure-anyway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resuming a failure anyway
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2933,7 +2967,7 @@ decision to make and actants will not make it for you.</p>
 </tr>
 <tr>
 <td><code>failed</code></td>
-<td>Raises <code>RuntimeError</code> describing the original failure.</td>
+<td>Raises <code>RuntimeError</code> describing the original failure, unless you opt in.</td>
 </tr>
 </tbody>
 </table>
@@ -2943,6 +2977,39 @@ hold.</p>
 torn turn, and a silent retry of an unknown failure is how a side effect gets repeated.
 Inspect it, and start a new run or delete the thread. Note that a run which dies before
 its first checkpoint leaves no thread at all — there is no state worth resuming.</p>
+<h3 id="resuming-a-failure-anyway">Resuming a failure anyway<a class="headerlink" href="#resuming-a-failure-anyway" title="Permanent link">&para;</a></h3>
+<p>The default above is right for the general case, but it is not the whole story: an
+ordinary exception — a network timeout in one stage of a long run — is far more common
+than a process that vanishes, and the completed work is provably still in the checkpoint.
+Refusing outright means an operator has no way to recover it.</p>
+<p>So there is an escape hatch, and it is deliberately awkward to type:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">RESUME_FAILED_ACKNOWLEDGED</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">,</span> <span class="n">resume_failed</span><span class="o">=</span><span class="n">RESUME_FAILED_ACKNOWLEDGED</span><span class="p">)</span>
+</span></code></pre></div>
+<p>The constant's value is the sentence <code>"i-know-the-failure-may-have-half-run"</code>. It is not
+a boolean, and nothing but that exact string is accepted, so it cannot be set by a
+generic retry wrapper forwarding flags it does not understand, and it cannot be reached
+by a truthy default. Typing it is a statement about a specific thread.</p>
+<p><strong>What it does not do.</strong> It does not loosen the at-most-once guarantee by one inch. A
+thread that failed <em>while a tool was in flight</em> still goes through <code>resolve</code>, so a call
+registered <code>idempotent=False</code> still raises <code>UnresolvedToolCallError</code> — opting in to
+resume a failure is not opting in to replay an unsafe side effect, and those are separate
+decisions because they are answered by separate evidence. Every tool call whose result
+was recorded is replayed from the checkpoint, never dispatched again.</p>
+<p><strong>When it is safe.</strong> When you know what the failure was and that it left nothing
+half-done — a timeout on a read, a transient dependency outage, an exception thrown
+between side effects. Read <code>checkpoint.error</code> first; that is the point of keeping it.</p>
+<p><strong>When it is not.</strong> When the failure is unexplained, when it came from a tool that writes
+somewhere, or when the answer is "let's just retry it and see". The refusal is the
+correct outcome in all three, and re-running from scratch is cheaper than a duplicated
+charge.</p>
+<p>A thread resumed this way goes back to <code>running</code> and, if it gets there, <code>completed</code> — it
+is genuinely running again, and leaving it marked <code>failed</code> would make the status a lie.
+The failure it was resumed past is not lost: it moves to <code>checkpoint.prior_errors</code>, which
+accumulates across resumes. If the resumed run fails again the new failure lands in
+<code>error</code> and the original stays in <code>prior_errors</code>, so a thread that has been retried
+several times still shows what went wrong the first time.</p>
 <h2 id="checkpointer-implementations">Checkpointer implementations<a class="headerlink" href="#checkpointer-implementations" title="Permanent link">&para;</a></h2>
 <p><code>InMemoryCheckpointer</code> is process-local. It survives a failed <em>run</em>, not a dead
 <em>process</em>, which makes it right for tests and for approve/reject flows inside one
@@ -2952,15 +3019,15 @@ Each call opens its own connection, so the checkpointer instance holds no state 
 separate processes writing different thread ids coexist on WAL.</p>
 <!-- docs-test: run -->
 
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Checkpoint</span><span class="p">,</span> <span class="n">InMemoryCheckpointer</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">store</span> <span class="o">=</span> <span class="n">InMemoryCheckpointer</span><span class="p">()</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Checkpoint</span><span class="p">(</span><span class="n">thread_id</span><span class="o">=</span><span class="s2">&quot;job-42&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;running&quot;</span><span class="p">))</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">loaded</span> <span class="o">=</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">)</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="k">assert</span> <span class="n">loaded</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">loaded</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;running&quot;</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">assert</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">list_threads</span><span class="p">()</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;job-42&quot;</span><span class="p">]</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="k">assert</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Checkpoint</span><span class="p">,</span> <span class="n">InMemoryCheckpointer</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">store</span> <span class="o">=</span> <span class="n">InMemoryCheckpointer</span><span class="p">()</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Checkpoint</span><span class="p">(</span><span class="n">thread_id</span><span class="o">=</span><span class="s2">&quot;job-42&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;running&quot;</span><span class="p">))</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">loaded</span> <span class="o">=</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">)</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="k">assert</span> <span class="n">loaded</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">loaded</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;running&quot;</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">assert</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">list_threads</span><span class="p">()</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;job-42&quot;</span><span class="p">]</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="k">assert</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
 </span></code></pre></div>
 <p><code>Checkpointer</code> is a runtime-checkable <code>Protocol</code> with four async methods — <code>put</code>, <code>get</code>,
 <code>list_threads</code>, <code>delete</code> — so a store backed by Redis, Postgres, or an object store is

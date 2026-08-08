@@ -2960,7 +2960,7 @@ nothing, which is what keeps un-threaded runs exactly as they were.</p>
   </span>
 
 <a href="#actants.agents.agent.Agent.resume" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">resume</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">approve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">resolve</span><span class="p">:</span> <span class="n">ResumeResolution</span> <span class="o">=</span> <span class="s1">&#39;abort&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentResult</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">resume</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">approve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">resolve</span><span class="p">:</span> <span class="n">ResumeResolution</span> <span class="o">=</span> <span class="s1">&#39;abort&#39;</span><span class="p">,</span> <span class="n">resume_failed</span><span class="p">:</span> <span class="n">ResumeFailedAck</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentResult</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2986,8 +2986,13 @@ anyway, for when the caller has established it did not run; <code>"skip"</code> 
 that it was not run and lets the model continue without it.</p>
 <p>Resuming a thread that already completed returns its stored result without
 re-running anything. Resuming one that failed re-raises a description of the
-original failure. An unknown <code>thread_id</code> raises
-<code>UnknownThreadError</code>.</p>
+original failure, unless <code>resume_failed=RESUME_FAILED_ACKNOWLEDGED</code> is passed:
+an unknown failure may have half-run, so continuing past one is a judgement only a
+human has the context to make, and the opt-in is spelled as a sentence so it
+cannot arrive from a wrapper forwarding flags. It does <strong>not</strong> loosen anything
+above it — a thread that died mid-call still goes through <code>resolve</code>, so a
+non-idempotent call still raises <code>UnresolvedToolCallError</code>.
+An unknown <code>thread_id</code> raises <code>UnknownThreadError</code>.</p>
 <p>Concurrent resumes of one <code>thread_id</code> <strong>within this process</strong> are serialized on
 a per-thread lock, so the read-decide-dispatch sequence cannot interleave and the
 at-most-once guarantee above holds for them: the second resume runs after the

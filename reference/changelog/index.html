@@ -2510,6 +2510,25 @@
 <p>Durability is opt-in per run: an <code>Agent</code> built without a <code>checkpointer</code>, or a <code>run()</code>
 called without a <code>thread_id</code>, behaves exactly as it did before and touches no storage.
 <code>stream()</code> is not yet checkpointed.</p>
+<ul>
+<li><strong>An explicit opt-in for resuming a <code>failed</code> thread.</strong> <code>Agent.resume()</code>,
+  <code>CompiledGraph.resume()</code>, and <code>CompiledGraph.resume_stream()</code> take
+  <code>resume_failed=RESUME_FAILED_ACKNOWLEDGED</code>, which continues a thread the default still
+  refuses. The refusal is right in general — a silent retry of an unknown failure is how
+  a side effect gets repeated — but an ordinary exception like a network timeout is far
+  more common than a vanished process, and every completed stage was already sitting in
+  the checkpoint with no way to get it back.</li>
+</ul>
+<p>The opt-in is the literal string <code>"i-know-the-failure-may-have-half-run"</code> rather than a
+  boolean, so it cannot arrive from a generic retry wrapper forwarding flags or from a
+  truthy default; any other value raises. It does <strong>not</strong> weaken the at-most-once
+  guarantee: a thread that failed with a tool in flight goes through the same <code>resolve</code>
+  path a crashed one does, so an <code>idempotent=False</code> call still raises
+  <code>UnresolvedToolCallError</code>. Recorded tool results and completed graph nodes are replayed,
+  never re-run.</p>
+<p>A resumed thread returns to <code>running</code>, and the failure it was resumed past moves to the
+  new <code>Checkpoint.prior_errors</code> instead of being overwritten — a thread that fails again
+  keeps the original failure alongside the new one.</p>
 <h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
 <ul>
 <li>

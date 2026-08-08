@@ -3431,7 +3431,7 @@ through and one seed object can safely start several concurrent runs.</p>
   </span>
 
 <a href="#actants.graph.state_graph.CompiledGraph.resume" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">resume</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">approve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphResult</span><span class="p">[</span><span class="n">StateT</span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">resume</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">approve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">resume_failed</span><span class="p">:</span> <span class="n">ResumeFailedAck</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphResult</span><span class="p">[</span><span class="n">StateT</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3446,8 +3446,11 @@ pending node and continues, <code>False</code> skips it and routes onward as tho
 run without changing the state. Mirrors
 <code>resume</code>.</p>
 <p>Resuming a thread that already completed returns its stored state without
-re-running anything. An unknown <code>thread_id</code> raises
-<code>UnknownThreadError</code>.</p>
+re-running anything. A thread marked failed refuses, because an unknown failure
+may have half-run a node; <code>resume_failed=RESUME_FAILED_ACKNOWLEDGED</code> overrides
+that once a human has established continuing is safe, and picks up at the node
+the checkpoint says was next — every completed node is still skipped. An unknown
+<code>thread_id</code> raises <code>UnknownThreadError</code>.</p>
 <p>Two processes resuming the same <code>thread_id</code> concurrently is undefined; actants
 does not lock a thread across processes.</p>
 
@@ -3468,7 +3471,7 @@ does not lock a thread across processes.</p>
   </span>
 
 <a href="#actants.graph.state_graph.CompiledGraph.resume_stream" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">resume_stream</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">approve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GraphEvent</span><span class="p">[</span><span class="n">StateT</span><span class="p">]]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">resume_stream</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">approve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">resume_failed</span><span class="p">:</span> <span class="n">ResumeFailedAck</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GraphEvent</span><span class="p">[</span><span class="n">StateT</span><span class="p">]]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">

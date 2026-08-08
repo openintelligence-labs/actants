@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.0] - 2026-08-08
 
 ### Added
 
@@ -34,10 +34,6 @@
 - `CheckpointError`, `CheckpointSchemaMismatch`, `UnknownThreadError`, and
   `UnresolvedToolCallError`, all under `ActantsError`.
 
-Durability is opt-in per run: an `Agent` built without a `checkpointer`, or a `run()`
-called without a `thread_id`, behaves exactly as it did before and touches no storage.
-`stream()` is not yet checkpointed.
-
 - **An explicit opt-in for resuming a `failed` thread.** `Agent.resume()`,
   `CompiledGraph.resume()`, and `CompiledGraph.resume_stream()` take
   `resume_failed=RESUME_FAILED_ACKNOWLEDGED`, which continues a thread the default still
@@ -57,6 +53,11 @@ called without a `thread_id`, behaves exactly as it did before and touches no st
   A resumed thread returns to `running`, and the failure it was resumed past moves to the
   new `Checkpoint.prior_errors` instead of being overwritten — a thread that fails again
   keeps the original failure alongside the new one.
+
+Everything above is additive and opt-in. An `Agent` built without a `checkpointer`, or a
+`run()` called without a `thread_id`, behaves exactly as it did in 1.0 and touches no
+storage; `extract()` falls back to the prompt path wherever a provider cannot constrain
+decoding. `Agent.stream()` is not yet checkpointed.
 
 ### Fixed
 

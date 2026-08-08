@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # Public-attribute name → (module path, source attribute name).
 _LAZY: dict[str, tuple[str, str]] = {

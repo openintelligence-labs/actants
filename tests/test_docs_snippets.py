@@ -77,7 +77,19 @@ def _collect() -> list[Snippet]:
 
 
 SNIPPETS = _collect()
-CHECKED = [s for s in SNIPPETS if not s.has("skip")]
+
+#: Snippets the static checks apply to.
+#:
+#: ``docs-test: skip`` means "do not *execute* this" — it is for snippets that need a
+#: network, a key, a server, or a name defined in the surrounding prose. It deliberately
+#: does NOT exempt them from parsing and API checks: an unrunnable snippet is still one a
+#: reader will copy, and the checks are static. Marking a snippet unrunnable used to
+#: exempt it from every check, which is how a `registry.tool(...)` decorator that has
+#: never existed got as far as review.
+#:
+#: ``docs-test: nocheck`` is the real escape hatch, for a fragment that is not valid
+#: standalone Python — a partial class body, a `...` placeholder. Use it sparingly.
+CHECKED = [s for s in SNIPPETS if not s.has("nocheck")]
 
 
 def test_readme_snippets_were_found():
@@ -243,6 +255,62 @@ def test_snippet_keyword_arguments_exist(snippet: Snippet):
                 f"{node.func.id} accepts only {sorted(sig.parameters)}. "
                 "The docs are out of date."
             )
+
+
+@pytest.mark.parametrize("snippet", CHECKED, ids=lambda s: s.id)
+def test_snippet_methods_exist(snippet: Snippet):
+    """Methods called on an actants object must exist on it.
+
+    The kwarg check above only sees direct calls to top-level names, so a snippet could
+    invent a whole method — `registry.tool(...)`, a decorator that has never existed —
+    and nothing failed. Drafting the "Agent or StateGraph?" page produced exactly that,
+    so the gap is real rather than theoretical.
+
+    Only variables assigned straight from an actants constructor are checked; the
+    binding has to be visible in the snippet for the type to be knowable.
+    """
+    symbols = _public_callables()
+    tree = ast.parse(snippet.code, snippet.id)
+
+    from_actants: set[str] = set()
+    shadowed: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            target = from_actants if node.module.startswith("actants") else shadowed
+            for alias in node.names:
+                target.add(alias.asname or alias.name)
+
+    # variable name -> the actants class it was constructed from
+    bound: dict[str, type] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+            continue
+        target_node, value = node.targets[0], node.value
+        if not (isinstance(target_node, ast.Name) and isinstance(value, ast.Call)):
+            continue
+        if not isinstance(value.func, ast.Name):
+            continue
+        ctor_name = value.func.id
+        if ctor_name in shadowed and ctor_name not in from_actants:
+            continue
+        ctor = symbols.get(ctor_name)
+        if inspect.isclass(ctor):
+            bound[target_node.id] = ctor
+
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)):
+            continue
+        obj = node.func.value
+        if not isinstance(obj, ast.Name):
+            continue
+        cls = bound.get(obj.id)
+        if cls is None:
+            continue
+        assert hasattr(cls, node.func.attr), (
+            f"{snippet.id} calls {obj.id}.{node.func.attr}(), but "
+            f"{cls.__name__} has no attribute {node.func.attr!r}. "
+            "The docs are out of date."
+        )
 
 
 OFFLINE_RUNNABLE = [s for s in CHECKED if s.has("run")]

@@ -111,6 +111,7 @@ nav:
       - Installation: installation.md
       - Configuration: configuration.md
   - Concepts:
+      - Agent or StateGraph?: concepts/choosing.md
       - Agent: concepts/agent.md
       - LLM & providers: concepts/llm.md
       - Tools: concepts/tools.md

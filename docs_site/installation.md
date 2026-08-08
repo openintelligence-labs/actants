@@ -40,7 +40,7 @@ do not pay for themselves at import time.
 | `cli` | Click + Rich CLI helpers | `pip install 'actants[cli]'` |
 | `mcp` | MCP client + server (official `mcp` SDK) | `pip install 'actants[mcp]'` |
 | `a2a` | A2A client + server (official `a2a-sdk`) | `pip install 'actants[a2a]'` |
-| `all` | OpenAI + Anthropic + cache + cli | `pip install 'actants[all]'` |
+| `all` | `openai` + `anthropic` + `cache` + `cli` + `mcp`. Not `a2a` — that pulls a web server. The OpenAI-compatible provider extras need nothing extra, since they all resolve to the `openai` SDK this already installs | `pip install 'actants[all]'` |
 | `dev` | pytest, ruff, build, twine | `pip install 'actants[dev]'` |
 
 Combine extras with commas: `pip install 'actants[openai,anthropic,mcp,a2a]'`.

@@ -1,9 +1,15 @@
 # StateGraph
 
-`Agent` is a linear loop: think, call tools, repeat until done. `StateGraph` is for the
-shapes that loop cannot express — a router that picks one of three branches, a critic
-that sends work back for another pass, a pipeline whose stages each need their own
-prompt.
+`StateGraph` is for work whose steps you can write down. You define the stages and the
+edges between them, and your code decides what runs next; the model is called inside a
+stage to do one bounded job. That is the opposite of [`Agent`](agent.md), where the model
+picks the next tool and you find out the sequence afterwards.
+
+Written-down steps are usually the better design, not a fallback: a pipeline costs
+roughly the same on every run, fails at a named node, and changes shape when you edit an
+edge rather than when you re-word a prompt. Reach for the agent loop when the steps
+genuinely cannot be known ahead of time — see
+[Agent or StateGraph?](choosing.md) for the full comparison.
 
 The state is a pydantic model you define. Nodes receive it and return a partial update;
 edges say what runs next. Nothing runs until you `compile()`, which is where the

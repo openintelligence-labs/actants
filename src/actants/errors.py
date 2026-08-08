@@ -1,13 +1,13 @@
 """The exception hierarchy, in one place.
 
-Every exception actants raises on purpose inherits from :class:`ActantsError`, so
+Every exception actants raises on purpose inherits from `ActantsError`, so
 ``except ActantsError`` is a complete catch for "actants itself refused" — as opposed
 to a bug in the caller's code or an error escaping from a provider SDK.
 
 Each class also inherits the builtin exception a caller would naturally reach for, so
-existing handlers keep working: :class:`UnknownProviderError` is a ``ValueError``,
-:class:`ProviderNotInstalledError` is an ``ImportError``,
-:class:`ToolCallsNotSupportedError` is a ``TypeError``. Catching either the actants
+existing handlers keep working: `UnknownProviderError` is a ``ValueError``,
+`ProviderNotInstalledError` is an ``ImportError``,
+`ToolCallsNotSupportedError` is a ``TypeError``. Catching either the actants
 class or the builtin one works, and the narrower class is always available when a
 caller wants to be precise::
 

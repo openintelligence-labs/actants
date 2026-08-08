@@ -65,7 +65,7 @@ class LLMSettings(BaseSettings):
 #: provider name -> (env var holding its API key, extra that installs it)
 #:
 #: Everything from ``groq`` down speaks the OpenAI wire format and is served by
-#: :mod:`actants.llm.openai_compatible`, so adding one is a row here plus a row there.
+#: `actants.llm.openai_compatible`, so adding one is a row here plus a row there.
 #: Each has its own extra in pyproject — all aliases for ``openai``, the SDK they
 #: actually need — so the "install this extra" error can name what the user expects.
 _PROVIDER_REQUIREMENTS: dict[str, tuple[str | None, str]] = {
@@ -220,7 +220,7 @@ class LLM:
 
     Of the copy's own fields, ``model`` and ``temperature`` are re-read on every call, so
     assigning ``llm.settings.model`` does change subsequent requests. ``provider`` and
-    ``base_url`` are read once, to build :attr:`provider`; assigning them later does
+    ``base_url`` are read once, to build `provider`; assigning them later does
     nothing. Build a new ``LLM`` to change provider, or pass a provider instance
     directly.
 
@@ -232,9 +232,9 @@ class LLM:
 
     * ``RetryPolicy(max_attempts=N)`` — at most ``N`` requests in total. ``N=1`` means no
       retry.
-    * ``max_steps=N`` (:meth:`run_agent`, :meth:`run_agent_stream`, ``Agent.run``) — at
+    * ``max_steps=N`` (`run_agent`, `run_agent_stream`, ``Agent.run``) — at
       most ``N`` LLM round-trips in the loop, in total.
-    * ``max_repairs=N`` (:meth:`extract`) — the initial completion, plus at most ``N``
+    * ``max_repairs=N`` (`extract`) — the initial completion, plus at most ``N``
       self-correction attempts after it: ``N + 1`` requests in total. ``N=0`` disables
       repair, and is the analogue of ``max_attempts=1``.
 
@@ -441,7 +441,7 @@ class LLM:
         prompt and a failed parse is repaired. Both paths return the same validated
         instance; :meth:`last_schema_plan` reports which one ran.
 
-        ``tag`` is recorded on the CostTracker as in :meth:`complete`. Every attempt is
+        ``tag`` is recorded on the CostTracker as in `complete`. Every attempt is
         recorded under the same tag, including repairs that failed to parse — a repair
         costs real tokens, so hiding it would understate what the extraction spent.
 
@@ -545,9 +545,9 @@ class LLM:
         streams as *text* — every partial parse then comes off a stream that cannot go
         schema-invalid. Anthropic's forced tool call is excluded: its JSON arrives as
         tool-call input rather than text deltas, so that provider streams via the prompt
-        path. :meth:`last_schema_plan` reports which ran.
+        path. `last_schema_plan` reports which ran.
 
-        ``tag`` is recorded on the CostTracker as in :meth:`stream_events`.
+        ``tag`` is recorded on the CostTracker as in `stream_events`.
         """
         _require_pydantic_model(schema)
         plan = self._plan_schema(schema, streaming=True)
@@ -604,12 +604,12 @@ class LLM:
     ) -> AsyncIterator[str]:
         """Stream plain text chunks, with the client's retry and tracing applied.
 
-        ``tag`` is recorded on the CostTracker exactly as in :meth:`complete`, so cost
+        ``tag`` is recorded on the CostTracker exactly as in `complete`, so cost
         attribution survives the switch from ``complete()`` to streaming. The spend is
-        recorded once, when the provider reports usage — see :meth:`stream_events`.
+        recorded once, when the provider reports usage — see `stream_events`.
 
         Extra keyword arguments are provider-specific parameters, forwarded verbatim —
-        see :meth:`complete`.
+        see `complete`.
         """
         messages = self._normalize(prompt, system=system)
         async for event in self._stream_layered(
@@ -639,12 +639,12 @@ class LLM:
     ) -> AsyncIterator[StreamEvent]:
         """Yield typed StreamEvents (text, tool_call, usage, finish).
 
-        Applies the same retry and tracing layers as :meth:`complete`, and honours the
+        Applies the same retry and tracing layers as `complete`, and honours the
         same per-call ``model`` / ``temperature`` overrides. Extra keyword arguments are
-        provider-specific parameters, forwarded verbatim — see :meth:`complete`.
+        provider-specific parameters, forwarded verbatim — see `complete`.
 
-        ``tag`` is recorded on the CostTracker just as in :meth:`complete`. A stream
-        reports its spend in a single :class:`~actants.llm.base.UsageDelta` near the end,
+        ``tag`` is recorded on the CostTracker just as in `complete`. A stream
+        reports its spend in a single `UsageDelta` near the end,
         so the tracker is credited once per streamed request, at that point — a stream
         the consumer abandons before the usage event therefore records nothing, because
         actants never saw what it cost.
@@ -686,10 +686,10 @@ class LLM:
         the same defect that was fixed in ``FallbackProvider.stream``.
 
         Cost is recorded here rather than in each caller so that every streaming entry
-        point — :meth:`stream`, :meth:`stream_events`, :meth:`extract_stream`,
-        :meth:`run_agent_stream` — attributes spend to ``tag`` through the same code
+        point — `stream`, `stream_events`, `extract_stream`,
+        `run_agent_stream` — attributes spend to ``tag`` through the same code
         ``complete`` uses. ``record_cost=False`` is for the one caller that records its
-        own :class:`~actants.llm.base.CompletionResult` (:meth:`Agent.stream`), which
+        own `CompletionResult` (`Agent.stream`), which
         would otherwise double-count.
         """
         effective_model = model or self.settings.model
@@ -779,7 +779,7 @@ class LLM:
         dispatches tool calls as they complete, and loops until a final text answer.
 
         ``tag`` is recorded on the CostTracker for every step of the loop, matching
-        :meth:`run_agent`."""
+        `run_agent`."""
         _require_registry(tools)
         messages = self._normalize(prompt, system=system)
         specs = tools.as_specs()

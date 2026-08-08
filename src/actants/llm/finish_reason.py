@@ -3,14 +3,14 @@
 Every provider spells "the model stopped because it ran out of tokens" differently:
 OpenAI says ``"length"``, Anthropic says ``"max_tokens"``, Gemini says ``"MAX_TOKENS"``,
 Ollama says ``"length"``. A caller holding a provider-agnostic
-:class:`~actants.llm.base.CompletionResult` cannot branch on that without writing the
+`CompletionResult` cannot branch on that without writing the
 union of every provider's vocabulary — which is exactly the coupling the result type
 exists to remove.
 
-:data:`FinishReason` is therefore a closed :class:`~typing.Literal` of six canonical
-values, and :func:`normalize_finish_reason` maps each provider's string onto it. The
+`FinishReason` is therefore a closed `Literal` of six canonical
+values, and `normalize_finish_reason` maps each provider's string onto it. The
 provider's original string is never discarded: it is preserved verbatim on
-:attr:`~actants.llm.base.CompletionResult.raw_finish_reason`, so anything that needs the
+`raw_finish_reason`, so anything that needs the
 exact wire value — logging, a provider-specific workaround, telemetry — still has it.
 
 **Unknown values never raise.** Providers add stop reasons on their own schedule; Gemini
@@ -39,7 +39,7 @@ from typing import Literal, get_args
 #:   it could not render as valid JSON.
 #: * ``"unknown"`` — no reason was reported, or the provider sent a value this version of
 #:   actants does not recognize. Check
-#:   :attr:`~actants.llm.base.CompletionResult.raw_finish_reason` for what it actually
+#:   `raw_finish_reason` for what it actually
 #:   said.
 FinishReason = Literal[
     "stop",
@@ -50,7 +50,7 @@ FinishReason = Literal[
     "unknown",
 ]
 
-#: Runtime mirror of :data:`FinishReason`, for validation and for tests that assert the
+#: Runtime mirror of `FinishReason`, for validation and for tests that assert the
 #: mapping tables only ever produce a canonical value.
 FINISH_REASONS: tuple[FinishReason, ...] = get_args(FinishReason)
 
@@ -65,7 +65,7 @@ UNKNOWN_FINISH_REASON: FinishReason = "unknown"
 #: This table also serves every OpenAI-compatible provider — Groq, Mistral, xAI,
 #: DeepSeek, Together, Fireworks, OpenRouter, Cerebras, Perplexity — because they return
 #: OpenAI's response shape verbatim, which is the entire premise of
-#: :mod:`actants.llm.openai_compatible`.
+#: `actants.llm.openai_compatible`.
 _OPENAI: dict[str, FinishReason] = {
     "stop": "stop",
     "length": "length",
@@ -139,7 +139,7 @@ _OLLAMA: dict[str, FinishReason] = {
 #:
 #: Providers absent from this table fall back to the OpenAI vocabulary, which is correct
 #: for every OpenAI-compatible provider and is also the most likely shape for a
-#: third-party provider written against :class:`~actants.llm.base.BaseLLMProvider`.
+#: third-party provider written against `BaseLLMProvider`.
 _TABLES: dict[str, dict[str, FinishReason]] = {
     "openai": _OPENAI,
     "anthropic": _ANTHROPIC,
@@ -149,7 +149,7 @@ _TABLES: dict[str, dict[str, FinishReason]] = {
 
 
 def normalize_finish_reason(provider: str, raw: str | None) -> FinishReason:
-    """Map ``raw`` from ``provider`` onto a canonical :data:`FinishReason`.
+    """Map ``raw`` from ``provider`` onto a canonical `FinishReason`.
 
     ``None`` and the empty string mean the provider reported nothing, which is
     ``"unknown"``. An unrecognized value is also ``"unknown"`` — never an exception —

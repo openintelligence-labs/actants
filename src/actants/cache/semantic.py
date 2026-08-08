@@ -23,7 +23,7 @@ log = structlog.get_logger(__name__)
 #: On-disk schema version, stored in ``PRAGMA user_version``.
 #:
 #: Bumped whenever the table layout *or* the meaning of ``scope_hash`` changes — the
-#: latter is why it is derived from :data:`~actants.cache.request.KEY_VERSION` rather
+#: latter is why it is derived from `KEY_VERSION` rather
 #: than being an independent counter. A file written by an actants whose scope hash
 #: covered fewer fields must not be read by this one, because its entries were keyed on
 #: a subset of the request and would be served for requests they never matched.
@@ -31,10 +31,10 @@ SCHEMA_VERSION = KEY_VERSION
 
 #: What to do when an on-disk cache was written by an incompatible schema version.
 #: ``"reset"`` discards the file and starts empty; ``"error"`` raises
-#: :class:`CacheSchemaMismatch`.
+#: `CacheSchemaMismatch`.
 SchemaMismatchAction = Literal["reset", "error"]
 
-#: Runtime mirror of :data:`SchemaMismatchAction`, for the constructor check.
+#: Runtime mirror of `SchemaMismatchAction`, for the constructor check.
 _SCHEMA_MISMATCH_ACTIONS: tuple[SchemaMismatchAction, ...] = ("reset", "error")
 
 
@@ -76,7 +76,7 @@ class SqliteVecCache:
     **On-disk compatibility.** The database records its schema version in
     ``PRAGMA user_version``. Opening a file written by an incompatible version discards
     it and starts empty rather than serving entries that were keyed on fewer fields;
-    pass ``on_schema_mismatch="error"`` to raise :class:`CacheSchemaMismatch` instead.
+    pass ``on_schema_mismatch="error"`` to raise `CacheSchemaMismatch` instead.
     A cache is disposable, so dropping it costs a re-computation; reading it wrong costs
     a wrong answer.
     """
@@ -123,7 +123,7 @@ class SqliteVecCache:
 
         Assigning it would have been a no-op with a misleading result: the path is
         snapshotted into the sqlite connection the first time the cache is used, so a
-        reassignment moved nothing, while :meth:`describe` and :meth:`__repr__` went on
+        reassignment moved nothing, while `describe` and `__repr__` went on
         reporting the new value — the cache would claim to be somewhere it was not. To
         use a different file, construct a new ``SqliteVecCache``.
         """

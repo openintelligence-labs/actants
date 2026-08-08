@@ -2,14 +2,14 @@
 
 xAI, DeepSeek, Together, Fireworks, OpenRouter, Cerebras, and Perplexity all expose
 an OpenAI-compatible ``/chat/completions`` endpoint. There is nothing for actants to
-translate, so each one is :class:`~actants.llm.openai_provider.OpenAIProvider` with a
+translate, so each one is `OpenAIProvider` with a
 ``name`` and a ``base_url`` — the same shape ``GroqProvider`` and ``MistralProvider``
 already had, which is why those two are declared in the table here as well and their
 original modules now re-export from it.
 
 Writing nine near-identical class bodies by hand would mean nine places for the
 request path to drift apart. They are built from one table instead, and
-:func:`openai_compatible_provider` builds the class so each one is still a real,
+`openai_compatible_provider` builds the class so each one is still a real,
 importable, subclassable type with the parent's full signature.
 """
 
@@ -70,7 +70,7 @@ NO_NATIVE_SCHEMA: dict[str, str] = {
 
 
 def openai_compatible_provider(name: str, base_url: str, description: str) -> type[OpenAIProvider]:
-    """Build an :class:`OpenAIProvider` subclass pinned to ``base_url``.
+    """Build an `OpenAIProvider` subclass pinned to ``base_url``.
 
     The generated class accepts the *full* parent signature — ``api_key``, ``client``,
     and ``base_url`` — because narrowing a public subclass's signature makes

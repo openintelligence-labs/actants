@@ -4,7 +4,7 @@ Every error raised here names the exact problem and the exact fix. The rule is:
 if a user can hit it in their first ten minutes, the message must tell them what
 to type next.
 
-The exception *classes* live in :mod:`actants.errors` and are re-exported here, so
+The exception *classes* live in `actants.errors` and are re-exported here, so
 ``from actants.llm.errors import ProviderError`` keeps working; new code should prefer
 ``from actants import ProviderError``. What is defined in this module is the logic that
 builds the messages.
@@ -145,7 +145,7 @@ async def raise_for_ollama_error(
 ) -> None:
     """Translate a raw httpx failure from Ollama into an actionable actants error.
 
-    Re-raises a :class:`ProviderError` subclass when the cause is recognisable
+    Re-raises a `ProviderError` subclass when the cause is recognisable
     (server down, model not pulled), otherwise returns so the caller can re-raise
     the original exception untouched.
     """

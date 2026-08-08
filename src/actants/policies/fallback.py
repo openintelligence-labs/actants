@@ -81,7 +81,7 @@ class FallbackProvider(BaseLLMProvider):
     def supports_streaming_tools(self) -> bool:
         """True only if *every* provider in the chain supports streaming tool calls.
 
-        Derived on access, for the same reason as :attr:`supports_tool_calls`.
+        Derived on access, for the same reason as `supports_tool_calls`.
         """
         return all(p.supports_streaming_tools for p, _ in self._chain)
 
@@ -140,7 +140,7 @@ class FallbackProvider(BaseLLMProvider):
         """Fall back across providers while preserving typed events.
 
         This is the only streaming method the chain implements: ``stream`` is derived
-        from it by :class:`~actants.llm.base.BaseLLMProvider`, so plain-text streaming
+        from it by `BaseLLMProvider`, so plain-text streaming
         gets the same fallback behaviour for free.
 
         Fallback stops as soon as the first event reaches the consumer. Restarting on

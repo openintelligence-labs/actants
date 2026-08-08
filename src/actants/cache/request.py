@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 #: Bump when the hashed payload layout changes, so entries written by an older actants
 #: can never be misread as current ones. This value is embedded in both the exact-match
 #: key and the semantic backend's scope hash, and it is what the on-disk schema version
-#: check in :class:`~actants.cache.semantic.SqliteVecCache` compares against.
+#: check in `SqliteVecCache` compares against.
 KEY_VERSION = 3
 
 
@@ -46,7 +46,7 @@ class CacheRequest:
             block). Changes the shape of the answer, so it changes the key.
         extra: Provider-specific parameters not modelled above — ``seed``, ``top_p``,
             ``stop``. Populated from the passthrough keyword arguments of
-            :meth:`~actants.llm.client.LLM.complete`, and included in the key verbatim,
+            `complete`, and included in the key verbatim,
             so a ``seed=1`` answer is never served to a ``seed=2`` request.
     """
 

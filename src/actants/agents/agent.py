@@ -47,14 +47,14 @@ AgentEvent = (
 )
 
 #: How concurrent ``run()`` calls on one Agent share its ConversationMemory.
-#: See the :class:`Agent` docstring for the guarantee each one provides.
+#: See the `Agent` docstring for the guarantee each one provides.
 #:
 #: Spelled as a ``Literal`` rather than an enum to match the rest of the public API
 #: (``Role``, ``LogFormat``, ``LogLevel``): callers pass a plain string, and a type
 #: checker rejects a typo at the call site instead of at runtime.
 ConcurrencyMode = Literal["isolated", "serialized"]
 
-#: Runtime mirror of :data:`ConcurrencyMode`, for the constructor check that catches
+#: Runtime mirror of `ConcurrencyMode`, for the constructor check that catches
 #: callers who are not running a type checker.
 _CONCURRENCY_MODES: tuple[ConcurrencyMode, ...] = ("isolated", "serialized")
 
@@ -164,7 +164,7 @@ class AgentResult:
 class Agent:
     """Stateful tool-calling agent.
 
-    Wraps :class:`LLM` with conversation memory, tool registry, and lifecycle hooks.
+    Wraps `LLM` with conversation memory, tool registry, and lifecycle hooks.
     For one-shot tool loops without state, use ``LLM.run_agent`` directly.
 
     ``llm`` defaults to ``LLM()``, i.e. Ollama on localhost.
@@ -310,7 +310,7 @@ class Agent:
     async def _turn(self, prompt: str) -> AsyncIterator[_Turn]:
         """Scope one run's conversation state; see the class docstring for the contract.
 
-        Yields a :class:`_Turn` holding the working history for this run. In
+        Yields a `_Turn` holding the working history for this run. In
         ``isolated`` mode that history is a private copy seeded from the agent's memory,
         and the messages the run appends are committed back in one batch on success —
         so no other run can ever observe a partially-written turn. In ``serialized``
@@ -346,7 +346,7 @@ class Agent:
     ) -> AgentResult:
         """Run one user turn; may dispatch tools across multiple LLM steps.
 
-        Concurrency-safe: see the :class:`Agent` docstring for exactly what concurrent
+        Concurrency-safe: see the `Agent` docstring for exactly what concurrent
         runs on one Agent are guaranteed to see.
 
         Pass ``thread_id`` — with a ``checkpointer`` on the agent — to make the run
@@ -862,7 +862,7 @@ class Agent:
           - ``AgentRunCompleted(content, final)`` — final answer (terminal)
 
         At the end of streaming, the agent state matches what ``run()`` would produce,
-        and the same concurrency guarantee applies — see the :class:`Agent` docstring.
+        and the same concurrency guarantee applies — see the `Agent` docstring.
         A stream that is abandoned part-way (the consumer stops iterating) commits
         nothing in the default ``isolated`` mode.
         """
@@ -891,7 +891,7 @@ class Agent:
         model: str,
         tag: str | None,
     ) -> AsyncIterator[AgentEvent]:
-        """The step loop for :meth:`stream`, factored out so the turn scope wraps it."""
+        """The step loop for `stream`, factored out so the turn scope wraps it."""
         for step_idx in range(limit):
             msgs = turn.memory.messages()
             if self.hooks.before_step is not None:

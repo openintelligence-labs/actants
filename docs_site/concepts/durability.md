@@ -208,7 +208,7 @@ A checkpoint records where the run stood, and `resume()` behaves differently for
 | `running` | Continues the run. |
 | `interrupted` | Needs `approve=True` / `approve=False`; raises `ValueError` without one. |
 | `completed` | Returns the stored result without re-running anything. |
-| `failed` | Raises `RuntimeError` describing the original failure. |
+| `failed` | Raises `RuntimeError` describing the original failure, unless you opt in. |
 
 An unknown `thread_id` raises `UnknownThreadError`, listing the threads the store does
 hold.
@@ -217,6 +217,49 @@ A `failed` thread is deliberately not auto-resumable. The failure may have come 
 torn turn, and a silent retry of an unknown failure is how a side effect gets repeated.
 Inspect it, and start a new run or delete the thread. Note that a run which dies before
 its first checkpoint leaves no thread at all — there is no state worth resuming.
+
+### Resuming a failure anyway
+
+The default above is right for the general case, but it is not the whole story: an
+ordinary exception — a network timeout in one stage of a long run — is far more common
+than a process that vanishes, and the completed work is provably still in the checkpoint.
+Refusing outright means an operator has no way to recover it.
+
+So there is an escape hatch, and it is deliberately awkward to type:
+
+```python
+from actants import RESUME_FAILED_ACKNOWLEDGED
+
+result = await agent.resume("job-42", resume_failed=RESUME_FAILED_ACKNOWLEDGED)
+```
+
+The constant's value is the sentence `"i-know-the-failure-may-have-half-run"`. It is not
+a boolean, and nothing but that exact string is accepted, so it cannot be set by a
+generic retry wrapper forwarding flags it does not understand, and it cannot be reached
+by a truthy default. Typing it is a statement about a specific thread.
+
+**What it does not do.** It does not loosen the at-most-once guarantee by one inch. A
+thread that failed *while a tool was in flight* still goes through `resolve`, so a call
+registered `idempotent=False` still raises `UnresolvedToolCallError` — opting in to
+resume a failure is not opting in to replay an unsafe side effect, and those are separate
+decisions because they are answered by separate evidence. Every tool call whose result
+was recorded is replayed from the checkpoint, never dispatched again.
+
+**When it is safe.** When you know what the failure was and that it left nothing
+half-done — a timeout on a read, a transient dependency outage, an exception thrown
+between side effects. Read `checkpoint.error` first; that is the point of keeping it.
+
+**When it is not.** When the failure is unexplained, when it came from a tool that writes
+somewhere, or when the answer is "let's just retry it and see". The refusal is the
+correct outcome in all three, and re-running from scratch is cheaper than a duplicated
+charge.
+
+A thread resumed this way goes back to `running` and, if it gets there, `completed` — it
+is genuinely running again, and leaving it marked `failed` would make the status a lie.
+The failure it was resumed past is not lost: it moves to `checkpoint.prior_errors`, which
+accumulates across resumes. If the resumed run fails again the new failure lands in
+`error` and the original stays in `prior_errors`, so a thread that has been retried
+several times still shows what went wrong the first time.
 
 ## Checkpointer implementations
 

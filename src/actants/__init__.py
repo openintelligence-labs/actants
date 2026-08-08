@@ -27,6 +27,11 @@ _LAZY: dict[str, tuple[str, str]] = {
     "InMemoryCheckpointer": ("actants.agents.checkpoint", "InMemoryCheckpointer"),
     "SqliteCheckpointer": ("actants.agents.checkpoint", "SqliteCheckpointer"),
     "ResumeResolution": ("actants.agents.agent", "ResumeResolution"),
+    "ResumeFailedAck": ("actants.agents.checkpoint", "ResumeFailedAck"),
+    "RESUME_FAILED_ACKNOWLEDGED": (
+        "actants.agents.checkpoint",
+        "RESUME_FAILED_ACKNOWLEDGED",
+    ),
     # Typed state graphs: branching and looping workflows over a pydantic state model.
     "StateGraph": ("actants.graph.state_graph", "StateGraph"),
     "CompiledGraph": ("actants.graph.state_graph", "CompiledGraph"),
@@ -205,10 +210,14 @@ if TYPE_CHECKING:
     from actants.agents.agent import AgentResult as AgentResult
     from actants.agents.agent import AgentStep as AgentStep
     from actants.agents.agent import ResumeResolution as ResumeResolution
+    from actants.agents.checkpoint import (
+        RESUME_FAILED_ACKNOWLEDGED as RESUME_FAILED_ACKNOWLEDGED,
+    )
     from actants.agents.checkpoint import Checkpoint as Checkpoint
     from actants.agents.checkpoint import Checkpointer as Checkpointer
     from actants.agents.checkpoint import CheckpointStatus as CheckpointStatus
     from actants.agents.checkpoint import InMemoryCheckpointer as InMemoryCheckpointer
+    from actants.agents.checkpoint import ResumeFailedAck as ResumeFailedAck
     from actants.agents.checkpoint import SqliteCheckpointer as SqliteCheckpointer
     from actants.agents.checkpoint import StepRecord as StepRecord
     from actants.agents.events import AgentRunCompleted as AgentRunCompleted

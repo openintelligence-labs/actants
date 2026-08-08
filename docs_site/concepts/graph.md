@@ -237,6 +237,27 @@ anything, and `executed` comes back empty. An unknown thread id raises
 retrying. A graph whose *entry* node fails leaves no thread at all — nothing is
 checkpointed before the first node returns.
 
+A failed thread can still be resumed deliberately, which is what you want when one stage
+of a long pipeline died on a network timeout and the stages before it are sitting in the
+checkpoint:
+
+```python
+from actants import RESUME_FAILED_ACKNOWLEDGED
+
+result = await compiled.resume("job-1", resume_failed=RESUME_FAILED_ACKNOWLEDGED)
+```
+
+`resume_stream()` takes the same argument. The run picks up at the node the checkpoint
+says was next and every completed node is skipped, exactly as for a crashed thread — the
+opt-in changes whether the run is allowed to continue, not which nodes it runs. Only the
+node that was executing when the failure hit is re-run, so the
+[at-least-once caveat](#durability) above is the one to think about before typing it: if
+that node writes somewhere, it writes again. The failure being resumed past moves to
+`checkpoint.prior_errors` rather than being overwritten, so it is still readable if the
+resumed run fails too. See
+[Resuming a failure anyway](durability.md#resuming-a-failure-anyway) for when this is and
+is not a safe thing to do.
+
 Graph runs reuse the agent's `Checkpointer` protocol, so one store — and one SQLite file
 — holds both. They are tagged, so resuming a graph thread with `Agent.resume` (or an
 agent thread with `CompiledGraph.resume`) fails loudly instead of misreading the payload.

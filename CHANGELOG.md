@@ -38,6 +38,26 @@ Durability is opt-in per run: an `Agent` built without a `checkpointer`, or a `r
 called without a `thread_id`, behaves exactly as it did before and touches no storage.
 `stream()` is not yet checkpointed.
 
+- **An explicit opt-in for resuming a `failed` thread.** `Agent.resume()`,
+  `CompiledGraph.resume()`, and `CompiledGraph.resume_stream()` take
+  `resume_failed=RESUME_FAILED_ACKNOWLEDGED`, which continues a thread the default still
+  refuses. The refusal is right in general — a silent retry of an unknown failure is how
+  a side effect gets repeated — but an ordinary exception like a network timeout is far
+  more common than a vanished process, and every completed stage was already sitting in
+  the checkpoint with no way to get it back.
+
+  The opt-in is the literal string `"i-know-the-failure-may-have-half-run"` rather than a
+  boolean, so it cannot arrive from a generic retry wrapper forwarding flags or from a
+  truthy default; any other value raises. It does **not** weaken the at-most-once
+  guarantee: a thread that failed with a tool in flight goes through the same `resolve`
+  path a crashed one does, so an `idempotent=False` call still raises
+  `UnresolvedToolCallError`. Recorded tool results and completed graph nodes are replayed,
+  never re-run.
+
+  A resumed thread returns to `running`, and the failure it was resumed past moves to the
+  new `Checkpoint.prior_errors` instead of being overwritten — a thread that fails again
+  keeps the original failure alongside the new one.
+
 ### Fixed
 
 - **A graph node's completion is no longer lost when its router raises.** `_next_of()`

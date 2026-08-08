@@ -57,9 +57,11 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from actants.agents.checkpoint import (
+    RESUME_FAILED_ACKNOWLEDGED,
     Checkpoint,
     Checkpointer,  # noqa: TC001 — runtime use in the constructor's isinstance check
     CheckpointStatus,
+    ResumeFailedAck,
 )
 from actants.errors import GraphRecursionError, GraphValidationError, UnknownThreadError
 from actants.graph.events import (
@@ -567,6 +569,7 @@ class CompiledGraph[StateT: BaseModel]:
         thread_id: str,
         *,
         approve: bool | None = None,
+        resume_failed: ResumeFailedAck | None = None,
     ) -> GraphResult[StateT]:
         """Continue a checkpointed run from the last node that completed.
 
@@ -581,13 +584,16 @@ class CompiledGraph[StateT: BaseModel]:
         `resume`.
 
         Resuming a thread that already completed returns its stored state without
-        re-running anything. An unknown ``thread_id`` raises
-        `UnknownThreadError`.
+        re-running anything. A thread marked failed refuses, because an unknown failure
+        may have half-run a node; ``resume_failed=RESUME_FAILED_ACKNOWLEDGED`` overrides
+        that once a human has established continuing is safe, and picks up at the node
+        the checkpoint says was next — every completed node is still skipped. An unknown
+        ``thread_id`` raises `UnknownThreadError`.
 
         Two processes resuming the same ``thread_id`` concurrently is undefined; actants
         does not lock a thread across processes.
         """
-        resumption = await self._resume_run(thread_id, approve)
+        resumption = await self._resume_run(thread_id, approve, resume_failed)
         if resumption.finished:
             return self._result(resumption.run)
         async for _ in self._drive(
@@ -603,9 +609,10 @@ class CompiledGraph[StateT: BaseModel]:
         thread_id: str,
         *,
         approve: bool | None = None,
+        resume_failed: ResumeFailedAck | None = None,
     ) -> AsyncIterator[GraphEvent[StateT]]:
         """Streaming form of `resume`; yields the same events as `stream`."""
-        resumption = await self._resume_run(thread_id, approve)
+        resumption = await self._resume_run(thread_id, approve, resume_failed)
         if resumption.finished:
             yield GraphCompleted(state=resumption.run.state)
             return
@@ -616,7 +623,12 @@ class CompiledGraph[StateT: BaseModel]:
         ):
             yield event
 
-    async def _resume_run(self, thread_id: str, approve: bool | None) -> _Resumption[StateT]:
+    async def _resume_run(
+        self,
+        thread_id: str,
+        approve: bool | None,
+        resume_failed: ResumeFailedAck | None = None,
+    ) -> _Resumption[StateT]:
         """Load a checkpointed run and decide how it continues."""
         if self.checkpointer is None:
             raise ValueError(
@@ -634,22 +646,38 @@ class CompiledGraph[StateT: BaseModel]:
                 f"this checkpointer, or its state was deleted. Known threads: {listed}."
             )
 
+        if resume_failed is not None and resume_failed != RESUME_FAILED_ACKNOWLEDGED:
+            raise ValueError(
+                f"resume_failed must be exactly {RESUME_FAILED_ACKNOWLEDGED!r} (importable "
+                f"as RESUME_FAILED_ACKNOWLEDGED), got {resume_failed!r}. It is spelled out "
+                "so resuming a failure is never something a caller does by accident."
+            )
+
         stored = self._read(checkpoint, thread_id)
         state = state_from_json(self.state_type, stored.state_json)
+        # The failure being resumed past moves into the history now, so it survives every
+        # write this run makes — including a second failure overwriting ``error``.
+        history = list(checkpoint.prior_errors)
+        if checkpoint.status == "failed" and checkpoint.error is not None:
+            history.append(checkpoint.error)
         run = _Run(
             state=state,
             next_node=self._resolve_routing(stored, state, thread_id),
             completed=list(stored.completed),
             iterations=stored.iterations,
             thread_id=thread_id,
+            prior_errors=history,
         )
 
         if checkpoint.status == "completed":
             return _Resumption(run=run, skip_pending=False, approved=False, finished=True)
-        if checkpoint.status == "failed":
+        if checkpoint.status == "failed" and resume_failed is None:
             raise RuntimeError(
                 f"Thread {thread_id!r} is checkpointed as failed and cannot be resumed: "
-                f"{checkpoint.error}. Start a new run, or delete the thread first."
+                f"{checkpoint.error}. Start a new run, or delete the thread first. If you "
+                "have established that continuing is safe, resume with "
+                f"resume_failed={RESUME_FAILED_ACKNOWLEDGED!r} — it picks up at "
+                f"{stored.next_node!r} and every completed node is skipped."
             )
         if checkpoint.status == "interrupted" and approve is None:
             raise ValueError(
@@ -831,6 +859,7 @@ class CompiledGraph[StateT: BaseModel]:
                 messages=[ChatMessage(role=_STATE_ROLE, content=payload.model_dump_json())],
                 tag=GRAPH_TAG,
                 created_at=run.created_at,
+                prior_errors=list(run.prior_errors),
             )
         )
 
@@ -849,6 +878,9 @@ class CompiledGraph[StateT: BaseModel]:
                 return
             stored.status = "failed"
             stored.error = f"{type(exc).__name__}: {exc}"
+            # From the run, not the stored copy: a resume that fails before writing
+            # anything would otherwise leave the failure it was resumed past unrecorded.
+            stored.prior_errors = list(run.prior_errors)
             stored.updated_at = time.time()
             await self.checkpointer.put(stored)
 
@@ -899,6 +931,8 @@ class _Run[StateT: BaseModel]:
     #: Set when the run stopped in front of a guarded node; None otherwise.
     pending_node: str | None = None
     created_at: float = field(default_factory=time.time)
+    #: Failures this thread was resumed past, carried so later writes cannot erase them.
+    prior_errors: list[str] = field(default_factory=list)
 
 
 __all__ = [

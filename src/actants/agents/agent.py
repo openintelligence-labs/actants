@@ -8,9 +8,11 @@ from dataclasses import dataclass, field
 from typing import Literal, NoReturn
 
 from actants.agents.checkpoint import (
+    RESUME_FAILED_ACKNOWLEDGED,
     Checkpoint,
     Checkpointer,  # noqa: TC001 — runtime use in the constructor's isinstance check
     CheckpointStatus,
+    ResumeFailedAck,
     record_to_step,
     step_to_record,
 )
@@ -117,6 +119,8 @@ class _RunState:
     max_steps: int
     steps: list[AgentStep] = field(default_factory=list)
     created_at: float = field(default_factory=time.time)
+    #: Failures this thread was resumed past, carried so later writes cannot erase them.
+    prior_errors: list[str] = field(default_factory=list)
 
 
 class _Interrupted(ActantsError):
@@ -390,6 +394,7 @@ class Agent:
         approve: bool | None = None,
         max_steps: int | None = None,
         resolve: ResumeResolution = "abort",
+        resume_failed: ResumeFailedAck | None = None,
     ) -> AgentResult:
         """Continue a checkpointed run from where it stopped.
 
@@ -416,8 +421,13 @@ class Agent:
 
         Resuming a thread that already completed returns its stored result without
         re-running anything. Resuming one that failed re-raises a description of the
-        original failure. An unknown ``thread_id`` raises
-        `UnknownThreadError`.
+        original failure, unless ``resume_failed=RESUME_FAILED_ACKNOWLEDGED`` is passed:
+        an unknown failure may have half-run, so continuing past one is a judgement only a
+        human has the context to make, and the opt-in is spelled as a sentence so it
+        cannot arrive from a wrapper forwarding flags. It does **not** loosen anything
+        above it — a thread that died mid-call still goes through ``resolve``, so a
+        non-idempotent call still raises `UnresolvedToolCallError`.
+        An unknown ``thread_id`` raises `UnknownThreadError`.
 
         Concurrent resumes of one ``thread_id`` **within this process** are serialized on
         a per-thread lock, so the read-decide-dispatch sequence cannot interleave and the
@@ -429,7 +439,11 @@ class Agent:
         """
         async with self._resume_guard(thread_id):
             return await self._resume_locked(
-                thread_id, approve=approve, max_steps=max_steps, resolve=resolve
+                thread_id,
+                approve=approve,
+                max_steps=max_steps,
+                resolve=resolve,
+                resume_failed=resume_failed,
             )
 
     def _resume_guard(self, thread_id: str) -> asyncio.Lock:
@@ -452,6 +466,7 @@ class Agent:
         approve: bool | None,
         max_steps: int | None,
         resolve: ResumeResolution,
+        resume_failed: ResumeFailedAck | None = None,
     ) -> AgentResult:
         """The body of `resume`, run while holding that thread's resume lock."""
         if self.checkpointer is None:
@@ -467,6 +482,12 @@ class Agent:
                 "non-idempotent call, 'retry' dispatches it anyway, 'skip' records that "
                 "it was not run."
             )
+        if resume_failed is not None and resume_failed != RESUME_FAILED_ACKNOWLEDGED:
+            raise ValueError(
+                f"resume_failed must be exactly {RESUME_FAILED_ACKNOWLEDGED!r} (importable "
+                f"as RESUME_FAILED_ACKNOWLEDGED), got {resume_failed!r}. It is spelled out "
+                "so resuming a failure is never something a caller does by accident."
+            )
 
         checkpoint = await self.checkpointer.get(thread_id)
         if checkpoint is None:
@@ -478,10 +499,13 @@ class Agent:
             )
         if checkpoint.status == "completed":
             return self._result_from_checkpoint(checkpoint)
-        if checkpoint.status == "failed":
+        if checkpoint.status == "failed" and resume_failed is None:
             raise RuntimeError(
                 f"Thread {thread_id!r} is checkpointed as failed and cannot be resumed: "
-                f"{checkpoint.error}. Start a new run, or delete the thread first."
+                f"{checkpoint.error}. Start a new run, or delete the thread first. If you "
+                "have established that continuing is safe, resume with "
+                f"resume_failed={RESUME_FAILED_ACKNOWLEDGED!r} — the completed steps are "
+                "still in the checkpoint and are replayed, not re-run."
             )
         if checkpoint.status == "interrupted" and approve is None:
             assert checkpoint.pending_call is not None  # invariant of "interrupted"
@@ -493,12 +517,18 @@ class Agent:
             )
 
         limit = max_steps if max_steps is not None else (checkpoint.max_steps or self.max_steps)
+        # The failure being resumed past moves into the history now, so it survives every
+        # write this run makes — including a second failure overwriting ``error``.
+        history = list(checkpoint.prior_errors)
+        if checkpoint.status == "failed" and checkpoint.error is not None:
+            history.append(checkpoint.error)
         state = _RunState(
             thread_id=thread_id,
             tag=checkpoint.tag,
             max_steps=limit,
             steps=[record_to_step(r) for r in checkpoint.steps],
             created_at=checkpoint.created_at,
+            prior_errors=history,
         )
 
         turn = self._turn_from_checkpoint(checkpoint)
@@ -659,6 +689,7 @@ class Agent:
                 pending_call=pending_call,
                 tag=state.tag,
                 created_at=state.created_at,
+                prior_errors=list(state.prior_errors),
             )
         )
 
@@ -679,6 +710,9 @@ class Agent:
                 return
             stored.status = "failed"
             stored.error = f"{type(exc).__name__}: {exc}"
+            # From the run, not the stored copy: a resume that fails before writing
+            # anything would otherwise leave the failure it was resumed past unrecorded.
+            stored.prior_errors = list(state.prior_errors)
             stored.updated_at = time.time()
             await self.checkpointer.put(stored)
 

@@ -2852,7 +2852,7 @@
 
 
         <p>Stateful tool-calling agent.</p>
-<p>Wraps :class:<code>LLM</code> with conversation memory, tool registry, and lifecycle hooks.
+<p>Wraps <code>LLM</code> with conversation memory, tool registry, and lifecycle hooks.
 For one-shot tool loops without state, use <code>LLM.run_agent</code> directly.</p>
 <p><code>llm</code> defaults to <code>LLM()</code>, i.e. Ollama on localhost.</p>
 <p>Example::</p>
@@ -2891,7 +2891,7 @@ result = await agent.run(&quot;book the flight&quot;, thread_id=&quot;job-42&quo
 result = await agent.resume(&quot;job-42&quot;)   # picks up where it left off
 </code></pre></div>
 <p><code>interrupt_before=["send_email"]</code> pauses the run in front of those tools instead of
-dispatching them; :meth:<code>resume</code> with <code>approve=True</code> or <code>approve=False</code> decides.</p>
+dispatching them; <code>resume</code> with <code>approve=True</code> or <code>approve=False</code> decides.</p>
 <p>Both default to None, and a run without a <code>thread_id</code> never touches the
 checkpointer — durability is opt-in per run, not a mode the agent is in.</p>
 
@@ -2934,11 +2934,11 @@ checkpointer — durability is opt-in per run, not a mode the agent is in.</p>
     <div class="doc doc-contents ">
 
         <p>Run one user turn; may dispatch tools across multiple LLM steps.</p>
-<p>Concurrency-safe: see the :class:<code>Agent</code> docstring for exactly what concurrent
+<p>Concurrency-safe: see the <code>Agent</code> docstring for exactly what concurrent
 runs on one Agent are guaranteed to see.</p>
 <p>Pass <code>thread_id</code> — with a <code>checkpointer</code> on the agent — to make the run
 durable. Its state is persisted after every LLM completion and after <em>each</em>
-individual tool result, so :meth:<code>resume</code> can continue it after a crash without
+individual tool result, so <code>resume</code> can continue it after a crash without
 re-running the tools that already finished. <code>thread_id</code> without a checkpointer
 is a <code>ValueError</code>; a checkpointer without a <code>thread_id</code> simply persists
 nothing, which is what keeps un-threaded runs exactly as they were.</p>
@@ -2973,7 +2973,7 @@ irreducible ambiguity: actants cannot know whether its side effect landed,
 because the process died before it could say so. For a tool declared
 <code>idempotent=True</code> (the default) that call is re-dispatched, making resume
 at-least-once for it; for <code>idempotent=False</code> it is surfaced as
-:class:<code>~actants.errors.UnresolvedToolCallError</code> instead of being guessed at. A
+<code>UnresolvedToolCallError</code> instead of being guessed at. A
 tool this Agent's registry no longer has — renamed or removed since the run
 started — counts as non-idempotent, because an unknown tool is precisely the case
 where actants cannot establish that repeating it is safe.</p>
@@ -2987,7 +2987,7 @@ that it was not run and lets the model continue without it.</p>
 <p>Resuming a thread that already completed returns its stored result without
 re-running anything. Resuming one that failed re-raises a description of the
 original failure. An unknown <code>thread_id</code> raises
-:class:<code>~actants.errors.UnknownThreadError</code>.</p>
+<code>UnknownThreadError</code>.</p>
 <p>Concurrent resumes of one <code>thread_id</code> <strong>within this process</strong> are serialized on
 a per-thread lock, so the read-decide-dispatch sequence cannot interleave and the
 at-most-once guarantee above holds for them: the second resume runs after the
@@ -3026,7 +3026,7 @@ and no in-process lock can.</p>
   - <code>AgentStepCompleted(step, completion)</code> — end of one LLM call
   - <code>AgentRunCompleted(content, final)</code> — final answer (terminal)</p>
 <p>At the end of streaming, the agent state matches what <code>run()</code> would produce,
-and the same concurrency guarantee applies — see the :class:<code>Agent</code> docstring.
+and the same concurrency guarantee applies — see the <code>Agent</code> docstring.
 A stream that is abandoned part-way (the consumer stops iterating) commits
 nothing in the default <code>isolated</code> mode.</p>
 
@@ -3064,10 +3064,10 @@ nothing in the default <code>isolated</code> mode.</p>
 
 
         <p>What one <code>run()</code> or <code>resume()</code> produced.</p>
-<p>A run that stopped at an <code>interrupt_before</code> tool sets :attr:<code>interrupted</code> and
-:attr:<code>pending_call</code> and leaves :attr:<code>final</code> holding the completion that <em>asked</em> for
+<p>A run that stopped at an <code>interrupt_before</code> tool sets <code>interrupted</code> and
+<code>pending_call</code> and leaves <code>final</code> holding the completion that <em>asked</em> for
 that call — the model's last word before it was paused. Call
-:meth:<code>Agent.resume</code> with the thread id to continue.</p>
+<code>resume</code> with the thread id to continue.</p>
 
 
 

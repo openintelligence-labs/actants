@@ -2932,7 +2932,7 @@ block). Changes the shape of the answer, so it changes the key.</p>
               <div class="doc-md-description">
                 <p>Provider-specific parameters not modelled above — <code>seed</code>, <code>top_p</code>,
 <code>stop</code>. Populated from the passthrough keyword arguments of
-:meth:<code>~actants.llm.client.LLM.complete</code>, and included in the key verbatim,
+<code>complete</code>, and included in the key verbatim,
 so a <code>seed=1</code> answer is never served to a <code>seed=2</code> request.</p>
               </div>
             </td>
@@ -3104,7 +3104,7 @@ messages and their roles — is included here, so that a 1-message and a
 
         <p>Key-value cache keyed by an opaque string.</p>
 <p>Implement this for exact-match caches. The key is produced by
-:meth:<code>CacheRequest.key</code>, so it already covers every request parameter that changes
+<code>CacheRequest.key</code>, so it already covers every request parameter that changes
 the answer — a backend must never derive its own key from a subset of the request.</p>
 
 
@@ -3155,11 +3155,11 @@ the answer — a backend must never derive its own key from a subset of the requ
 
         <p>Cache that decides hits from the whole request rather than a precomputed key.</p>
 <p>Semantic caches need this: they match message content by embedding distance, so they
-cannot be handed a hash. They receive the full :class:<code>CacheRequest</code> and are
+cannot be handed a hash. They receive the full <code>CacheRequest</code> and are
 responsible for honouring <em>every</em> field on it — a backend that ignores <code>max_tokens</code>
 or <code>tools</code> returns answers generated under different constraints.</p>
-<p>:class:<code>~actants.llm.client.LLM</code> prefers this protocol when a backend implements it,
-and falls back to :class:<code>CacheBackend</code>.</p>
+<p><code>LLM</code> prefers this protocol when a backend implements it,
+and falls back to <code>CacheBackend</code>.</p>
 
 
 
@@ -3222,7 +3222,7 @@ genuinely different answer no matter how similar the prompt looks.</p>
 <p><strong>On-disk compatibility.</strong> The database records its schema version in
 <code>PRAGMA user_version</code>. Opening a file written by an incompatible version discards
 it and starts empty rather than serving entries that were keyed on fewer fields;
-pass <code>on_schema_mismatch="error"</code> to raise :class:<code>CacheSchemaMismatch</code> instead.
+pass <code>on_schema_mismatch="error"</code> to raise <code>CacheSchemaMismatch</code> instead.
 A cache is disposable, so dropping it costs a re-computation; reading it wrong costs
 a wrong answer.</p>
 
@@ -3265,7 +3265,7 @@ a wrong answer.</p>
         <p>The database file this cache is bound to. <strong>Read-only.</strong></p>
 <p>Assigning it would have been a no-op with a misleading result: the path is
 snapshotted into the sqlite connection the first time the cache is used, so a
-reassignment moved nothing, while :meth:<code>describe</code> and :meth:<code>__repr__</code> went on
+reassignment moved nothing, while <code>describe</code> and <code>__repr__</code> went on
 reporting the new value — the cache would claim to be somewhere it was not. To
 use a different file, construct a new <code>SqliteVecCache</code>.</p>
 

@@ -2910,15 +2910,15 @@ applies.</p>
 
 
 
-        <p>Where :class:<code>~actants.agents.agent.Agent</code> persists and reads run state.</p>
+        <p>Where <code>Agent</code> persists and reads run state.</p>
 <p>Four async methods, keyed by <code>thread_id</code>. Implement this against any store —
 Redis, Postgres, an object store — and pass it as <code>Agent(checkpointer=...)</code>.</p>
 <p><code>put</code> must be a full overwrite of the thread's state, not an append: the agent
-always hands over the complete :class:<code>Checkpoint</code>, and resume only ever reads the
+always hands over the complete <code>Checkpoint</code>, and resume only ever reads the
 latest one.</p>
 <p>Concurrent access to <em>different</em> thread_ids must be safe. Two writers on the <em>same</em>
 thread_id is undefined — see the note on
-:meth:<code>~actants.agents.agent.Agent.resume</code>.</p>
+<code>resume</code>.</p>
 
 
 
@@ -3114,7 +3114,7 @@ and has <em>not</em> dispatched.</p>
 
 
 
-        <p>One :class:<code>~actants.agents.agent.AgentStep</code>, in a form that survives a round-trip.</p>
+        <p>One <code>AgentStep</code>, in a form that survives a round-trip.</p>
 <p><code>AgentStep</code> is a dataclass holding pydantic models; this is the pydantic mirror of
 it, so the whole checkpoint serializes with a single <code>model_dump_json</code>.</p>
 
@@ -3166,7 +3166,7 @@ it, so the whole checkpoint serializes with a single <code>model_dump_json</code
 
         <p>Process-local checkpointer: durable across a crash of the <em>run</em>, not the process.</p>
 <p>Useful for tests and for interrupt/approve flows inside one process. Use
-:class:<code>SqliteCheckpointer</code> for anything that must survive the interpreter exiting.</p>
+<code>SqliteCheckpointer</code> for anything that must survive the interpreter exiting.</p>
 
 
 
@@ -3215,12 +3215,12 @@ it, so the whole checkpoint serializes with a single <code>model_dump_json</code
 
         <p>Checkpointer backed by a SQLite file, safe to open from several processes.</p>
 <p>Each call opens its own connection through
-:func:<code>~actants.storage.sqlite.open_sqlite</code>, so a checkpointer instance carries no
+<code>open_sqlite</code>, so a checkpointer instance carries no
 connection state and separate processes writing <em>different</em> thread_ids coexist on
 WAL. Nothing is cached in memory, which is the point: a resume in a fresh process
 reads exactly what the crashed one committed.</p>
 <p>The file records its schema version in <code>PRAGMA user_version</code>; opening one written
-by an incompatible actants raises :class:<code>~actants.errors.CheckpointSchemaMismatch</code>
+by an incompatible actants raises <code>CheckpointSchemaMismatch</code>
 rather than resetting, because these rows are the only record of which side effects
 already ran.</p>
 
@@ -3381,10 +3381,10 @@ already ran.</p>
 <p>The process died while this call was executing, so actants cannot know whether the
 side effect happened. Re-dispatching could duplicate it; skipping could drop it.
 Rather than guess, resume raises this and hands the decision back — see
-:meth:<code>~actants.agents.agent.Agent.resume</code> for the <code>resolve=</code> options.</p>
-<p>The unresolved call is on :attr:<code>call</code>, and the thread it belongs to on
-:attr:<code>thread_id</code>, so a handler can present it to a human or look it up in a
-vendor's API by :attr:<code>ToolCall.id &lt;actants.llm.base.ToolCall.id&gt;</code>.</p>
+<code>resume</code> for the <code>resolve=</code> options.</p>
+<p>The unresolved call is on <code>call</code>, and the thread it belongs to on
+<code>thread_id</code>, so a handler can present it to a human or look it up in a
+vendor's API by <code>id&gt;</code>.</p>
 
 
 

@@ -3250,7 +3250,7 @@ afterwards has no effect on this client — and a settings object shared between
 clients cannot have one client's <code>model=</code> override leak into the other.</p>
 <p>Of the copy's own fields, <code>model</code> and <code>temperature</code> are re-read on every call, so
 assigning <code>llm.settings.model</code> does change subsequent requests. <code>provider</code> and
-<code>base_url</code> are read once, to build :attr:<code>provider</code>; assigning them later does
+<code>base_url</code> are read once, to build <code>provider</code>; assigning them later does
 nothing. Build a new <code>LLM</code> to change provider, or pass a provider instance
 directly.</p>
 <h4 id="actants.llm.client.LLM--counting-conventions">Counting conventions<a class="headerlink" href="#actants.llm.client.LLM--counting-conventions" title="Permanent link">&para;</a></h4>
@@ -3260,9 +3260,9 @@ bounds the <strong>total</strong>, and a name saying <em>repairs</em> bounds the
 <ul>
 <li><code>RetryPolicy(max_attempts=N)</code> — at most <code>N</code> requests in total. <code>N=1</code> means no
   retry.</li>
-<li><code>max_steps=N</code> (:meth:<code>run_agent</code>, :meth:<code>run_agent_stream</code>, <code>Agent.run</code>) — at
+<li><code>max_steps=N</code> (<code>run_agent</code>, <code>run_agent_stream</code>, <code>Agent.run</code>) — at
   most <code>N</code> LLM round-trips in the loop, in total.</li>
-<li><code>max_repairs=N</code> (:meth:<code>extract</code>) — the initial completion, plus at most <code>N</code>
+<li><code>max_repairs=N</code> (<code>extract</code>) — the initial completion, plus at most <code>N</code>
   self-correction attempts after it: <code>N + 1</code> requests in total. <code>N=0</code> disables
   repair, and is the analogue of <code>max_attempts=1</code>.</li>
 </ul>
@@ -3380,8 +3380,8 @@ Gemini, <code>format</code> on Ollama — the schema is sent on the wire and inv
 is impossible rather than merely unlikely. Everywhere else, and for any schema
 the provider's dialect cannot express, the schema is described in a system
 prompt and a failed parse is repaired. Both paths return the same validated
-instance; :meth:<code>last_schema_plan</code> reports which one ran.</p>
-<p><code>tag</code> is recorded on the CostTracker as in :meth:<code>complete</code>. Every attempt is
+instance; <code>last_schema_plan</code> reports which one ran.</p>
+<p><code>tag</code> is recorded on the CostTracker as in <code>complete</code>. Every attempt is
 recorded under the same tag, including repairs that failed to parse — a repair
 costs real tokens, so hiding it would understate what the extraction spent.</p>
 <p><code>max_repairs</code> counts <em>repair</em> attempts, not total attempts: the initial
@@ -3415,7 +3415,7 @@ produce a response pydantic rejects, and no amount of repair could fix it.</p>
 
     <div class="doc doc-contents ">
 
-        <p>How the most recent :meth:<code>extract</code> / :meth:<code>extract_stream</code> call was sent.</p>
+        <p>How the most recent <code>extract</code> / <code>extract_stream</code> call was sent.</p>
 <p><code>None</code> before the first call. This is the supported way to tell the native
 path from the prompt path — the alternative would be a log line on every
 extraction, which is noise in the overwhelming case where the answer never
@@ -3453,8 +3453,8 @@ yield is the fully-parsed and validated <code>schema</code> instance.</p>
 streams as <em>text</em> — every partial parse then comes off a stream that cannot go
 schema-invalid. Anthropic's forced tool call is excluded: its JSON arrives as
 tool-call input rather than text deltas, so that provider streams via the prompt
-path. :meth:<code>last_schema_plan</code> reports which ran.</p>
-<p><code>tag</code> is recorded on the CostTracker as in :meth:<code>stream_events</code>.</p>
+path. <code>last_schema_plan</code> reports which ran.</p>
+<p><code>tag</code> is recorded on the CostTracker as in <code>stream_events</code>.</p>
 
 
     </div>
@@ -3479,11 +3479,11 @@ path. :meth:<code>last_schema_plan</code> reports which ran.</p>
     <div class="doc doc-contents ">
 
         <p>Stream plain text chunks, with the client's retry and tracing applied.</p>
-<p><code>tag</code> is recorded on the CostTracker exactly as in :meth:<code>complete</code>, so cost
+<p><code>tag</code> is recorded on the CostTracker exactly as in <code>complete</code>, so cost
 attribution survives the switch from <code>complete()</code> to streaming. The spend is
-recorded once, when the provider reports usage — see :meth:<code>stream_events</code>.</p>
+recorded once, when the provider reports usage — see <code>stream_events</code>.</p>
 <p>Extra keyword arguments are provider-specific parameters, forwarded verbatim —
-see :meth:<code>complete</code>.</p>
+see <code>complete</code>.</p>
 
 
     </div>
@@ -3508,11 +3508,11 @@ see :meth:<code>complete</code>.</p>
     <div class="doc doc-contents ">
 
         <p>Yield typed StreamEvents (text, tool_call, usage, finish).</p>
-<p>Applies the same retry and tracing layers as :meth:<code>complete</code>, and honours the
+<p>Applies the same retry and tracing layers as <code>complete</code>, and honours the
 same per-call <code>model</code> / <code>temperature</code> overrides. Extra keyword arguments are
-provider-specific parameters, forwarded verbatim — see :meth:<code>complete</code>.</p>
-<p><code>tag</code> is recorded on the CostTracker just as in :meth:<code>complete</code>. A stream
-reports its spend in a single :class:<code>~actants.llm.base.UsageDelta</code> near the end,
+provider-specific parameters, forwarded verbatim — see <code>complete</code>.</p>
+<p><code>tag</code> is recorded on the CostTracker just as in <code>complete</code>. A stream
+reports its spend in a single <code>UsageDelta</code> near the end,
 so the tracker is credited once per streamed request, at that point — a stream
 the consumer abandons before the usage event therefore records nothing, because
 actants never saw what it cost.</p>
@@ -3542,7 +3542,7 @@ actants never saw what it cost.</p>
         <p>Streaming agent loop. Yields text deltas while the model is thinking,
 dispatches tool calls as they complete, and loops until a final text answer.</p>
 <p><code>tag</code> is recorded on the CostTracker for every step of the loop, matching
-:meth:<code>run_agent</code>.</p>
+<code>run_agent</code>.</p>
 
 
     </div>
@@ -3854,14 +3854,14 @@ dispatches tool calls as they complete, and loops until a final text answer.</p>
 
 
         <p>The contract every LLM provider implements.</p>
-<p>To write a provider, implement exactly three methods: :meth:<code>complete</code>,
-:meth:<code>stream_events</code>, and :meth:<code>health</code>. That is the whole surface.</p>
+<p>To write a provider, implement exactly three methods: <code>complete</code>,
+<code>stream_events</code>, and <code>health</code>. That is the whole surface.</p>
 <p><strong>Streaming has one primitive: <code>stream_events</code>.</strong> It yields typed
-:data:<code>StreamEvent</code> objects, which is a superset of what plain text streaming can
+<code>StreamEvent</code> objects, which is a superset of what plain text streaming can
 express — text deltas, tool calls, token usage, and the finish reason.
-:meth:<code>stream</code> is a <em>provided helper</em> that filters those events down to text; it is
+<code>stream</code> is a <em>provided helper</em> that filters those events down to text; it is
 not an extension point, and overriding it has no effect on what
-:meth:<code>~actants.llm.client.LLM.stream</code> yields, because the client also goes through
+<code>stream</code> yields, because the client also goes through
 <code>stream_events</code>. Implement <code>stream_events</code> and both work.</p>
 <p>Capability flags are declared as plain class attributes::</p>
 <div class="language-text highlight"><pre><span></span><code>class MyProvider(BaseLLMProvider):
@@ -3871,7 +3871,7 @@ not an extension point, and overriding it has no effect on what
 </code></pre></div>
 <p>They may also be set per instance (a provider that learns what it can do from a
 runtime handshake), or replaced by a <code>property</code> in a subclass that derives them
-from something else — see :class:<code>~actants.policies.fallback.FallbackProvider</code>,
+from something else — see <code>FallbackProvider</code>,
 which computes both from the providers in its chain on every access.</p>
 <p>Example::</p>
 <div class="language-text highlight"><pre><span></span><code>class EchoProvider(BaseLLMProvider):
@@ -3957,13 +3957,13 @@ which computes both from the providers in its chain on every access.</p>
 
         <p>Stream typed events: text deltas, tool calls, usage, and finish.</p>
 <p><strong>This is the streaming primitive.</strong> Override it as an <code>async def</code> generator
-that yields :class:<code>TextDelta</code> for content, :class:<code>ToolCallDelta</code> for each tool
-call, :class:<code>UsageDelta</code> once token counts are known, and :class:<code>FinishDelta</code>
+that yields <code>TextDelta</code> for content, <code>ToolCallDelta</code> for each tool
+call, <code>UsageDelta</code> once token counts are known, and <code>FinishDelta</code>
 last. A provider that cannot stream tool calls simply never yields a
 <code>ToolCallDelta</code> and leaves <code>supports_streaming_tools</code> at <code>False</code>.</p>
 <p>Not abstract, so a completion-only provider stays usable for
-:meth:<code>~actants.llm.client.LLM.complete</code> without writing a streaming stub. The
-default raises :class:<code>NotImplementedError</code> when something actually tries to
+<code>complete</code> without writing a streaming stub. The
+default raises <code>NotImplementedError</code> when something actually tries to
 stream.</p>
 
 
@@ -3988,7 +3988,7 @@ stream.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Yield just the text content of :meth:<code>stream_events</code>.</p>
+        <p>Yield just the text content of <code>stream_events</code>.</p>
 <p>Provided by this base class — <strong>do not override it.</strong> Every actants code path
 that streams goes through <code>stream_events</code>, so an override here would be
 bypassed and the two would silently disagree. Put your implementation in
@@ -4190,10 +4190,10 @@ bypassed and the two would silently disagree. Put your implementation in
 
         <p>The terminal event of a stream, carrying why generation stopped.</p>
 <p><code>reason</code> is normalized the same way as
-:attr:<code>CompletionResult.finish_reason</code>, so a streamed run and a completed one can be
+<code>CompletionResult.finish_reason</code>, so a streamed run and a completed one can be
 branched on identically; <code>raw_reason</code> preserves the provider's own string.</p>
 <p>A provider may construct this with either — <code>FinishDelta(reason="stop")</code> in a
-hand-written provider, or via :meth:<code>from_provider</code> to normalize a raw wire value.</p>
+hand-written provider, or via <code>from_provider</code> to normalize a raw wire value.</p>
 
 
 

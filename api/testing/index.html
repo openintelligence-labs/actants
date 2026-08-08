@@ -4071,7 +4071,7 @@ saw) to assert prompt construction in tests.</p>
 
 
         <p>Captures every LLM exchange a run makes, to a JSONL file or to memory.</p>
-<p>Wrap any provider with :meth:<code>wrap</code> and use the result exactly as you would the
+<p>Wrap any provider with <code>wrap</code> and use the result exactly as you would the
 original: it delegates every call through and writes down what happened. The run
 behaves identically — recording is observation, never interception.</p>
 <p>Example::</p>
@@ -4081,7 +4081,7 @@ await Agent(llm=llm, tools=tools).run(&quot;book a flight&quot;)
 recorder.close()
 </code></pre></div>
 <p><code>path=None</code> records to memory only, which is what a test that never wants a file
-wants; :attr:<code>recording</code> is available either way.</p>
+wants; <code>recording</code> is available either way.</p>
 
 
 
@@ -4238,7 +4238,7 @@ wants; :attr:<code>recording</code> is available either way.</p>
 
 
         <p>A recorded run: a header plus every LLM exchange, in order.</p>
-<p>Load one with :meth:<code>load</code>, serve it with :class:<code>ReplayProvider</code>. A recording is
+<p>Load one with <code>load</code>, serve it with <code>ReplayProvider</code>. A recording is
 immutable in spirit — nothing in actants mutates a loaded one — so the same object can
 seed several replays.</p>
 
@@ -4326,7 +4326,7 @@ seed several replays.</p>
 
         <p>Every tool call the recorded model asked for, in order, as <code>(name, args)</code>.</p>
 <p>This is the recorded <em>trajectory</em> — what a
-:class:<code>~actants.testing.evals.ToolCalled</code> assertion is checked against.</p>
+<code>ToolCalled</code> assertion is checked against.</p>
 
 
     </div>
@@ -4351,7 +4351,7 @@ seed several replays.</p>
     <div class="doc doc-contents ">
 
         <p>Read a recording from a JSONL file.</p>
-<p>Raises :class:<code>~actants.errors.RecordingFormatError</code> for a file this build cannot
+<p>Raises <code>RecordingFormatError</code> for a file this build cannot
 read: a wrong format version, a missing header, or a line that does not parse.
 Never a partial read — a recording is a regression baseline, and one that silently
 drops the exchanges it could not understand would report a passing replay of a run
@@ -4388,7 +4388,7 @@ that never happened.</p>
 
 
 
-        <p>Serves a :class:<code>Recording</code> back in place of a real provider. <strong>No network.</strong></p>
+        <p>Serves a <code>Recording</code> back in place of a real provider. <strong>No network.</strong></p>
 <p>This is the piece that turns a recorded run into an offline regression suite: an agent
 built on one behaves exactly as it did when recorded, in microseconds, with no server
 running and no key set.</p>
@@ -4399,7 +4399,7 @@ running and no key set.</p>
   request will not match, and the point is to see what the rest of the system does
   with the same model answers.</li>
 <li><code>match="request"</code> looks each request up by content and raises
-  :class:<code>~actants.errors.RecordingMissError</code> on a request that was never recorded.
+  <code>RecordingMissError</code> on a request that was never recorded.
   Use it for a <strong>determinism check</strong>: it proves the run asked the same questions, not
   merely the same number of them.</li>
 </ul>
@@ -4627,7 +4627,7 @@ reproduce them would be a fiction the recording cannot actually support.</p>
 
 
         <p>A provider that delegates every call and writes down what happened.</p>
-<p>Built by :meth:<code>RunRecorder.wrap</code>. Capability flags mirror the wrapped provider's, so
+<p>Built by <code>wrap</code>. Capability flags mirror the wrapped provider's, so
 wrapping cannot change what the client believes the provider can do.</p>
 
 
@@ -4693,7 +4693,7 @@ wrapping cannot change what the client believes the provider can do.</p>
     <div class="doc doc-contents ">
 
         <p>Pass events through, assembling the completion they add up to.</p>
-<p>A streamed exchange is recorded as the :class:<code>CompletionResult</code> it produced, not
+<p>A streamed exchange is recorded as the <code>CompletionResult</code> it produced, not
 as a list of deltas: the replay serves whole completions and re-derives deltas from
 them, so one recording drives both a streamed and a non-streamed replay.</p>
 
@@ -4822,7 +4822,7 @@ being read with today's assumptions about what its fields mean.</p>
     <div class="doc doc-contents first">
 
         <p>Stream a recording's exchanges without holding the whole file in memory.</p>
-<p>For the case :meth:<code>Recording.load</code> is wrong for: a long run being scanned for one
+<p>For the case <code>load</code> is wrong for: a long run being scanned for one
 thing. Validates the header first, so a bad file still fails on the first line.</p>
 
 
@@ -4849,7 +4849,7 @@ thing. Validates the header first, so a bad file still fails on the first line.<
 
         <p>A named set of cases, runnable against an Agent or a CompiledGraph.</p>
 <p><code>concurrency</code> runs cases in parallel; the default of 1 is sequential, which is what
-a suite sharing one :class:<code>~actants.agents.agent.Agent</code> needs — every case is an
+a suite sharing one <code>Agent</code> needs — every case is an
 independent question, so the agent's conversation is reset between them.</p>
 <p>Example::</p>
 <div class="language-text highlight"><pre><span></span><code>suite = EvalSuite(&quot;booking&quot;, [EvalCase(&quot;berlin&quot;, &quot;book Berlin&quot;,
@@ -4897,8 +4897,8 @@ assert report.ok, report.summary()
     <div class="doc doc-contents ">
 
         <p>Run every case against <code>target</code> and score the results.</p>
-<p>Accepts an :class:<code>~actants.agents.agent.Agent</code> or a
-:class:<code>~actants.graph.state_graph.CompiledGraph</code>; the difference is confined to
+<p>Accepts an <code>Agent</code> or a
+<code>CompiledGraph</code>; the difference is confined to
 how one case is executed, so the same suite scores both.</p>
 
 
@@ -4988,7 +4988,7 @@ to pass for the case to pass — a case is an assertion, not an average.</p>
 
 
         <p>The result of running a suite: per-case verdicts plus the aggregates.</p>
-<p>:meth:<code>summary</code> is for a human, :meth:<code>to_dict</code> for CI. :meth:<code>compare</code> against an
+<p><code>summary</code> is for a human, <code>to_dict</code> for CI. <code>compare</code> against an
 earlier report is what turns this from a test result into a decision.</p>
 
 
@@ -5133,7 +5133,7 @@ earlier report is what turns this from a test result into a decision.</p>
 
     <div class="doc doc-contents ">
 
-        <p>:meth:<code>to_dict</code> as a JSON string, for writing straight to a CI artifact.</p>
+        <p><code>to_dict</code> as a JSON string, for writing straight to a CI artifact.</p>
 
 
     </div>
@@ -5190,7 +5190,7 @@ a negative <code>cost_delta_usd</code> means the candidate is cheaper.</p>
 
 
 
-        <p>The difference between two :class:<code>EvalReport</code> runs.</p>
+        <p>The difference between two <code>EvalReport</code> runs.</p>
 <p>The number that actually answers "should I switch models": what the swap did to
 correctness, to spend, and to latency, all at once. A cheaper model that costs 40%
 less and fails two more cases is a decision, not an improvement, and this makes both
@@ -5691,7 +5691,7 @@ happened.</p>
 <code>match="request"</code> — it asked a question that was never recorded. Both mean the
 behaviour changed, which is the thing a replay exists to detect, so this is raised
 rather than papered over with an invented answer.</p>
-<p>:attr:<code>request_index</code> is the position in <em>this</em> run's sequence of LLM calls, so a
+<p><code>request_index</code> is the position in <em>this</em> run's sequence of LLM calls, so a
 handler can point at the step that diverged.</p>
 
 

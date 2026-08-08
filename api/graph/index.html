@@ -3130,8 +3130,8 @@
 
         <p>A typed state graph, built node by node and then compiled.</p>
 <p><code>state_type</code> is the pydantic model that flows through the graph; every node and
-router is typed against it. Nothing runs until :meth:<code>compile</code>, which is where the
-structural checks happen — see :meth:<code>compile</code> for exactly what it rejects.</p>
+router is typed against it. Nothing runs until <code>compile</code>, which is where the
+structural checks happen — see <code>compile</code> for exactly what it rejects.</p>
 <p>Example::</p>
 <div class="language-text highlight"><pre><span></span><code>graph = StateGraph(State)
 graph.add_node(&quot;fetch&quot;, fetch)
@@ -3180,8 +3180,8 @@ return <code>self</code>, so the same graph can be written as a chain if you pre
 
         <p>Register <code>fn</code> under <code>name</code>.</p>
 <p><code>fn</code> must be an async callable taking the graph's state and returning a partial
-update, a whole state, or None. An :class:<code>~actants.agents.agent.Agent</code> is usable
-here by wrapping it — see :func:<code>~actants.graph.agent_node.agent_node</code>.</p>
+update, a whole state, or None. An <code>Agent</code> is usable
+here by wrapping it — see <code>agent_node</code>.</p>
 
 
     </div>
@@ -3222,7 +3222,7 @@ here by wrapping it — see :func:<code>~actants.graph.agent_node.agent_node</co
     <div class="doc doc-contents ">
 
         <p>Always go from <code>start</code> to <code>end</code> after <code>start</code> completes.</p>
-<p><code>end</code> may be :data:<code>~actants.graph.state.END</code> to finish the run.</p>
+<p><code>end</code> may be <code>END</code> to finish the run.</p>
 
 
     </div>
@@ -3244,7 +3244,7 @@ here by wrapping it — see :func:<code>~actants.graph.agent_node.agent_node</co
 
         <p>Route out of <code>start</code> by what <code>router(state)</code> returns.</p>
 <p><code>router</code> returns a key of <code>mapping</code>; the mapped value is the next node, or
-:data:<code>~actants.graph.state.END</code>. The indirection through <code>mapping</code> is what
+<code>END</code>. The indirection through <code>mapping</code> is what
 makes the branch inspectable: <code>compile</code> can check every reachable target
 exists, which it could not do if the router returned node names directly.</p>
 
@@ -3278,7 +3278,7 @@ exists, which it could not do if the router returned node names directly.</p>
 <p><code>max_iterations</code> caps how many nodes one run may execute. Graphs loop by
 design, so there is no structural way to tell a slow convergence from an
 infinite one; exceeding the cap raises
-:class:<code>~actants.errors.GraphRecursionError</code> naming the node that was running.</p>
+<code>GraphRecursionError</code> naming the node that was running.</p>
 
 
     </div>
@@ -3309,9 +3309,9 @@ infinite one; exceeding the cap raises
 
 
 
-        <p>A validated graph, ready to run. Built by :meth:<code>StateGraph.compile</code>.</p>
-<p>Runs are driven by :meth:<code>invoke</code> (await the final state), :meth:<code>stream</code> (watch
-node-by-node), and :meth:<code>resume</code> (continue a checkpointed run).</p>
+        <p>A validated graph, ready to run. Built by <code>compile</code>.</p>
+<p>Runs are driven by <code>invoke</code> (await the final state), <code>stream</code> (watch
+node-by-node), and <code>resume</code> (continue a checkpointed run).</p>
 
 
 
@@ -3377,7 +3377,7 @@ node-by-node), and :meth:<code>resume</code> (continue a checkpointed run).</p>
 
         <p>Run the graph from its entry point until END, or until a pause.</p>
 <p>Pass <code>thread_id</code> — with a <code>checkpointer</code> on the compiled graph — to make the
-run durable. State is persisted after every node completes, so :meth:<code>resume</code>
+run durable. State is persisted after every node completes, so <code>resume</code>
 can continue it without re-running the nodes that already finished. A
 <code>thread_id</code> without a checkpointer is a <code>ValueError</code>; a checkpointer without
 a <code>thread_id</code> persists nothing, so durability stays opt-in per run.</p>
@@ -3444,10 +3444,10 @@ node left it.</p>
 <p><code>approve</code> answers a run paused by <code>interrupt_before</code>: <code>True</code> runs the
 pending node and continues, <code>False</code> skips it and routes onward as though it had
 run without changing the state. Mirrors
-:meth:<code>~actants.agents.agent.Agent.resume</code>.</p>
+<code>resume</code>.</p>
 <p>Resuming a thread that already completed returns its stored state without
 re-running anything. An unknown <code>thread_id</code> raises
-:class:<code>~actants.errors.UnknownThreadError</code>.</p>
+<code>UnknownThreadError</code>.</p>
 <p>Two processes resuming the same <code>thread_id</code> concurrently is undefined; actants
 does not lock a thread across processes.</p>
 
@@ -3473,7 +3473,7 @@ does not lock a thread across processes.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Streaming form of :meth:<code>resume</code>; yields the same events as :meth:<code>stream</code>.</p>
+        <p>Streaming form of <code>resume</code>; yields the same events as <code>stream</code>.</p>
 
 
     </div>
@@ -3509,10 +3509,10 @@ does not lock a thread across processes.</p>
 
 
         <p>What one <code>invoke()</code> or <code>resume()</code> produced.</p>
-<p>A run that stopped in front of an <code>interrupt_before</code> node sets :attr:<code>interrupted</code>
-and :attr:<code>pending_node</code>, and :attr:<code>state</code> holds the state as it stood <em>before</em> that
+<p>A run that stopped in front of an <code>interrupt_before</code> node sets <code>interrupted</code>
+and <code>pending_node</code>, and <code>state</code> holds the state as it stood <em>before</em> that
 node ran. Deliberately the same shape and vocabulary as
-:class:<code>~actants.agents.agent.AgentResult</code>, so code that handles a paused agent
+<code>AgentResult</code>, so code that handles a paused agent
 handles a paused graph the same way.</p>
 
 
@@ -3825,7 +3825,7 @@ loop durable too, and give it a thread id derived from your own state.</p>
 
 
 
-        <p>A :class:<code>~actants.graph.state_graph.StateGraph</code> could not be built or run.</p>
+        <p>A <code>StateGraph</code> could not be built or run.</p>
 
 
 

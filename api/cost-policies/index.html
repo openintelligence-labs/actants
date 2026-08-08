@@ -2896,7 +2896,7 @@
     <div class="doc doc-contents ">
 
         <p>True when at least one recorded call had no known price.</p>
-<p>When this is true, :attr:<code>total_usd</code> understates real spend. Surface it next to
+<p>When this is true, <code>total_usd</code> understates real spend. Surface it next to
 the total wherever the total is shown to a person.</p>
 
     </div>
@@ -2929,11 +2929,11 @@ the total wherever the total is shown to a person.</p>
 
         <p>Estimate USD cost for a completion, returning <code>0.0</code> when the price is unknown.</p>
 <p><code>0.0</code> here is a <em>floor</em>, not a claim that the call was free. The field it feeds
-(:attr:<code>~actants.llm.base.CompletionResult.cost_usd</code>) is a non-optional float, so
+(<code>cost_usd</code>) is a non-optional float, so
 an unpriced model has to be some number; this keeps totals from being inflated by
 a guess. Callers that need to tell "free" from "unknown" apart must use
-:func:<code>estimate_cost_or_none</code> or :func:<code>is_priced</code> — and
-:attr:<code>~actants.cost.tracker.CostTracker.untracked_models</code> records every model
+<code>estimate_cost_or_none</code> or <code>is_priced</code> — and
+<code>untracked_models</code> records every model
 that took this path, so an unknown model is visible in the report instead of
 disappearing into a $0.00 line.</p>
 
@@ -3136,7 +3136,7 @@ could not.</p>
     <div class="doc doc-contents ">
 
         <p>True only if <em>every</em> provider in the chain supports streaming tool calls.</p>
-<p>Derived on access, for the same reason as :attr:<code>supports_tool_calls</code>.</p>
+<p>Derived on access, for the same reason as <code>supports_tool_calls</code>.</p>
 
     </div>
 
@@ -3164,7 +3164,7 @@ could not.</p>
 
         <p>Fall back across providers while preserving typed events.</p>
 <p>This is the only streaming method the chain implements: <code>stream</code> is derived
-from it by :class:<code>~actants.llm.base.BaseLLMProvider</code>, so plain-text streaming
+from it by <code>BaseLLMProvider</code>, so plain-text streaming
 gets the same fallback behaviour for free.</p>
 <p>Fallback stops as soon as the first event reaches the consumer. Restarting on
 another provider after that would splice two different completions into one

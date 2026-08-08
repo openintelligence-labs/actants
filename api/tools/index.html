@@ -2860,7 +2860,7 @@
 annotations. Every parameter must be annotated, otherwise the model would
 receive a tool with no visible arguments.</p>
 <p>Pass <code>idempotent=False</code> for anything with an externally-visible side effect —
-see :attr:<code>Tool.idempotent &lt;actants.tools.base.Tool.idempotent&gt;</code>, which the
+see <code>idempotent&gt;</code>, which the
 default of <code>True</code> is wrong for.</p>
 
 
@@ -2909,7 +2909,7 @@ default of <code>True</code> is wrong for.</p>
 <p>The tool name and arguments come from the model, so a hallucinated name or a
 bogus argument list is normal model behaviour — not a programming error. Both
 are reported back as <code>ok=False</code> so the agent loop can feed the error to the
-model and let it correct itself. Use :meth:<code>get</code> when you want an unknown tool
+model and let it correct itself. Use <code>get</code> when you want an unknown tool
 to raise.</p>
 
 

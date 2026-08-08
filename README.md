@@ -101,6 +101,13 @@ anything annotations cannot express.
 The model decides when to call the tool; `Agent` dispatches it and feeds
 the result back through the tool-calling loop.
 
+That is the right shape when the steps cannot be known in advance. When they can,
+write them down instead: `StateGraph` runs stages you define, in an order your code
+controls, calling the model inside a stage to do one bounded job. It is cheaper and
+easier to debug, and both shapes checkpoint and resume the same way.
+[Agent or StateGraph?](https://actants.openintelligence-labs.org/concepts/choosing/)
+covers the choice.
+
 ## Streaming
 
 `Agent.stream()` yields typed events:

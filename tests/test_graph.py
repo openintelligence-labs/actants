@@ -21,7 +21,12 @@ import pytest
 from pydantic import BaseModel, Field
 
 from actants.agents.agent import Agent
-from actants.agents.checkpoint import Checkpoint, InMemoryCheckpointer, SqliteCheckpointer
+from actants.agents.checkpoint import (
+    RESUME_FAILED_ACKNOWLEDGED,
+    Checkpoint,
+    InMemoryCheckpointer,
+    SqliteCheckpointer,
+)
 from actants.errors import (
     ActantsError,
     GraphError,
@@ -834,6 +839,113 @@ async def test_resuming_a_failed_thread_refuses() -> None:
 
     with pytest.raises(RuntimeError, match="checkpointed as failed"):
         await compiled.resume("t1")
+
+
+# ---------------------------------------------------------------------------
+# Resuming a failure on purpose
+# ---------------------------------------------------------------------------
+
+
+def _flaky(counter: Counter, fails: int) -> tuple[StateGraph[State], list[int]]:
+    """scrape -> parse -> END, where ``scrape`` raises its first ``fails`` attempts.
+
+    A stage that dies on a network timeout is the case the escape hatch exists for: the
+    stages before it completed and are sitting in the checkpoint.
+    """
+    attempts = [0]
+
+    async def scrape(state: State) -> dict[str, Any]:
+        attempts[0] += 1
+        if attempts[0] <= fails:
+            raise TimeoutError("scrape timed out")
+        counter.names.append("scrape")
+        return {"label": "scraped"}
+
+    graph: StateGraph[State] = StateGraph(State)
+    graph.add_node("setup", counter.node("setup", value=1))
+    graph.add_node("scrape", scrape)
+    graph.add_node("parse", counter.node("parse", label="parsed"))
+    graph.set_entry_point("setup")
+    graph.add_edge("setup", "scrape")
+    graph.add_edge("scrape", "parse")
+    graph.add_edge("parse", END)
+    return graph, attempts
+
+
+@pytest.mark.asyncio
+async def test_acknowledged_failure_resumes_at_the_failed_node() -> None:
+    """Completed stages are kept; the run picks up at the one that died."""
+    counter = Counter()
+    graph, _ = _flaky(counter, fails=1)
+    store = InMemoryCheckpointer()
+    compiled = graph.compile(checkpointer=store)
+    with pytest.raises(TimeoutError):
+        await compiled.invoke(State(), thread_id="t1")
+    assert counter.count("setup") == 1
+
+    result = await compiled.resume("t1", resume_failed=RESUME_FAILED_ACKNOWLEDGED)
+
+    assert result.state.label == "parsed"
+    assert counter.count("setup") == 1, "a completed node must not be re-run"
+    assert counter.count("scrape") == 1
+    assert counter.count("parse") == 1
+
+
+@pytest.mark.asyncio
+async def test_acknowledged_failure_resumes_a_stream_too() -> None:
+    """resume_stream is the same decision, so it takes the same opt-in."""
+    from actants.graph.events import GraphCompleted
+
+    counter = Counter()
+    graph, _ = _flaky(counter, fails=1)
+    store = InMemoryCheckpointer()
+    compiled = graph.compile(checkpointer=store)
+    with pytest.raises(TimeoutError):
+        await compiled.invoke(State(), thread_id="t1")
+
+    with pytest.raises(RuntimeError, match="checkpointed as failed"):
+        async for _ in compiled.resume_stream("t1"):
+            pass
+
+    seen = [
+        event
+        async for event in compiled.resume_stream("t1", resume_failed=RESUME_FAILED_ACKNOWLEDGED)
+    ]
+
+    assert isinstance(seen[-1], GraphCompleted)
+    assert counter.count("setup") == 1, "a completed node must not be re-run"
+
+
+@pytest.mark.asyncio
+async def test_the_original_graph_failure_survives_a_second_one() -> None:
+    counter = Counter()
+    graph, _ = _flaky(counter, fails=2)
+    store = InMemoryCheckpointer()
+    compiled = graph.compile(checkpointer=store)
+    with pytest.raises(TimeoutError):
+        await compiled.invoke(State(), thread_id="t1")
+
+    with pytest.raises(TimeoutError):
+        await compiled.resume("t1", resume_failed=RESUME_FAILED_ACKNOWLEDGED)
+
+    stored = await store.get("t1")
+    assert stored is not None
+    assert stored.status == "failed"
+    assert len(stored.prior_errors) == 1, "the first failure is still on record"
+    assert counter.count("setup") == 1, "and neither attempt re-ran the completed node"
+
+
+@pytest.mark.asyncio
+async def test_the_graph_opt_in_must_be_spelled_exactly() -> None:
+    counter = Counter()
+    graph, _ = _flaky(counter, fails=1)
+    store = InMemoryCheckpointer()
+    compiled = graph.compile(checkpointer=store)
+    with pytest.raises(TimeoutError):
+        await compiled.invoke(State(), thread_id="t1")
+
+    with pytest.raises(ValueError, match="resume_failed must be exactly"):
+        await compiled.resume("t1", resume_failed="yes")  # type: ignore[arg-type]
 
 
 @pytest.mark.asyncio

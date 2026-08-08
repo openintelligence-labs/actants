@@ -16,7 +16,7 @@ import json
 import sqlite3
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Final, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
@@ -41,6 +41,15 @@ SCHEMA_VERSION = 1
 #: terminal in the sense that resume either returns the stored result, re-raises, or —
 #: for ``"interrupted"`` — needs an explicit approve/reject decision.
 CheckpointStatus = Literal["running", "interrupted", "completed", "failed"]
+
+#: The one value ``resume_failed`` accepts, on both `Agent.resume` and
+#: `CompiledGraph.resume`. A sentence rather than ``True`` so the opt-in cannot arrive
+#: from a generic retry wrapper forwarding flags it does not understand, and so the call
+#: site states what is being accepted rather than hiding it behind a bare bool.
+RESUME_FAILED_ACKNOWLEDGED: Final = "i-know-the-failure-may-have-half-run"
+
+#: Type of the ``resume_failed`` opt-in; see `RESUME_FAILED_ACKNOWLEDGED`.
+ResumeFailedAck = Literal["i-know-the-failure-may-have-half-run"]
 
 
 class StepRecord(BaseModel):
@@ -79,6 +88,10 @@ class Checkpoint(BaseModel):
     #: Set when ``status="failed"``: the ``repr``-ish description of what went wrong.
     #: Kept as a string because the original exception is not portable across processes.
     error: str | None = None
+    #: Every failure this thread has already been resumed past, oldest first. A resumed
+    #: failure that fails again would otherwise overwrite the only record of why it failed
+    #: the first time, which is the thing an operator debugging a retry loop needs most.
+    prior_errors: list[str] = Field(default_factory=list)
     created_at: float = Field(default_factory=time.time)
     updated_at: float = Field(default_factory=time.time)
 

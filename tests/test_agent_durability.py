@@ -17,6 +17,7 @@ import pytest
 
 from actants.agents.agent import Agent, AgentResult
 from actants.agents.checkpoint import (
+    RESUME_FAILED_ACKNOWLEDGED,
     SCHEMA_VERSION,
     Checkpoint,
     Checkpointer,
@@ -930,6 +931,160 @@ async def test_resuming_a_failed_thread_refuses() -> None:
 
     with pytest.raises(RuntimeError, match="checkpointed as failed"):
         await agent.resume("t1")
+
+
+# ---------------------------------------------------------------------------
+# Resuming a failure on purpose
+#
+# The default refusal above is the product; these cover the escape hatch for an
+# operator who has established the failure is safe to continue past. The one that
+# matters most is the UnresolvedToolCallError test: opting in to resume a failure
+# must not become a way around the at-most-once guarantee.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_acknowledged_failure_resumes_without_redoing_completed_work() -> None:
+    """The work sitting in the checkpoint is recoverable, and is not redone.
+
+    A network timeout after a tool has already run is the motivating case: the run dies
+    with the tool's result durably recorded, and the operator wants the rest of the run
+    without paying for that side effect twice.
+    """
+    lookup = Counter()
+    provider = ScriptedProvider(
+        [_completion("", [_call("lookup", "c1", x=1)]), TimeoutError("scrape timed out")]
+    )
+    store = InMemoryCheckpointer()
+    agent = _agent(provider, _registry(lookup=lookup), checkpointer=store)
+    with pytest.raises(TimeoutError):
+        await agent.run("go", thread_id="t1")
+    assert lookup.count == 1
+
+    provider.queue(_completion("finished"))
+    result = await agent.resume("t1", resume_failed=RESUME_FAILED_ACKNOWLEDGED)
+
+    assert result.content == "finished"
+    assert lookup.count == 1, "the completed tool call must be replayed, not re-run"
+
+
+@pytest.mark.asyncio
+async def test_acknowledged_failure_still_refuses_an_in_flight_unsafe_call() -> None:
+    """The critical one: opting in to a failure is not opting in to an unsafe replay.
+
+    A thread can fail *while* a non-idempotent tool is in flight, which is exactly the
+    ambiguity ``resolve`` exists for. ``resume_failed`` gets past the failed-status
+    refusal and lands the run in the same place a crashed thread lands: still unable to
+    say whether the side effect happened, and still refusing to guess.
+    """
+    store, provider, send = await _stage_in_flight("unsafe_send")
+    stored = await store.get("t1")
+    assert stored is not None
+    stored.status = "failed"
+    stored.error = "TimeoutError: scrape timed out"
+    await store.put(stored)
+    agent = _agent(provider, _registry(unsafe_send=send), checkpointer=store)
+
+    with pytest.raises(UnresolvedToolCallError) as exc:
+        await agent.resume("t1", resume_failed=RESUME_FAILED_ACKNOWLEDGED)
+
+    assert send.count == 0, "resuming a failure must not dispatch an unsafe in-flight call"
+    assert exc.value.call.name == "unsafe_send"
+    assert "resolve='retry'" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_resolving_an_unsafe_call_on_a_failed_thread_still_works() -> None:
+    """The other half: the operator can still resolve it, once they have checked."""
+    store, provider, send = await _stage_in_flight("unsafe_send")
+    stored = await store.get("t1")
+    assert stored is not None
+    stored.status = "failed"
+    stored.error = "TimeoutError: scrape timed out"
+    await store.put(stored)
+
+    provider.queue(_completion("finished"))
+    result = await _agent(provider, _registry(unsafe_send=send), checkpointer=store).resume(
+        "t1", resolve="skip", resume_failed=RESUME_FAILED_ACKNOWLEDGED
+    )
+
+    assert result.content == "finished"
+    assert send.count == 0, "'skip' means the call was not run, on a failed thread too"
+
+
+@pytest.mark.asyncio
+async def test_the_original_failure_survives_a_resume_that_fails_again() -> None:
+    """An operator debugging a retry loop needs the *first* failure, not just the last."""
+    provider = ScriptedProvider(
+        [_completion("", [_call("lookup", "c1", x=1)]), TimeoutError("first failure")]
+    )
+    store = InMemoryCheckpointer()
+    agent = _agent(provider, _registry(lookup=Counter()), checkpointer=store)
+    with pytest.raises(TimeoutError):
+        await agent.run("go", thread_id="t1")
+
+    provider.queue(RuntimeError("second failure"))
+    with pytest.raises(RuntimeError, match="second failure"):
+        await agent.resume("t1", resume_failed=RESUME_FAILED_ACKNOWLEDGED)
+
+    stored = await store.get("t1")
+    assert stored is not None
+    assert stored.status == "failed"
+    assert "second failure" in (stored.error or ""), "the current error is the latest one"
+    assert any("first failure" in e for e in stored.prior_errors), "and the first is kept"
+
+
+@pytest.mark.asyncio
+async def test_a_resumed_failure_is_running_again_and_completes_clean() -> None:
+    """A thread that resumes successfully is no longer failed, and says so."""
+    provider = ScriptedProvider(
+        [_completion("", [_call("lookup", "c1", x=1)]), TimeoutError("scrape timed out")]
+    )
+    store = InMemoryCheckpointer()
+    agent = _agent(provider, _registry(lookup=Counter()), checkpointer=store)
+    with pytest.raises(TimeoutError):
+        await agent.run("go", thread_id="t1")
+
+    provider.queue(_completion("finished"))
+    await agent.resume("t1", resume_failed=RESUME_FAILED_ACKNOWLEDGED)
+
+    stored = await store.get("t1")
+    assert stored is not None
+    assert stored.status == "completed"
+    assert any("scrape timed out" in e for e in stored.prior_errors), (
+        "a completed thread should still show what it had to be resumed past"
+    )
+
+
+@pytest.mark.asyncio
+async def test_the_opt_in_must_be_spelled_exactly() -> None:
+    """A near-miss is a mistake, not consent — so it raises rather than resuming."""
+    provider = ScriptedProvider(
+        [_completion("", [_call("lookup", "c1", x=1)]), RuntimeError("boom")]
+    )
+    store = InMemoryCheckpointer()
+    agent = _agent(provider, _registry(lookup=Counter()), checkpointer=store)
+    with pytest.raises(RuntimeError, match="boom"):
+        await agent.run("go", thread_id="t1")
+
+    with pytest.raises(ValueError, match="resume_failed must be exactly"):
+        await agent.resume("t1", resume_failed="yes")  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
+async def test_the_default_refusal_points_at_the_escape_hatch() -> None:
+    """The refusal has to be actionable, or the operator's next move is deleting state."""
+    provider = ScriptedProvider(
+        [_completion("", [_call("lookup", "c1", x=1)]), RuntimeError("boom")]
+    )
+    store = InMemoryCheckpointer()
+    agent = _agent(provider, _registry(lookup=Counter()), checkpointer=store)
+    with pytest.raises(RuntimeError, match="boom"):
+        await agent.run("go", thread_id="t1")
+
+    with pytest.raises(RuntimeError) as exc:
+        await agent.resume("t1")
+    assert RESUME_FAILED_ACKNOWLEDGED in str(exc.value)
 
 
 @pytest.mark.asyncio

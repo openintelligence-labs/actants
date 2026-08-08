@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://actants.openintelligence-labs.org/api/errors/">
+        <link rel="canonical" href="https://actants.openintelligence-labs.org/api/graph/">
       
       
-        <link rel="prev" href="../tools/">
+        <link rel="prev" href="../durability/">
       
       
-        <link rel="next" href="../embeddings/">
+        <link rel="next" href="../llm/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Errors - actants</title>
+        <title>StateGraph - actants</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#errors" class="md-skip">
+        <a href="#stategraph" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Errors
+              StateGraph
             
           </span>
         </div>
@@ -1807,10 +1807,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../graph/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StateGraph
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1826,6 +1853,324 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;StateGraph
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" StateGraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.add_node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_node
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.set_entry_point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;set_entry_point
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.add_edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_edge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.add_conditional_edges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_conditional_edges
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.compile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CompiledGraph
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CompiledGraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.invoke" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;invoke
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.resume" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;resume
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.resume_stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;resume_stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.GraphResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphResult
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.state.Append" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;Append
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Events
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.events.GraphNodeStarted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphNodeStarted
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.events.GraphNodeCompleted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphNodeCompleted
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.events.GraphInterrupted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphInterrupted
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.events.GraphCompleted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphCompleted
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agents-as-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agents as nodes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.agent_node.agent_node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;agent_node
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.GraphError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.GraphValidationError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphValidationError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.GraphRecursionError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphRecursionError
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1891,37 +2236,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Errors
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../errors/" class="md-nav__link">
         
   
   
@@ -1937,191 +2255,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#hierarchy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hierarchy
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#handling-them" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Handling them
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#falling-back-across-providers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Falling back across providers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#compatibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Compatibility
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.errors.ActantsError" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ActantsError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.errors.ProviderError" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ProviderError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.errors.UnknownProviderError" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;UnknownProviderError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.errors.ProviderNotInstalledError" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ProviderNotInstalledError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.errors.MissingAPIKeyError" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MissingAPIKeyError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.errors.ModelNotFoundError" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ModelNotFoundError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.errors.ToolCallsNotSupportedError" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ToolCallsNotSupportedError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.tools.base.ToolError" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ToolError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.policies.fallback.AllProvidersFailedError" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AllProvidersFailedError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.cache.semantic.CacheSchemaMismatch" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CacheSchemaMismatch
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2652,10 +2785,154 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#hierarchy" class="md-nav__link">
+  <a href="#actants.graph.state_graph.StateGraph" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hierarchy
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;StateGraph
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" StateGraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.add_node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_node
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.set_entry_point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;set_entry_point
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.add_edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_edge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.add_conditional_edges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_conditional_edges
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.StateGraph.compile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CompiledGraph
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CompiledGraph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.invoke" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;invoke
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.resume" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;resume
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.CompiledGraph.resume_stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;resume_stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.graph.state_graph.GraphResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphResult
       
     </span>
   </a>
@@ -2663,10 +2940,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#handling-them" class="md-nav__link">
+  <a href="#state" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Handling them
+        State
       
     </span>
   </a>
@@ -2674,10 +2951,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#falling-back-across-providers" class="md-nav__link">
+  <a href="#actants.graph.state.Append" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Falling back across providers
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;Append
       
     </span>
   </a>
@@ -2685,10 +2962,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#compatibility" class="md-nav__link">
+  <a href="#events" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Compatibility
+        Events
       
     </span>
   </a>
@@ -2696,10 +2973,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#reference" class="md-nav__link">
+  <a href="#actants.graph.events.GraphNodeStarted" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reference
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphNodeStarted
       
     </span>
   </a>
@@ -2707,10 +2984,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.errors.ActantsError" class="md-nav__link">
+  <a href="#actants.graph.events.GraphNodeCompleted" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ActantsError
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphNodeCompleted
       
     </span>
   </a>
@@ -2718,10 +2995,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.errors.ProviderError" class="md-nav__link">
+  <a href="#actants.graph.events.GraphInterrupted" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ProviderError
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphInterrupted
       
     </span>
   </a>
@@ -2729,10 +3006,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.errors.UnknownProviderError" class="md-nav__link">
+  <a href="#actants.graph.events.GraphCompleted" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;UnknownProviderError
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphCompleted
       
     </span>
   </a>
@@ -2740,10 +3017,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.errors.ProviderNotInstalledError" class="md-nav__link">
+  <a href="#agents-as-nodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ProviderNotInstalledError
+        Agents as nodes
       
     </span>
   </a>
@@ -2751,10 +3028,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.errors.MissingAPIKeyError" class="md-nav__link">
+  <a href="#actants.graph.agent_node.agent_node" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MissingAPIKeyError
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;agent_node
       
     </span>
   </a>
@@ -2762,10 +3039,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.errors.ModelNotFoundError" class="md-nav__link">
+  <a href="#errors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ModelNotFoundError
+        Errors
       
     </span>
   </a>
@@ -2773,10 +3050,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.errors.ToolCallsNotSupportedError" class="md-nav__link">
+  <a href="#actants.errors.GraphError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ToolCallsNotSupportedError
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphError
       
     </span>
   </a>
@@ -2784,10 +3061,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.tools.base.ToolError" class="md-nav__link">
+  <a href="#actants.errors.GraphValidationError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ToolError
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphValidationError
       
     </span>
   </a>
@@ -2795,21 +3072,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.policies.fallback.AllProvidersFailedError" class="md-nav__link">
+  <a href="#actants.errors.GraphRecursionError" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AllProvidersFailedError
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.cache.semantic.CacheSchemaMismatch" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CacheSchemaMismatch
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GraphRecursionError
       
     </span>
   </a>
@@ -2833,7 +3099,7 @@
 
 
   
-    <a href="https://github.com/openintelligence-labs/actants/edit/main/docs_site/api/errors.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/openintelligence-labs/actants/edit/main/docs_site/api/graph.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2841,338 +3107,491 @@
   
 
 
-<h1 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h1>
-<p>Every exception actants raises on purpose inherits from <code>ActantsError</code>, and all of
-them are importable from the top level:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActantsError</span><span class="p">,</span> <span class="n">ModelNotFoundError</span>
-</span></code></pre></div>
-<p><code>except ActantsError</code> is therefore a complete catch for "actants itself refused",
-as distinct from a bug in your own code or an error escaping from a provider SDK.</p>
-<h2 id="hierarchy">Hierarchy<a class="headerlink" href="#hierarchy" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>ActantsError
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── ProviderError
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│   ├── UnknownProviderError        (also ValueError)
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│   ├── ProviderNotInstalledError   (also ImportError)
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│   ├── MissingAPIKeyError          (also ValueError)
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>│   ├── ModelNotFoundError          (also ValueError)
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>│   ├── ToolCallsNotSupportedError  (also TypeError)
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│   └── AllProvidersFailedError     (also RuntimeError)
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>├── ToolError
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>├── CacheSchemaMismatch             (also RuntimeError)
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>└── MCPConnectionError              (also RuntimeError)
-</span></code></pre></div>
-<p>Each class also inherits the builtin exception you would naturally reach for, so
-<code>except ValueError</code> still catches an unknown provider name. Catch the actants class
-when you want to be precise, the builtin when you want to be permissive.</p>
-<h2 id="handling-them">Handling them<a class="headerlink" href="#handling-them" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLM</span><span class="p">,</span> <span class="n">ActantsError</span><span class="p">,</span> <span class="n">MissingAPIKeyError</span><span class="p">,</span> <span class="n">ModelNotFoundError</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">LLM</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.2&quot;</span><span class="p">)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">try</span><span class="p">:</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">llm</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">except</span> <span class="n">ModelNotFoundError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="c1"># names the models the server does have, and the `ollama pull` to run</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">except</span> <span class="n">MissingAPIKeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="c1"># names the env var to set</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">except</span> <span class="n">ActantsError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;actants refused: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span></code></pre></div>
-<p>Every message names the exact problem and the exact fix — if you can hit it in your
-first ten minutes, it tells you what to type next.</p>
-<h2 id="falling-back-across-providers">Falling back across providers<a class="headerlink" href="#falling-back-across-providers" title="Permanent link">&para;</a></h2>
-<p><code>AllProvidersFailedError</code> carries the individual failures, so you can see why each
-link in the chain gave up rather than only that the chain did:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">AllProvidersFailedError</span><span class="p">,</span> <span class="n">FallbackProvider</span><span class="p">,</span> <span class="n">LLM</span><span class="p">,</span> <span class="n">OllamaProvider</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">chain</span> <span class="o">=</span> <span class="n">FallbackProvider</span><span class="p">([(</span><span class="n">OllamaProvider</span><span class="p">(),</span> <span class="s2">&quot;llama3.2&quot;</span><span class="p">)])</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">try</span><span class="p">:</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="k">await</span> <span class="n">LLM</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="n">chain</span><span class="p">)</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">except</span> <span class="n">AllProvidersFailedError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">err</span> <span class="ow">in</span> <span class="n">exc</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">err</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span></code></pre></div>
-<h2 id="compatibility">Compatibility<a class="headerlink" href="#compatibility" title="Permanent link">&para;</a></h2>
-<p>The classes previously lived in <code>actants.llm.errors</code>. That path still works and
-returns the identical class objects, so existing imports and <code>except</code> clauses are
-unaffected; new code should prefer the top-level import.</p>
-<h2 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h2>
+<h1 id="stategraph">StateGraph<a class="headerlink" href="#stategraph" title="Permanent link">&para;</a></h1>
+<p>Branching and looping workflows over a typed state model. See
+<a href="../../concepts/graph/">StateGraph</a> for the walkthrough.</p>
 
 
 <div class="doc doc-object doc-class">
 
 
 
-<h2 id="actants.errors.ActantsError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ActantsError</span>
+<h2 id="actants.graph.state_graph.StateGraph" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">StateGraph</span>
 
 
-<a href="#actants.errors.ActantsError" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><span title="Exception">Exception</span></code></p>
-
-
-
-        <p>Base class for every error actants raises deliberately.</p>
-<p>Catching this catches exactly the failures actants decided to report — a missing
-API key, an unknown provider, a model that is not pulled — and nothing else.</p>
-
-
-
-
-
-
-
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="actants.errors.ProviderError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ProviderError</span>
-
-
-<a href="#actants.errors.ProviderError" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            ActantsError (actants.errors.ActantsError)" href="#actants.errors.ActantsError">ActantsError</a></code></p>
-
-
-
-        <p>A provider could not be reached or returned an unusable response.</p>
-
-
-
-
-
-
-
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="actants.errors.UnknownProviderError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">UnknownProviderError</span>
-
-
-<a href="#actants.errors.UnknownProviderError" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            ProviderError (actants.errors.ProviderError)" href="#actants.errors.ProviderError">ProviderError</a></code>, <code><span title="ValueError">ValueError</span></code></p>
-
-
-
-        <p>The requested provider name is not one actants knows about.</p>
-
-
-
-
-
-
-
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="actants.errors.ProviderNotInstalledError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ProviderNotInstalledError</span>
-
-
-<a href="#actants.errors.ProviderNotInstalledError" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            ProviderError (actants.errors.ProviderError)" href="#actants.errors.ProviderError">ProviderError</a></code>, <code><span title="ImportError">ImportError</span></code></p>
-
-
-
-        <p>The provider's optional extra is not installed.</p>
-
-
-
-
-
-
-
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="actants.errors.MissingAPIKeyError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">MissingAPIKeyError</span>
-
-
-<a href="#actants.errors.MissingAPIKeyError" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            ProviderError (actants.errors.ProviderError)" href="#actants.errors.ProviderError">ProviderError</a></code>, <code><span title="ValueError">ValueError</span></code></p>
-
-
-
-        <p>The provider needs an API key and none was found.</p>
-
-
-
-
-
-
-
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="actants.errors.ModelNotFoundError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ModelNotFoundError</span>
-
-
-<a href="#actants.errors.ModelNotFoundError" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            ProviderError (actants.errors.ProviderError)" href="#actants.errors.ProviderError">ProviderError</a></code>, <code><span title="ValueError">ValueError</span></code></p>
-
-
-
-        <p>The server is reachable but does not have the requested model.</p>
-
-
-
-
-
-
-
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="actants.errors.ToolCallsNotSupportedError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ToolCallsNotSupportedError</span>
-
-
-<a href="#actants.errors.ToolCallsNotSupportedError" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            ProviderError (actants.errors.ProviderError)" href="#actants.errors.ProviderError">ProviderError</a></code>, <code><span title="TypeError">TypeError</span></code></p>
-
-
-
-        <p>Tools were passed to a provider that declares it cannot call them.</p>
-
-
-
-
-
-
-
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="actants.tools.base.ToolError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ToolError</span>
-
-
-<a href="#actants.tools.base.ToolError" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            ActantsError (actants.errors.ActantsError)" href="#actants.errors.ActantsError">ActantsError</a></code></p>
-
-
-
-        <p>A tool could not be registered, or refused to run.</p>
-
-
-
-
-
-
-
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="actants.policies.fallback.AllProvidersFailedError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">AllProvidersFailedError</span>
-
-
-<a href="#actants.policies.fallback.AllProvidersFailedError" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">AllProvidersFailedError</span><span class="p">(</span><span class="n">errors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="ne">BaseException</span><span class="p">]])</span>
+<a href="#actants.graph.state_graph.StateGraph" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">StateGraph</span><span class="p">(</span><span class="n">state_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">StateT</span><span class="p">])</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            ProviderError (actants.errors.ProviderError)" href="#actants.errors.ProviderError">ProviderError</a></code>, <code><span title="RuntimeError">RuntimeError</span></code></p>
 
 
 
-        <p>Raised when every provider in a FallbackProvider chain fails.</p>
-<p>Carries the per-provider failures in <code>errors</code> so a caller can inspect why each
-link gave up, not just that the chain did.</p>
+        <p>A typed state graph, built node by node and then compiled.</p>
+<p><code>state_type</code> is the pydantic model that flows through the graph; every node and
+router is typed against it. Nothing runs until :meth:<code>compile</code>, which is where the
+structural checks happen — see :meth:<code>compile</code> for exactly what it rejects.</p>
+<p>Example::</p>
+<div class="language-text highlight"><pre><span></span><code>graph = StateGraph(State)
+graph.add_node(&quot;fetch&quot;, fetch)
+graph.add_node(&quot;summarize&quot;, summarize)
+graph.set_entry_point(&quot;fetch&quot;)
+graph.add_edge(&quot;fetch&quot;, &quot;summarize&quot;)
+graph.add_edge(&quot;summarize&quot;, END)
+compiled = graph.compile()
+</code></pre></div>
+<p><code>add_node</code> / <code>add_edge</code> / <code>add_conditional_edges</code> / <code>set_entry_point</code> all
+return <code>self</code>, so the same graph can be written as a chain if you prefer.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.graph.state_graph.StateGraph.add_node" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">add_node</span>
+
+
+<a href="#actants.graph.state_graph.StateGraph.add_node" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_node</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">NodeFn</span><span class="p">[</span><span class="n">StateT</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">StateGraph</span><span class="p">[</span><span class="n">StateT</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Register <code>fn</code> under <code>name</code>.</p>
+<p><code>fn</code> must be an async callable taking the graph's state and returning a partial
+update, a whole state, or None. An :class:<code>~actants.agents.agent.Agent</code> is usable
+here by wrapping it — see :func:<code>~actants.graph.agent_node.agent_node</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.graph.state_graph.StateGraph.set_entry_point" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">set_entry_point</span>
+
+
+<a href="#actants.graph.state_graph.StateGraph.set_entry_point" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">set_entry_point</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateGraph</span><span class="p">[</span><span class="n">StateT</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Choose the node the run starts at.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.graph.state_graph.StateGraph.add_edge" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">add_edge</span>
+
+
+<a href="#actants.graph.state_graph.StateGraph.add_edge" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_edge</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateGraph</span><span class="p">[</span><span class="n">StateT</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Always go from <code>start</code> to <code>end</code> after <code>start</code> completes.</p>
+<p><code>end</code> may be :data:<code>~actants.graph.state.END</code> to finish the run.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.graph.state_graph.StateGraph.add_conditional_edges" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">add_conditional_edges</span>
+
+
+<a href="#actants.graph.state_graph.StateGraph.add_conditional_edges" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_conditional_edges</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">router</span><span class="p">:</span> <span class="n">RouterFn</span><span class="p">[</span><span class="n">StateT</span><span class="p">],</span> <span class="n">mapping</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">StateGraph</span><span class="p">[</span><span class="n">StateT</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Route out of <code>start</code> by what <code>router(state)</code> returns.</p>
+<p><code>router</code> returns a key of <code>mapping</code>; the mapped value is the next node, or
+:data:<code>~actants.graph.state.END</code>. The indirection through <code>mapping</code> is what
+makes the branch inspectable: <code>compile</code> can check every reachable target
+exists, which it could not do if the router returned node names directly.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.graph.state_graph.StateGraph.compile" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">compile</span>
+
+
+<a href="#actants.graph.state_graph.StateGraph.compile" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compile</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">checkpointer</span><span class="p">:</span> <span class="n">Checkpointer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interrupt_before</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompiledGraph</span><span class="p">[</span><span class="n">StateT</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Validate the graph's shape and return a runnable form.</p>
+<p>Rejects, before anything can run:</p>
+<ul>
+<li>no entry point, or an entry point that is not a registered node</li>
+<li>an edge or conditional target naming a node that does not exist</li>
+<li>a node with no outgoing edge (it would silently end the run)</li>
+<li>a node unreachable from the entry point</li>
+<li>an <code>interrupt_before</code> naming a node that does not exist</li>
+</ul>
+<p><code>max_iterations</code> caps how many nodes one run may execute. Graphs loop by
+design, so there is no structural way to tell a slow convergence from an
+infinite one; exceeding the cap raises
+:class:<code>~actants.errors.GraphRecursionError</code> naming the node that was running.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.graph.state_graph.CompiledGraph" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CompiledGraph</span>
+
+
+<a href="#actants.graph.state_graph.CompiledGraph" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">CompiledGraph</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">state_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">StateT</span><span class="p">],</span> <span class="n">nodes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Node</span><span class="p">[</span><span class="n">StateT</span><span class="p">]],</span> <span class="n">entry_point</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">checkpointer</span><span class="p">:</span> <span class="n">Checkpointer</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interrupt_before</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>A validated graph, ready to run. Built by :meth:<code>StateGraph.compile</code>.</p>
+<p>Runs are driven by :meth:<code>invoke</code> (await the final state), :meth:<code>stream</code> (watch
+node-by-node), and :meth:<code>resume</code> (continue a checkpointed run).</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="actants.graph.state_graph.CompiledGraph.nodes" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">nodes</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#actants.graph.state_graph.CompiledGraph.nodes" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">nodes</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The names of every node in this graph. <strong>Read-only.</strong></p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.graph.state_graph.CompiledGraph.invoke" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">invoke</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#actants.graph.state_graph.CompiledGraph.invoke" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">invoke</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphResult</span><span class="p">[</span><span class="n">StateT</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Run the graph from its entry point until END, or until a pause.</p>
+<p>Pass <code>thread_id</code> — with a <code>checkpointer</code> on the compiled graph — to make the
+run durable. State is persisted after every node completes, so :meth:<code>resume</code>
+can continue it without re-running the nodes that already finished. A
+<code>thread_id</code> without a checkpointer is a <code>ValueError</code>; a checkpointer without
+a <code>thread_id</code> persists nothing, so durability stays opt-in per run.</p>
+<p><code>state</code> is deep-copied on the way in, so the object you pass is never written
+through and one seed object can safely start several concurrent runs.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.graph.state_graph.CompiledGraph.stream" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">stream</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#actants.graph.state_graph.CompiledGraph.stream" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GraphEvent</span><span class="p">[</span><span class="n">StateT</span><span class="p">]]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Run the graph, yielding an event as each node starts and finishes.</p>
+<p>Yields, in order:
+  - <code>GraphNodeStarted(node, iteration)</code> — before a node runs
+  - <code>GraphNodeCompleted(node, iteration, state)</code> — after its update merged
+  - <code>GraphInterrupted(node, state)</code> — paused before a guarded node (terminal)
+  - <code>GraphCompleted(state)</code> — reached END (terminal)</p>
+<p>Every run ends in exactly one of the two terminal events.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.graph.state_graph.CompiledGraph.resume" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">resume</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#actants.graph.state_graph.CompiledGraph.resume" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">resume</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">approve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphResult</span><span class="p">[</span><span class="n">StateT</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Continue a checkpointed run from the last node that completed.</p>
+<p><strong>The guarantee.</strong> Every node whose completion was recorded before the crash is
+skipped, never re-run — resume is at-most-once for them. The run picks up at the
+node the checkpoint says was next, with the state exactly as the last completed
+node left it.</p>
+<p><code>approve</code> answers a run paused by <code>interrupt_before</code>: <code>True</code> runs the
+pending node and continues, <code>False</code> skips it and routes onward as though it had
+run without changing the state. Mirrors
+:meth:<code>~actants.agents.agent.Agent.resume</code>.</p>
+<p>Resuming a thread that already completed returns its stored state without
+re-running anything. An unknown <code>thread_id</code> raises
+:class:<code>~actants.errors.UnknownThreadError</code>.</p>
+<p>Two processes resuming the same <code>thread_id</code> concurrently is undefined; actants
+does not lock a thread across processes.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.graph.state_graph.CompiledGraph.resume_stream" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">resume_stream</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#actants.graph.state_graph.CompiledGraph.resume_stream" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">resume_stream</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">approve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GraphEvent</span><span class="p">[</span><span class="n">StateT</span><span class="p">]]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Streaming form of :meth:<code>resume</code>; yields the same events as :meth:<code>stream</code>.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.graph.state_graph.GraphResult" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">GraphResult</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#actants.graph.state_graph.GraphResult" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">GraphResult</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span> <span class="n">interrupted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">pending_node</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">executed</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">())</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>What one <code>invoke()</code> or <code>resume()</code> produced.</p>
+<p>A run that stopped in front of an <code>interrupt_before</code> node sets :attr:<code>interrupted</code>
+and :attr:<code>pending_node</code>, and :attr:<code>state</code> holds the state as it stood <em>before</em> that
+node ran. Deliberately the same shape and vocabulary as
+:class:<code>~actants.agents.agent.AgentResult</code>, so code that handles a paused agent
+handles a paused graph the same way.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="state">State<a class="headerlink" href="#state" title="Permanent link">&para;</a></h2>
+<p><code>END</code> is the terminal sentinel: return it from a router, or name it as a target in a
+conditional mapping, to finish the run. Its type is exported as <code>EndT</code> for signatures
+that mention it.</p>
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="actants.graph.state.Append" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">Append</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#actants.graph.state.Append" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">Append</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">_AppendReducer</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+    </div>
+
+</div><h2 id="events">Events<a class="headerlink" href="#events" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.graph.events.GraphNodeStarted" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">GraphNodeStarted</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#actants.graph.events.GraphNodeStarted" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">GraphNodeStarted</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>A node is about to run. <code>iteration</code> counts nodes executed in this run.</p>
 
 
 
@@ -3207,30 +3626,300 @@ link gave up, not just that the chain did.</p>
 
 
 
-<h2 id="actants.cache.semantic.CacheSchemaMismatch" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CacheSchemaMismatch</span>
+<h2 id="actants.graph.events.GraphNodeCompleted" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">GraphNodeCompleted</span>
 
 
-<a href="#actants.cache.semantic.CacheSchemaMismatch" class="headerlink" title="Permanent link">&para;</a></h2>
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#actants.graph.events.GraphNodeCompleted" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">GraphNodeCompleted</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>A node returned and its update was merged. <code>state</code> is the result of that merge.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.graph.events.GraphInterrupted" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">GraphInterrupted</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#actants.graph.events.GraphInterrupted" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">GraphInterrupted</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>The run paused in front of an <code>interrupt_before</code> node and persisted.</p>
+<p><code>node</code> is the node that has <em>not</em> run. Resume with
+<code>compiled.resume(thread_id, approve=True)</code> to run it, or <code>approve=False</code> to skip
+it and continue past it.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.graph.events.GraphCompleted" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">GraphCompleted</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#actants.graph.events.GraphCompleted" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">GraphCompleted</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>The run reached END. <code>state</code> is the final state (terminal event).</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="agents-as-nodes">Agents as nodes<a class="headerlink" href="#agents-as-nodes" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="actants.graph.agent_node.agent_node" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">agent_node</span>
+
+
+<a href="#actants.graph.agent_node.agent_node" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">agent_node</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="n">Agent</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">StateT</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">StateT</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+        <p>Adapt <code>agent</code> into a node function for a graph over <code>StateT</code>.</p>
+<p>The returned node runs one agent turn per visit and writes the agent's final content
+to the <code>output</code> field.</p>
+<p>The agent's own <code>thread_id</code> is deliberately not wired to the graph's: the graph
+checkpoints the <em>state</em> after the node completes, which is the boundary that matters
+for "this node already ran". Giving the agent its own durable thread as well would
+make a resumed graph replay a half-finished agent turn inside a node the graph has
+already recorded as done. Pass a checkpointed Agent explicitly if you want the inner
+loop durable too, and give it a thread id derived from your own state.</p>
+
+
+    </div>
+
+</div><h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.errors.GraphError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">GraphError</span>
+
+
+<a href="#actants.errors.GraphError" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            ActantsError (actants.errors.ActantsError)" href="#actants.errors.ActantsError">ActantsError</a></code>, <code><span title="RuntimeError">RuntimeError</span></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            ActantsError (actants.errors.ActantsError)" href="../errors/#actants.errors.ActantsError">ActantsError</a></code></p>
 
 
 
-        <p>Raised when an on-disk cache was written by an incompatible schema version.</p>
-<p>Only raised when the cache was constructed with <code>on_schema_mismatch="error"</code>; the
-default is to discard the stale file and start empty.</p>
-
-
+        <p>A :class:<code>~actants.graph.state_graph.StateGraph</code> could not be built or run.</p>
 
 
 
 
 
 
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.errors.GraphValidationError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">GraphValidationError</span>
+
+
+<a href="#actants.errors.GraphValidationError" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            GraphError (actants.errors.GraphError)" href="#actants.errors.GraphError">GraphError</a></code>, <code><span title="ValueError">ValueError</span></code></p>
+
+
+
+        <p>A graph's shape is wrong, caught by <code>compile()</code> before anything runs.</p>
+<p>Every check this reports — an undefined edge target, an unreachable node, a missing
+entry point — is a structural mistake that would otherwise surface as a confusing
+failure halfway through a run, after side effects had already happened.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.errors.GraphRecursionError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">GraphRecursionError</span>
+
+
+<a href="#actants.errors.GraphRecursionError" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">GraphRecursionError</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            GraphError (actants.errors.GraphError)" href="#actants.errors.GraphError">GraphError</a></code>, <code><span title="RuntimeError">RuntimeError</span></code></p>
+
+
+
+        <p>A graph ran <code>max_iterations</code> nodes without reaching END.</p>
+<p>Graphs loop by design, so actants cannot tell a slow convergence from a stuck one;
+the cap is the backstop. The message names the node the run was executing when the
+budget ran out, which is nearly always the one whose router never returns END.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
 
     </div>
 
@@ -3272,7 +3961,7 @@ default is to discard the stale file and start empty.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../tools/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Tools">
+          <a href="../durability/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Durability">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3282,20 +3971,20 @@ default is to discard the stale file and start empty.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Tools
+                Durability
               </div>
             </div>
           </a>
         
         
           
-          <a href="../embeddings/" class="md-footer__link md-footer__link--next" aria-label="Next: Embeddings">
+          <a href="../llm/" class="md-footer__link md-footer__link--next" aria-label="Next: LLM">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Embeddings
+                LLM
               </div>
             </div>
             <div class="md-footer__button md-icon">

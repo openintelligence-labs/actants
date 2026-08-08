@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://actants.openintelligence-labs.org/api/llm/">
       
       
-        <link rel="prev" href="../agent/">
+        <link rel="prev" href="../graph/">
       
       
         <link rel="next" href="../tools/">
@@ -673,6 +673,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -845,6 +851,90 @@
     
   
     ReAct loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/durability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Durability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StateGraph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing agents
   
 
     
@@ -1596,6 +1686,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1668,6 +1762,62 @@
     
   
     Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../durability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Durability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StateGraph
   
 
     
@@ -1786,6 +1936,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;extract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.llm.client.LLM.last_schema_plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;last_schema_plan
       
     </span>
   </a>
@@ -2719,6 +2880,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#actants.llm.client.LLM.last_schema_plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;last_schema_plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#actants.llm.client.LLM.extract_stream" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3202,9 +3374,13 @@ Raises RuntimeError if the loop exceeds <code>max_steps</code> without a final a
     <div class="doc doc-contents ">
 
         <p>Prompt the model and parse the response into the given pydantic model.</p>
-<p>If the first response doesn't parse, retries once with the parser error appended
-to the conversation so the model can self-correct. Works across all providers
-since it asks for JSON via prompt rather than provider-specific JSON modes.</p>
+<p>Where the provider supports provider-native constrained decoding — OpenAI's
+<code>response_format</code>, a forced tool call on Anthropic, <code>responseSchema</code> on
+Gemini, <code>format</code> on Ollama — the schema is sent on the wire and invalid output
+is impossible rather than merely unlikely. Everywhere else, and for any schema
+the provider's dialect cannot express, the schema is described in a system
+prompt and a failed parse is repaired. Both paths return the same validated
+instance; :meth:<code>last_schema_plan</code> reports which one ran.</p>
 <p><code>tag</code> is recorded on the CostTracker as in :meth:<code>complete</code>. Every attempt is
 recorded under the same tag, including repairs that failed to parse — a repair
 costs real tokens, so hiding it would understate what the extraction spent.</p>
@@ -3212,7 +3388,40 @@ costs real tokens, so hiding it would understate what the extraction spent.</p>
 completion always happens, and <code>max_repairs=1</code> (the default) allows one
 self-correction after it, for at most two requests. <code>max_repairs=0</code> disables
 repair entirely. This differs deliberately from <code>RetryPolicy.max_attempts</code> and
-<code>max_steps</code>, which bound the total; see the note in the class docstring.</p>
+<code>max_steps</code>, which bound the total; see the note in the class docstring.
+Its meaning is unchanged on the native path — the repair loop is simply never
+entered, because a schema-valid response cannot fail to parse.</p>
+<p>Strict mode has no way to say "this field may be absent", only "it may be null",
+so a field with a non-null default is sent as nullable-and-required. A <code>null</code>
+for one of those is read back as the absence it was standing in for, and the
+field's default applies — otherwise a provider obeying the schema exactly would
+produce a response pydantic rejects, and no amount of repair could fix it.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.llm.client.LLM.last_schema_plan" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">last_schema_plan</span>
+
+
+<a href="#actants.llm.client.LLM.last_schema_plan" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">last_schema_plan</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">SchemaPlan</span> <span class="o">|</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>How the most recent :meth:<code>extract</code> / :meth:<code>extract_stream</code> call was sent.</p>
+<p><code>None</code> before the first call. This is the supported way to tell the native
+path from the prompt path — the alternative would be a log line on every
+extraction, which is noise in the overwhelming case where the answer never
+changes for a given provider and schema.</p>
+<p>Reflects one client's last call, so read it from the same task that made the
+call: two concurrent extractions on one <code>LLM</code> overwrite each other's plan.</p>
 
 
     </div>
@@ -3240,6 +3449,11 @@ repair entirely. This differs deliberately from <code>RetryPolicy.max_attempts</
 <p>Each yielded instance represents the best parse of the bytes seen so far.
 Emits a new instance only when the parsed output has changed. The final
 yield is the fully-parsed and validated <code>schema</code> instance.</p>
+<p>Uses provider-native constrained decoding where the provider has a mode that
+streams as <em>text</em> — every partial parse then comes off a stream that cannot go
+schema-invalid. Anthropic's forced tool call is excluded: its JSON arrives as
+tool-call input rather than text deltas, so that provider streams via the prompt
+path. :meth:<code>last_schema_plan</code> reports which ran.</p>
 <p><code>tag</code> is recorded on the CostTracker as in :meth:<code>stream_events</code>.</p>
 
 
@@ -4142,7 +4356,7 @@ one place per provider and the raw value is never dropped on the way.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../agent/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Agent">
+          <a href="../graph/" class="md-footer__link md-footer__link--prev" aria-label="Previous: StateGraph">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -4152,7 +4366,7 @@ one place per provider and the raw value is never dropped on the way.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Agent
+                StateGraph
               </div>
             </div>
           </a>

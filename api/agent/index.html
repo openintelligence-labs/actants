@@ -16,7 +16,7 @@
         <link rel="prev" href="../">
       
       
-        <link rel="next" href="../llm/">
+        <link rel="next" href="../durability/">
       
       
         
@@ -673,6 +673,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -845,6 +851,90 @@
     
   
     ReAct loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/durability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Durability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StateGraph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing agents
   
 
     
@@ -1596,6 +1686,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1743,6 +1837,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#actants.agents.agent.Agent.resume" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;resume
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#actants.agents.agent.Agent.stream" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1872,6 +1977,62 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../durability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Durability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StateGraph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2509,6 +2670,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#actants.agents.agent.Agent.resume" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;resume
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#actants.agents.agent.Agent.stream" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2672,7 +2844,7 @@
 
 
 <a href="#actants.agents.agent.Agent" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">Agent</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">llm</span><span class="p">:</span> <span class="n">LLM</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="n">ToolRegistry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">memory</span><span class="p">:</span> <span class="n">ConversationMemory</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hooks</span><span class="p">:</span> <span class="n">AgentHooks</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">concurrency</span><span class="p">:</span> <span class="n">ConcurrencyMode</span> <span class="o">=</span> <span class="s1">&#39;isolated&#39;</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">Agent</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">llm</span><span class="p">:</span> <span class="n">LLM</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="n">ToolRegistry</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">memory</span><span class="p">:</span> <span class="n">ConversationMemory</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hooks</span><span class="p">:</span> <span class="n">AgentHooks</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">concurrency</span><span class="p">:</span> <span class="n">ConcurrencyMode</span> <span class="o">=</span> <span class="s1">&#39;isolated&#39;</span><span class="p">,</span> <span class="n">checkpointer</span><span class="p">:</span> <span class="n">Checkpointer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interrupt_before</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2711,6 +2883,17 @@ is an <code>asyncio</code> lock and the memory is a plain list. One Agent per ev
 <div class="language-text highlight"><pre><span></span><code>result = await agent.run(&quot;first&quot;)
 result2 = await agent.run(&quot;second&quot;)   # sees &quot;first&quot; either way
 </code></pre></div>
+<h4 id="actants.agents.agent.Agent--durability">Durability<a class="headerlink" href="#actants.agents.agent.Agent--durability" title="Permanent link">&para;</a></h4>
+<p>Pass a <code>checkpointer</code> and a <code>thread_id</code> to make a run resumable::</p>
+<div class="language-text highlight"><pre><span></span><code>agent = Agent(llm=LLM(), tools=tools, checkpointer=SqliteCheckpointer(&quot;runs.db&quot;))
+result = await agent.run(&quot;book the flight&quot;, thread_id=&quot;job-42&quot;)
+# ...process dies...
+result = await agent.resume(&quot;job-42&quot;)   # picks up where it left off
+</code></pre></div>
+<p><code>interrupt_before=["send_email"]</code> pauses the run in front of those tools instead of
+dispatching them; :meth:<code>resume</code> with <code>approve=True</code> or <code>approve=False</code> decides.</p>
+<p>Both default to None, and a run without a <code>thread_id</code> never touches the
+checkpointer — durability is opt-in per run, not a mode the agent is in.</p>
 
 
 
@@ -2745,7 +2928,7 @@ result2 = await agent.run(&quot;second&quot;)   # sees &quot;first&quot; either 
   </span>
 
 <a href="#actants.agents.agent.Agent.run" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">run</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentResult</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">run</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentResult</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2753,6 +2936,65 @@ result2 = await agent.run(&quot;second&quot;)   # sees &quot;first&quot; either 
         <p>Run one user turn; may dispatch tools across multiple LLM steps.</p>
 <p>Concurrency-safe: see the :class:<code>Agent</code> docstring for exactly what concurrent
 runs on one Agent are guaranteed to see.</p>
+<p>Pass <code>thread_id</code> — with a <code>checkpointer</code> on the agent — to make the run
+durable. Its state is persisted after every LLM completion and after <em>each</em>
+individual tool result, so :meth:<code>resume</code> can continue it after a crash without
+re-running the tools that already finished. <code>thread_id</code> without a checkpointer
+is a <code>ValueError</code>; a checkpointer without a <code>thread_id</code> simply persists
+nothing, which is what keeps un-threaded runs exactly as they were.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.agents.agent.Agent.resume" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">resume</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#actants.agents.agent.Agent.resume" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">resume</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">approve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">resolve</span><span class="p">:</span> <span class="n">ResumeResolution</span> <span class="o">=</span> <span class="s1">&#39;abort&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentResult</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Continue a checkpointed run from where it stopped.</p>
+<p><strong>The guarantee.</strong> Every tool call whose result was recorded before the crash is
+replayed from the checkpoint and never dispatched again — resume is at-most-once
+for those. The one call that was <em>in flight</em> when the process died is the
+irreducible ambiguity: actants cannot know whether its side effect landed,
+because the process died before it could say so. For a tool declared
+<code>idempotent=True</code> (the default) that call is re-dispatched, making resume
+at-least-once for it; for <code>idempotent=False</code> it is surfaced as
+:class:<code>~actants.errors.UnresolvedToolCallError</code> instead of being guessed at. A
+tool this Agent's registry no longer has — renamed or removed since the run
+started — counts as non-idempotent, because an unknown tool is precisely the case
+where actants cannot establish that repeating it is safe.</p>
+<p><code>approve</code> answers a run paused by <code>interrupt_before</code>: <code>True</code> dispatches the
+pending call and continues, <code>False</code> appends a tool result saying the call was
+rejected, so the model gets to react to the refusal rather than the run dying.</p>
+<p><code>resolve</code> decides what to do with an in-flight non-idempotent call, and is
+ignored otherwise: <code>"abort"</code> (the default) raises; <code>"retry"</code> dispatches it
+anyway, for when the caller has established it did not run; <code>"skip"</code> records
+that it was not run and lets the model continue without it.</p>
+<p>Resuming a thread that already completed returns its stored result without
+re-running anything. Resuming one that failed re-raises a description of the
+original failure. An unknown <code>thread_id</code> raises
+:class:<code>~actants.errors.UnknownThreadError</code>.</p>
+<p>Concurrent resumes of one <code>thread_id</code> <strong>within this process</strong> are serialized on
+a per-thread lock, so the read-decide-dispatch sequence cannot interleave and the
+at-most-once guarantee above holds for them: the second resume runs after the
+first has committed, sees a completed thread, and returns its stored result
+without dispatching anything. Two <em>processes</em> resuming the same <code>thread_id</code>
+concurrently remains undefined — actants does not lock a thread across processes,
+and no in-process lock can.</p>
 
 
     </div>
@@ -2814,12 +3056,18 @@ nothing in the default <code>isolated</code> mode.</p>
   </span>
 
 <a href="#actants.agents.agent.AgentResult" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">AgentResult</span><span class="p">(</span><span class="n">final</span><span class="p">:</span> <span class="n">CompletionResult</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AgentStep</span><span class="p">],</span> <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">])</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">AgentResult</span><span class="p">(</span><span class="n">final</span><span class="p">:</span> <span class="n">CompletionResult</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AgentStep</span><span class="p">],</span> <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">],</span> <span class="n">interrupted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">pending_call</span><span class="p">:</span> <span class="n">ToolCall</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
 
 
+
+        <p>What one <code>run()</code> or <code>resume()</code> produced.</p>
+<p>A run that stopped at an <code>interrupt_before</code> tool sets :attr:<code>interrupted</code> and
+:attr:<code>pending_call</code> and leaves :attr:<code>final</code> holding the completion that <em>asked</em> for
+that call — the model's last word before it was paused. Call
+:meth:<code>Agent.resume</code> with the thread id to continue.</p>
 
 
 
@@ -3313,13 +3561,13 @@ exception inside a step or tool call.</p>
         
         
           
-          <a href="../llm/" class="md-footer__link md-footer__link--next" aria-label="Next: LLM">
+          <a href="../durability/" class="md-footer__link md-footer__link--next" aria-label="Next: Durability">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                LLM
+                Durability
               </div>
             </div>
             <div class="md-footer__button md-icon">

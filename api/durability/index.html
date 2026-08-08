@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://actants.openintelligence-labs.org/api/config/">
+        <link rel="canonical" href="https://actants.openintelligence-labs.org/api/durability/">
       
       
-        <link rel="prev" href="../cli/">
+        <link rel="prev" href="../agent/">
       
       
-        <link rel="next" href="../testing/">
+        <link rel="next" href="../graph/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Config - actants</title>
+        <title>Durability - actants</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#config" class="md-skip">
+        <a href="#durability" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Config
+              Durability
             
           </span>
         </div>
@@ -1779,10 +1779,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../durability/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Durability
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1798,6 +1825,214 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.Checkpointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Checkpointer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" Checkpointer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.Checkpointer.put" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;put
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.Checkpointer.get" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.Checkpointer.list_threads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;list_threads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.Checkpointer.delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.Checkpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Checkpoint
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.StepRecord" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;StepRecord
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.InMemoryCheckpointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;InMemoryCheckpointer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.SqliteCheckpointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SqliteCheckpointer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" SqliteCheckpointer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.SqliteCheckpointer.path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.CheckpointError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CheckpointError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.UnknownThreadError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;UnknownThreadError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.UnresolvedToolCallError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;UnresolvedToolCallError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.CheckpointSchemaMismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CheckpointSchemaMismatch
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2143,37 +2378,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Config
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
         
   
   
@@ -2189,98 +2397,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AppSettings
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" AppSettings">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings.config_for" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;config_for
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings.load" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;load
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.config.paths.app_config_dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_config_dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.config.paths.app_data_dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_data_dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.config.paths.app_cache_dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_cache_dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2559,22 +2675,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings" class="md-nav__link">
+  <a href="#actants.agents.checkpoint.Checkpointer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AppSettings
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Checkpointer
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" AppSettings">
+    <nav class="md-nav" aria-label=" Checkpointer">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings.config_for" class="md-nav__link">
+  <a href="#actants.agents.checkpoint.Checkpointer.put" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;config_for
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;put
       
     </span>
   </a>
@@ -2582,10 +2698,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings.load" class="md-nav__link">
+  <a href="#actants.agents.checkpoint.Checkpointer.get" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;load
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.Checkpointer.list_threads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;list_threads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.Checkpointer.delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;delete
       
     </span>
   </a>
@@ -2598,10 +2736,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.config.paths.app_config_dir" class="md-nav__link">
+  <a href="#actants.agents.checkpoint.Checkpoint" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_config_dir
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Checkpoint
       
     </span>
   </a>
@@ -2609,10 +2747,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.config.paths.app_data_dir" class="md-nav__link">
+  <a href="#actants.agents.checkpoint.StepRecord" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_data_dir
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;StepRecord
       
     </span>
   </a>
@@ -2620,10 +2758,104 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.config.paths.app_cache_dir" class="md-nav__link">
+  <a href="#implementations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_cache_dir
+        Implementations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.InMemoryCheckpointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;InMemoryCheckpointer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.SqliteCheckpointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SqliteCheckpointer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" SqliteCheckpointer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actants.agents.checkpoint.SqliteCheckpointer.path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.CheckpointError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CheckpointError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.UnknownThreadError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;UnknownThreadError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.UnresolvedToolCallError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;UnresolvedToolCallError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actants.errors.CheckpointSchemaMismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CheckpointSchemaMismatch
       
     </span>
   </a>
@@ -2647,7 +2879,7 @@
 
 
   
-    <a href="https://github.com/openintelligence-labs/actants/edit/main/docs_site/api/config.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/openintelligence-labs/actants/edit/main/docs_site/api/durability.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2655,38 +2887,38 @@
   
 
 
-<h1 id="config">Config<a class="headerlink" href="#config" title="Permanent link">&para;</a></h1>
+<h1 id="durability">Durability<a class="headerlink" href="#durability" title="Permanent link">&para;</a></h1>
+<p>Checkpoint storage for agent runs that must survive the process that started them.
+See <a href="../../concepts/durability/">Durability</a> for the replay guarantee and when it
+applies.</p>
 
 
 <div class="doc doc-object doc-class">
 
 
 
-<h2 id="actants.config.settings.AppSettings" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">AppSettings</span>
+<h2 id="actants.agents.checkpoint.Checkpointer" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Checkpointer</span>
 
 
-<a href="#actants.config.settings.AppSettings" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#actants.agents.checkpoint.Checkpointer" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="pydantic_settings.BaseSettings">BaseSettings</span></code></p>
+              Bases: <code><span title="typing.Protocol">Protocol</span></code></p>
 
 
 
-        <p>Base class for app-level settings.</p>
-<p>Subclass and add your fields. Reads from environment variables, <code>.env</code> in CWD,
-and (optionally) <code>settings.toml</code> in the app config dir. Subclasses should set
-<code>app_name</code> and use it to derive paths.</p>
-<p>Example::</p>
-<div class="language-text highlight"><pre><span></span><code>class MySettings(AppSettings):
-    model_config = AppSettings.config_for(&quot;deepdive&quot;)
-    search_provider: str = &quot;ddg&quot;
-    max_results: int = 10
-
-s = MySettings()  # loads from env + .env
-</code></pre></div>
+        <p>Where :class:<code>~actants.agents.agent.Agent</code> persists and reads run state.</p>
+<p>Four async methods, keyed by <code>thread_id</code>. Implement this against any store —
+Redis, Postgres, an object store — and pass it as <code>Agent(checkpointer=...)</code>.</p>
+<p><code>put</code> must be a full overwrite of the thread's state, not an append: the agent
+always hands over the complete :class:<code>Checkpoint</code>, and resume only ever reads the
+latest one.</p>
+<p>Concurrent access to <em>different</em> thread_ids must be safe. Two writers on the <em>same</em>
+thread_id is undefined — see the note on
+:meth:<code>~actants.agents.agent.Agent.resume</code>.</p>
 
 
 
@@ -2712,21 +2944,21 @@ s = MySettings()  # loads from env + .env
 <div class="doc doc-object doc-function">
 
 
-<h3 id="actants.config.settings.AppSettings.config_for" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">config_for</span>
+<h3 id="actants.agents.checkpoint.Checkpointer.put" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">put</span>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
-<a href="#actants.config.settings.AppSettings.config_for" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">config_for</span><span class="p">(</span><span class="n">app_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">env_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SettingsConfigDict</span>
+<a href="#actants.agents.checkpoint.Checkpointer.put" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">put</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">:</span> <span class="n">Checkpoint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Build a SettingsConfigDict scoped to a named app.</p>
+        <p>Store <code>checkpoint</code>, replacing any earlier state for its <code>thread_id</code>.</p>
 
 
     </div>
@@ -2736,21 +2968,69 @@ s = MySettings()  # loads from env + .env
 <div class="doc doc-object doc-function">
 
 
-<h3 id="actants.config.settings.AppSettings.load" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">load</span>
+<h3 id="actants.agents.checkpoint.Checkpointer.get" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">get</span>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
-<a href="#actants.config.settings.AppSettings.load" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">load</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">env_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">overrides</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span>
+<a href="#actants.agents.checkpoint.Checkpointer.get" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Checkpoint</span> <span class="o">|</span> <span class="kc">None</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Load settings, optionally from a specific env file. Overrides win.</p>
+        <p>Return the stored checkpoint for <code>thread_id</code>, or None if there is none.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.agents.checkpoint.Checkpointer.list_threads" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">list_threads</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#actants.agents.checkpoint.Checkpointer.list_threads" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">list_threads</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return every <code>thread_id</code> this store holds.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="actants.agents.checkpoint.Checkpointer.delete" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">delete</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#actants.agents.checkpoint.Checkpointer.delete" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">delete</span><span class="p">(</span><span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Drop <code>thread_id</code>'s state; return whether anything was there to drop.</p>
 
 
     </div>
@@ -2765,63 +3045,403 @@ s = MySettings()  # loads from env + .env
 
 </div>
 
-<div class="doc doc-object doc-function">
+<div class="doc doc-object doc-class">
 
 
-<h2 id="actants.config.paths.app_config_dir" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">app_config_dir</span>
+
+<h2 id="actants.agents.checkpoint.Checkpoint" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Checkpoint</span>
 
 
-<a href="#actants.config.paths.app_config_dir" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">app_config_dir</span><span class="p">(</span><span class="n">app_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span>
+<a href="#actants.agents.checkpoint.Checkpoint" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>The durable state of one agent run.</p>
+<p><code>messages</code> is the full working history — everything the resumed run needs to
+reconstruct its turn, including the tool results that already landed. <code>pending_call</code>
+is set only for <code>status="interrupted"</code>: it is the call the agent stopped in front of
+and has <em>not</em> dispatched.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.agents.checkpoint.StepRecord" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">StepRecord</span>
+
+
+<a href="#actants.agents.checkpoint.StepRecord" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>One :class:<code>~actants.agents.agent.AgentStep</code>, in a form that survives a round-trip.</p>
+<p><code>AgentStep</code> is a dataclass holding pydantic models; this is the pydantic mirror of
+it, so the whole checkpoint serializes with a single <code>model_dump_json</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="implementations">Implementations<a class="headerlink" href="#implementations" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.agents.checkpoint.InMemoryCheckpointer" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">InMemoryCheckpointer</span>
+
+
+<a href="#actants.agents.checkpoint.InMemoryCheckpointer" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">InMemoryCheckpointer</span><span class="p">()</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
 
-        <p>Per-user config directory for <code>app_name</code>.</p>
-<p>macOS: <code>~/Library/Application Support/&lt;app&gt;</code>
-Linux: <code>$XDG_CONFIG_HOME/&lt;app&gt;</code> or <code>~/.config/&lt;app&gt;</code>
-Windows: <code>%APPDATA%/&lt;app&gt;</code></p>
+
+
+        <p>Process-local checkpointer: durable across a crash of the <em>run</em>, not the process.</p>
+<p>Useful for tests and for interrupt/approve flows inside one process. Use
+:class:<code>SqliteCheckpointer</code> for anything that must survive the interpreter exiting.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.agents.checkpoint.SqliteCheckpointer" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">SqliteCheckpointer</span>
+
+
+<a href="#actants.agents.checkpoint.SqliteCheckpointer" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">SqliteCheckpointer</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Checkpointer backed by a SQLite file, safe to open from several processes.</p>
+<p>Each call opens its own connection through
+:func:<code>~actants.storage.sqlite.open_sqlite</code>, so a checkpointer instance carries no
+connection state and separate processes writing <em>different</em> thread_ids coexist on
+WAL. Nothing is cached in memory, which is the point: a resume in a fresh process
+reads exactly what the crashed one committed.</p>
+<p>The file records its schema version in <code>PRAGMA user_version</code>; opening one written
+by an incompatible actants raises :class:<code>~actants.errors.CheckpointSchemaMismatch</code>
+rather than resetting, because these rows are the only record of which side effects
+already ran.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="actants.agents.checkpoint.SqliteCheckpointer.path" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">path</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#actants.agents.checkpoint.SqliteCheckpointer.path" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">path</span><span class="p">:</span> <span class="n">Path</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The database file this checkpointer is bound to. <strong>Read-only.</strong></p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.errors.CheckpointError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CheckpointError</span>
+
+
+<a href="#actants.errors.CheckpointError" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            ActantsError (actants.errors.ActantsError)" href="../errors/#actants.errors.ActantsError">ActantsError</a></code></p>
+
+
+
+        <p>A durable agent run could not be persisted, found, or resumed.</p>
+
+
+
+
+
+
+
 
 
     </div>
 
 </div>
 
-<div class="doc doc-object doc-function">
+<div class="doc doc-object doc-class">
 
 
-<h2 id="actants.config.paths.app_data_dir" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">app_data_dir</span>
+
+<h2 id="actants.errors.UnknownThreadError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">UnknownThreadError</span>
 
 
-<a href="#actants.config.paths.app_data_dir" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">app_data_dir</span><span class="p">(</span><span class="n">app_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span>
-</span></code></pre></div>
+<a href="#actants.errors.UnknownThreadError" class="headerlink" title="Permanent link">&para;</a></h2>
+
 
     <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            CheckpointError (actants.errors.CheckpointError)" href="#actants.errors.CheckpointError">CheckpointError</a></code>, <code><span title="KeyError">KeyError</span></code></p>
 
-        <p>Per-user data directory (databases, models, large state).</p>
 
+
+        <p>No checkpoint exists for the requested <code>thread_id</code>.</p>
+<p>Either the thread never ran under a checkpointer, or its state was deleted. Also a
+<code>KeyError</code>, since the checkpointer is a keyed store.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
 
     </div>
 
 </div>
 
-<div class="doc doc-object doc-function">
+<div class="doc doc-object doc-class">
 
 
-<h2 id="actants.config.paths.app_cache_dir" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">app_cache_dir</span>
+
+<h2 id="actants.errors.UnresolvedToolCallError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">UnresolvedToolCallError</span>
 
 
-<a href="#actants.config.paths.app_cache_dir" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">app_cache_dir</span><span class="p">(</span><span class="n">app_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span>
+<a href="#actants.errors.UnresolvedToolCallError" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">UnresolvedToolCallError</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">call</span><span class="p">:</span> <span class="n">ToolCall</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            CheckpointError (actants.errors.CheckpointError)" href="#actants.errors.CheckpointError">CheckpointError</a></code>, <code><span title="RuntimeError">RuntimeError</span></code></p>
 
-        <p>Per-user cache directory (regenerable artifacts).</p>
+
+
+        <p>Resume hit an in-flight call to a tool that declared <code>idempotent=False</code>.</p>
+<p>The process died while this call was executing, so actants cannot know whether the
+side effect happened. Re-dispatching could duplicate it; skipping could drop it.
+Rather than guess, resume raises this and hands the decision back — see
+:meth:<code>~actants.agents.agent.Agent.resume</code> for the <code>resolve=</code> options.</p>
+<p>The unresolved call is on :attr:<code>call</code>, and the thread it belongs to on
+:attr:<code>thread_id</code>, so a handler can present it to a human or look it up in a
+vendor's API by :attr:<code>ToolCall.id &lt;actants.llm.base.ToolCall.id&gt;</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="actants.errors.CheckpointSchemaMismatch" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CheckpointSchemaMismatch</span>
+
+
+<a href="#actants.errors.CheckpointSchemaMismatch" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            CheckpointError (actants.errors.CheckpointError)" href="#actants.errors.CheckpointError">CheckpointError</a></code>, <code><span title="RuntimeError">RuntimeError</span></code></p>
+
+
+
+        <p>An on-disk checkpoint store was written by an incompatible schema version.</p>
+<p>Unlike a cache, this is never discarded automatically: the rows are the only record
+of which tool side effects already ran.</p>
+
+
+
+
+
+
+
 
 
     </div>
@@ -2864,7 +3484,7 @@ Windows: <code>%APPDATA%/&lt;app&gt;</code></p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../cli/" class="md-footer__link md-footer__link--prev" aria-label="Previous: CLI helpers">
+          <a href="../agent/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Agent">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2874,20 +3494,20 @@ Windows: <code>%APPDATA%/&lt;app&gt;</code></p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                CLI helpers
+                Agent
               </div>
             </div>
           </a>
         
         
           
-          <a href="../testing/" class="md-footer__link md-footer__link--next" aria-label="Next: Testing">
+          <a href="../graph/" class="md-footer__link md-footer__link--next" aria-label="Next: StateGraph">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Testing
+                StateGraph
               </div>
             </div>
             <div class="md-footer__button md-icon">

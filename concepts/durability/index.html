@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://actants.openintelligence-labs.org/api/config/">
+        <link rel="canonical" href="https://actants.openintelligence-labs.org/concepts/durability/">
       
       
-        <link rel="prev" href="../cli/">
+        <link rel="prev" href="../react/">
       
       
-        <link rel="next" href="../testing/">
+        <link rel="next" href="../graph/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Config - actants</title>
+        <title>Durability - actants</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#config" class="md-skip">
+        <a href="#durability" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Config
+              Durability
             
           </span>
         </div>
@@ -267,11 +267,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../concepts/agent/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../agent/" class="md-tabs__link">
           
   
   
@@ -377,13 +379,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
           
   
   
@@ -652,8 +652,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -683,19 +685,22 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -713,7 +718,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -731,7 +736,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/agent/" class="md-nav__link">
+      <a href="../agent/" class="md-nav__link">
         
   
   
@@ -759,7 +764,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/llm/" class="md-nav__link">
+      <a href="../llm/" class="md-nav__link">
         
   
   
@@ -787,7 +792,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/tools/" class="md-nav__link">
+      <a href="../tools/" class="md-nav__link">
         
   
   
@@ -815,7 +820,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/streaming/" class="md-nav__link">
+      <a href="../streaming/" class="md-nav__link">
         
   
   
@@ -843,7 +848,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/react/" class="md-nav__link">
+      <a href="../react/" class="md-nav__link">
         
   
   
@@ -868,10 +873,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../concepts/durability/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Durability
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -887,6 +919,136 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#making-a-run-resumable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making a run resumable
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-guarantee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The guarantee
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#declaring-what-is-unsafe-to-repeat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Declaring what is unsafe to repeat
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resolving-an-unresolved-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resolving an unresolved call
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrupts-human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interrupts (human in the loop)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thread-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread states
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checkpointer-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checkpointer implementations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema versions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -899,7 +1061,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/graph/" class="md-nav__link">
+      <a href="../graph/" class="md-nav__link">
         
   
   
@@ -927,7 +1089,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/testing/" class="md-nav__link">
+      <a href="../testing/" class="md-nav__link">
         
   
   
@@ -955,7 +1117,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/embeddings/" class="md-nav__link">
+      <a href="../embeddings/" class="md-nav__link">
         
   
   
@@ -983,7 +1145,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/storage/" class="md-nav__link">
+      <a href="../storage/" class="md-nav__link">
         
   
   
@@ -1011,7 +1173,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/observability/" class="md-nav__link">
+      <a href="../observability/" class="md-nav__link">
         
   
   
@@ -1647,8 +1809,6 @@
       
   
   
-    
-  
   
   
     
@@ -1694,23 +1854,20 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../api/" class="md-nav__link ">
               
   
   
@@ -1728,13 +1885,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1754,7 +1911,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../agent/" class="md-nav__link">
+      <a href="../../api/agent/" class="md-nav__link">
         
   
   
@@ -1782,7 +1939,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../durability/" class="md-nav__link">
+      <a href="../../api/durability/" class="md-nav__link">
         
   
   
@@ -1810,7 +1967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../graph/" class="md-nav__link">
+      <a href="../../api/graph/" class="md-nav__link">
         
   
   
@@ -1838,7 +1995,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../llm/" class="md-nav__link">
+      <a href="../../api/llm/" class="md-nav__link">
         
   
   
@@ -1866,7 +2023,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tools/" class="md-nav__link">
+      <a href="../../api/tools/" class="md-nav__link">
         
   
   
@@ -1894,7 +2051,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../errors/" class="md-nav__link">
+      <a href="../../api/errors/" class="md-nav__link">
         
   
   
@@ -1922,7 +2079,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../embeddings/" class="md-nav__link">
+      <a href="../../api/embeddings/" class="md-nav__link">
         
   
   
@@ -1950,7 +2107,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../storage/" class="md-nav__link">
+      <a href="../../api/storage/" class="md-nav__link">
         
   
   
@@ -1978,7 +2135,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache/" class="md-nav__link">
+      <a href="../../api/cache/" class="md-nav__link">
         
   
   
@@ -2006,7 +2163,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cost-policies/" class="md-nav__link">
+      <a href="../../api/cost-policies/" class="md-nav__link">
         
   
   
@@ -2034,7 +2191,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tracing/" class="md-nav__link">
+      <a href="../../api/tracing/" class="md-nav__link">
         
   
   
@@ -2062,7 +2219,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp/" class="md-nav__link">
+      <a href="../../api/mcp/" class="md-nav__link">
         
   
   
@@ -2090,7 +2247,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../a2a/" class="md-nav__link">
+      <a href="../../api/a2a/" class="md-nav__link">
         
   
   
@@ -2118,7 +2275,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/" class="md-nav__link">
+      <a href="../../api/cli/" class="md-nav__link">
         
   
   
@@ -2143,37 +2300,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Config
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../api/config/" class="md-nav__link">
         
   
   
@@ -2189,98 +2319,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AppSettings
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" AppSettings">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings.config_for" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;config_for
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings.load" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;load
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.config.paths.app_config_dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_config_dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.config.paths.app_data_dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_data_dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.config.paths.app_cache_dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_cache_dir
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2293,7 +2331,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../testing/" class="md-nav__link">
+      <a href="../../api/testing/" class="md-nav__link">
         
   
   
@@ -2559,49 +2597,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings" class="md-nav__link">
+  <a href="#making-a-run-resumable" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AppSettings
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" AppSettings">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings.config_for" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;config_for
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#actants.config.settings.AppSettings.load" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;load
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#actants.config.paths.app_config_dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_config_dir
+        Making a run resumable
       
     </span>
   </a>
@@ -2609,10 +2608,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.config.paths.app_data_dir" class="md-nav__link">
+  <a href="#the-guarantee" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_data_dir
+        The guarantee
       
     </span>
   </a>
@@ -2620,10 +2619,87 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actants.config.paths.app_cache_dir" class="md-nav__link">
+  <a href="#declaring-what-is-unsafe-to-repeat" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;app_cache_dir
+        Declaring what is unsafe to repeat
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resolving-an-unresolved-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resolving an unresolved call
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrupts-human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interrupts (human in the loop)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thread-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread states
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checkpointer-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checkpointer implementations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema versions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
       
     </span>
   </a>
@@ -2647,7 +2723,7 @@
 
 
   
-    <a href="https://github.com/openintelligence-labs/actants/edit/main/docs_site/api/config.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/openintelligence-labs/actants/edit/main/docs_site/concepts/durability.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2655,178 +2731,272 @@
   
 
 
-<h1 id="config">Config<a class="headerlink" href="#config" title="Permanent link">&para;</a></h1>
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="actants.config.settings.AppSettings" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">AppSettings</span>
-
-
-<a href="#actants.config.settings.AppSettings" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><span title="pydantic_settings.BaseSettings">BaseSettings</span></code></p>
-
-
-
-        <p>Base class for app-level settings.</p>
-<p>Subclass and add your fields. Reads from environment variables, <code>.env</code> in CWD,
-and (optionally) <code>settings.toml</code> in the app config dir. Subclasses should set
-<code>app_name</code> and use it to derive paths.</p>
-<p>Example::</p>
-<div class="language-text highlight"><pre><span></span><code>class MySettings(AppSettings):
-    model_config = AppSettings.config_for(&quot;deepdive&quot;)
-    search_provider: str = &quot;ddg&quot;
-    max_results: int = 10
-
-s = MySettings()  # loads from env + .env
-</code></pre></div>
-
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="actants.config.settings.AppSettings.config_for" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">config_for</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
-  </span>
-
-<a href="#actants.config.settings.AppSettings.config_for" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">config_for</span><span class="p">(</span><span class="n">app_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">env_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SettingsConfigDict</span>
+<h1 id="durability">Durability<a class="headerlink" href="#durability" title="Permanent link">&para;</a></h1>
+<p>A long agent run has side effects. It charges a card, sends an email, files a ticket.
+If the process dies half way through, the two bad outcomes are losing the work and
+doing the work twice — and the second is usually worse.</p>
+<p>A <code>Checkpointer</code> plus a <code>thread_id</code> makes a run resumable. State is persisted after
+every LLM completion and after <em>each individual tool result</em>, so <code>resume()</code> can pick the
+run back up without paying for the completions again and without re-running the tools
+that already finished.</p>
+<p>Durability is opt-in per run. An <code>Agent</code> built without a <code>checkpointer</code>, or a <code>run()</code>
+called without a <code>thread_id</code>, touches no storage and behaves exactly as it did before
+any of this existed.</p>
+<h2 id="making-a-run-resumable">Making a run resumable<a class="headerlink" href="#making-a-run-resumable" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">LLM</span><span class="p">,</span> <span class="n">SqliteCheckpointer</span><span class="p">,</span> <span class="n">ToolRegistry</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">tools</span> <span class="o">=</span> <span class="n">ToolRegistry</span><span class="p">()</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">LLM</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.2&quot;</span><span class="p">),</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">checkpointer</span><span class="o">=</span><span class="n">SqliteCheckpointer</span><span class="p">(</span><span class="s2">&quot;runs.db&quot;</span><span class="p">),</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;book the flight&quot;</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="s2">&quot;job-42&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Build a SettingsConfigDict scoped to a named app.</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="actants.config.settings.AppSettings.load" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">load</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
-  </span>
-
-<a href="#actants.config.settings.AppSettings.load" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">load</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">env_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">overrides</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span>
+<p>If that process dies, a new one resumes the thread by reading the same file:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">LLM</span><span class="p">,</span> <span class="n">SqliteCheckpointer</span><span class="p">,</span> <span class="n">ToolRegistry</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">LLM</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.2&quot;</span><span class="p">),</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">tools</span><span class="o">=</span><span class="n">ToolRegistry</span><span class="p">(),</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">checkpointer</span><span class="o">=</span><span class="n">SqliteCheckpointer</span><span class="p">(</span><span class="s2">&quot;runs.db&quot;</span><span class="p">),</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">)</span>
 </span></code></pre></div>
+<p>Nothing is cached in the <code>SqliteCheckpointer</code> object, which is the point: the resuming
+process reads exactly what the crashed one committed to the file. <code>thread_id</code> without a
+checkpointer raises <code>ValueError</code>; a checkpointer with no <code>thread_id</code> simply persists
+nothing.</p>
+<h2 id="the-guarantee">The guarantee<a class="headerlink" href="#the-guarantee" title="Permanent link">&para;</a></h2>
+<p>This is the part worth reading carefully, because it is narrower than "exactly once" and
+saying otherwise would be a lie.</p>
+<p><strong>Resume is at-most-once for every tool call whose result was recorded before the crash.</strong>
+Those calls are replayed from the checkpoint and never dispatched again. A step with
+three tool calls that died after the second one comes back and dispatches only the third.</p>
+<p><strong>Resume is at-least-once for the single call that was in flight when the process died.</strong>
+That call is the irreducible ambiguity. actants wrote a checkpoint before dispatching it
+and would have written another once the result landed; the process died between the two.
+From the outside, "the request never left" and "the request was handled and the reply was
+lost" look identical, so there is nothing in the durable record that can distinguish
+them. No amount of checkpointing closes that gap — closing it requires the <em>tool's</em> side
+of the call to be idempotent, or to carry an idempotency key the vendor deduplicates on.</p>
+<p>So actants does not pretend to know. It applies the tool's own declaration:</p>
+<ul>
+<li><code>idempotent=True</code> (the default) — the call is re-dispatched. This is the at-least-once
+  half.</li>
+<li><code>idempotent=False</code> — the call is not re-dispatched. <code>resume()</code> raises
+  <code>UnresolvedToolCallError</code> instead, carrying the thread id and the <code>ToolCall</code>, so the
+  caller can decide.</li>
+<li><strong>A tool the resuming agent's registry does not have</strong> — renamed or removed since the
+  run started — is treated as <code>idempotent=False</code>. An unknown tool is precisely the case
+  where actants cannot establish that repeating it is safe, so it raises rather than
+  guessing.</li>
+</ul>
+<p>Exactly one call per thread is ever ambiguous. Everything before it is settled.</p>
+<p><strong>Concurrent <code>resume()</code> of one thread id is serialized within a process.</strong> Two <code>resume()</code>
+calls on one <code>Agent</code> for the same thread id queue on an in-process lock, so the
+read-decide-dispatch sequence cannot interleave: the second runs after the first has
+committed, sees a completed thread, and returns its stored result without dispatching
+anything. The at-most-once half of the guarantee therefore holds for them.</p>
+<p>This lock is per thread id, so unrelated threads still resume concurrently — and it is an
+<code>asyncio</code> lock in one process. <strong>Two <em>processes</em> resuming the same thread id concurrently
+remains undefined</strong>, exactly as before; no in-process lock can close that, and arranging
+that exclusion is still yours.</p>
+<h2 id="declaring-what-is-unsafe-to-repeat">Declaring what is unsafe to repeat<a class="headerlink" href="#declaring-what-is-unsafe-to-repeat" title="Permanent link">&para;</a></h2>
+<p><code>idempotent</code> defaults to <code>True</code> because most tools are reads, and that default is wrong
+for anything that writes. Set it explicitly on those:</p>
+<!-- docs-test: run -->
 
-    <div class="doc doc-contents ">
-
-        <p>Load settings, optionally from a specific env file. Overrides win.</p>
-
-
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="actants.config.paths.app_config_dir" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">app_config_dir</span>
-
-
-<a href="#actants.config.paths.app_config_dir" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">app_config_dir</span><span class="p">(</span><span class="n">app_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolRegistry</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">tools</span> <span class="o">=</span> <span class="n">ToolRegistry</span><span class="p">()</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">lookup_order</span><span class="p">(</span><span class="n">order_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;order </span><span class="si">{</span><span class="n">order_id</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">charge_card</span><span class="p">(</span><span class="n">order_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cents</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;charged </span><span class="si">{</span><span class="n">cents</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">tools</span><span class="o">.</span><span class="n">register_function</span><span class="p">(</span><span class="s2">&quot;lookup_order&quot;</span><span class="p">,</span> <span class="s2">&quot;Look an order up&quot;</span><span class="p">,</span> <span class="n">lookup_order</span><span class="p">)</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="n">tools</span><span class="o">.</span><span class="n">register_function</span><span class="p">(</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="s2">&quot;charge_card&quot;</span><span class="p">,</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="s2">&quot;Charge the card on file&quot;</span><span class="p">,</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">charge_card</span><span class="p">,</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="n">idempotent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="p">)</span>
 </span></code></pre></div>
-
-    <div class="doc doc-contents first">
-
-        <p>Per-user config directory for <code>app_name</code>.</p>
-<p>macOS: <code>~/Library/Application Support/&lt;app&gt;</code>
-Linux: <code>$XDG_CONFIG_HOME/&lt;app&gt;</code> or <code>~/.config/&lt;app&gt;</code>
-Windows: <code>%APPDATA%/&lt;app&gt;</code></p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="actants.config.paths.app_data_dir" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">app_data_dir</span>
-
-
-<a href="#actants.config.paths.app_data_dir" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">app_data_dir</span><span class="p">(</span><span class="n">app_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span>
+<h2 id="resolving-an-unresolved-call">Resolving an unresolved call<a class="headerlink" href="#resolving-an-unresolved-call" title="Permanent link">&para;</a></h2>
+<p>When <code>resume()</code> raises <code>UnresolvedToolCallError</code>, the call id in the exception is the same
+id the tool saw. If the vendor supports an idempotency key, or you keep an outbox, that
+id is what you look the call up by. Then resume again with a decision:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnresolvedToolCallError</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">try</span><span class="p">:</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">except</span> <span class="n">UnresolvedToolCallError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (id </span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">) may or may not have run&quot;</span><span class="p">)</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="c1"># Established it did not run:</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">,</span> <span class="n">resolve</span><span class="o">=</span><span class="s2">&quot;retry&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-
-    <div class="doc doc-contents first">
-
-        <p>Per-user data directory (databases, models, large state).</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="actants.config.paths.app_cache_dir" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">app_cache_dir</span>
-
-
-<a href="#actants.config.paths.app_cache_dir" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">app_cache_dir</span><span class="p">(</span><span class="n">app_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span>
+<p>The three resolutions:</p>
+<table>
+<thead>
+<tr>
+<th><code>resolve=</code></th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"abort"</code> (default)</td>
+<td>Raise <code>UnresolvedToolCallError</code>. No tool is dispatched.</td>
+</tr>
+<tr>
+<td><code>"retry"</code></td>
+<td>Dispatch the call anyway. Use once you have established it did not run.</td>
+</tr>
+<tr>
+<td><code>"skip"</code></td>
+<td>Record a tool result saying the call was not re-run and its outcome is unknown, then let the model continue.</td>
+</tr>
+</tbody>
+</table>
+<p><code>"skip"</code> writes an ordinary-looking failed tool result into the history rather than a
+special marker, so the model reacts to it the way it reacts to any tool error. That
+leaves the model working from an incomplete picture — it is the right choice when the
+call is unsafe to repeat and the run can proceed without it, not a way to make the
+ambiguity go away.</p>
+<p><code>resolve</code> applies only to an in-flight call. It is ignored otherwise.</p>
+<h2 id="interrupts-human-in-the-loop">Interrupts (human in the loop)<a class="headerlink" href="#interrupts-human-in-the-loop" title="Permanent link">&para;</a></h2>
+<p><code>interrupt_before</code> names tools the agent must not dispatch on its own. When the model
+asks for one, the run persists itself and stops in front of the call:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">LLM</span><span class="p">,</span> <span class="n">SqliteCheckpointer</span><span class="p">,</span> <span class="n">ToolRegistry</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">LLM</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.2&quot;</span><span class="p">),</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">tools</span><span class="o">=</span><span class="n">ToolRegistry</span><span class="p">(),</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">checkpointer</span><span class="o">=</span><span class="n">SqliteCheckpointer</span><span class="p">(</span><span class="s2">&quot;runs.db&quot;</span><span class="p">),</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">interrupt_before</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;send_email&quot;</span><span class="p">],</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">)</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;email the customer an apology&quot;</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="s2">&quot;job-7&quot;</span><span class="p">)</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">interrupted</span><span class="p">:</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;waiting on approval for </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">pending_call</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">pending_call</span><span class="o">.</span><span class="n">arguments</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 </span></code></pre></div>
+<p><code>result.final</code> holds the completion that <em>asked</em> for the call — the model's last word
+before it was paused. The turn is not committed to the agent's memory while it is paused,
+exactly as a failed turn is not.</p>
+<p>A decision resumes it:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">approved</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="s2">&quot;job-7&quot;</span><span class="p">,</span> <span class="n">approve</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># dispatch it and carry on</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">rejected</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="s2">&quot;job-7&quot;</span><span class="p">,</span> <span class="n">approve</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># record a refusal and carry on</span>
+</span></code></pre></div>
+<p><code>approve=False</code> appends a tool result saying a human rejected the call, so the model gets
+to respond to the refusal rather than the run dying. Any remaining calls in that step
+still run.</p>
+<p>Because the pending call lives in the checkpoint, the approval can come from a different
+process entirely — an HTTP handler, a Slack action, a cron job the next morning.
+Resuming an interrupted thread without passing <code>approve</code> raises <code>ValueError</code>: there is a
+decision to make and actants will not make it for you.</p>
+<p>Two details worth knowing:</p>
+<ul>
+<li>A guarded tool that comes around again in a later step pauses again. Approving once
+  does not disarm the guard for the rest of the run.</li>
+<li><code>interrupt_before</code> with no checkpointer and <code>thread_id</code> raises when the pause is
+  reached, because there would be nothing to resume from.</li>
+</ul>
+<h2 id="thread-states">Thread states<a class="headerlink" href="#thread-states" title="Permanent link">&para;</a></h2>
+<p>A checkpoint records where the run stood, and <code>resume()</code> behaves differently for each:</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th><code>resume()</code> does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>running</code></td>
+<td>Continues the run.</td>
+</tr>
+<tr>
+<td><code>interrupted</code></td>
+<td>Needs <code>approve=True</code> / <code>approve=False</code>; raises <code>ValueError</code> without one.</td>
+</tr>
+<tr>
+<td><code>completed</code></td>
+<td>Returns the stored result without re-running anything.</td>
+</tr>
+<tr>
+<td><code>failed</code></td>
+<td>Raises <code>RuntimeError</code> describing the original failure.</td>
+</tr>
+</tbody>
+</table>
+<p>An unknown <code>thread_id</code> raises <code>UnknownThreadError</code>, listing the threads the store does
+hold.</p>
+<p>A <code>failed</code> thread is deliberately not auto-resumable. The failure may have come from a
+torn turn, and a silent retry of an unknown failure is how a side effect gets repeated.
+Inspect it, and start a new run or delete the thread. Note that a run which dies before
+its first checkpoint leaves no thread at all — there is no state worth resuming.</p>
+<h2 id="checkpointer-implementations">Checkpointer implementations<a class="headerlink" href="#checkpointer-implementations" title="Permanent link">&para;</a></h2>
+<p><code>InMemoryCheckpointer</code> is process-local. It survives a failed <em>run</em>, not a dead
+<em>process</em>, which makes it right for tests and for approve/reject flows inside one
+process.</p>
+<p><code>SqliteCheckpointer</code> writes to a file and is what durability across a restart means.
+Each call opens its own connection, so the checkpointer instance holds no state and
+separate processes writing different thread ids coexist on WAL.</p>
+<!-- docs-test: run -->
 
-    <div class="doc doc-contents first">
-
-        <p>Per-user cache directory (regenerable artifacts).</p>
-
-
-    </div>
-
-</div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">actants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Checkpoint</span><span class="p">,</span> <span class="n">InMemoryCheckpointer</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">store</span> <span class="o">=</span> <span class="n">InMemoryCheckpointer</span><span class="p">()</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Checkpoint</span><span class="p">(</span><span class="n">thread_id</span><span class="o">=</span><span class="s2">&quot;job-42&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;running&quot;</span><span class="p">))</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">loaded</span> <span class="o">=</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">)</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="k">assert</span> <span class="n">loaded</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">loaded</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;running&quot;</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">assert</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">list_threads</span><span class="p">()</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;job-42&quot;</span><span class="p">]</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="k">assert</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;job-42&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
+</span></code></pre></div>
+<p><code>Checkpointer</code> is a runtime-checkable <code>Protocol</code> with four async methods — <code>put</code>, <code>get</code>,
+<code>list_threads</code>, <code>delete</code> — so a store backed by Redis, Postgres, or an object store is
+just a class implementing them. <code>put</code> must be a full overwrite of the thread's state, not
+an append: the agent always hands over the complete <code>Checkpoint</code>, and resume only ever
+reads the latest one.</p>
+<p>Concurrent access to <em>different</em> thread ids must be safe. Two writers on the <em>same</em>
+thread id is undefined, and actants does not lock a thread across processes — if two
+workers might resume the same thread, that exclusion is yours to arrange.</p>
+<h2 id="schema-versions">Schema versions<a class="headerlink" href="#schema-versions" title="Permanent link">&para;</a></h2>
+<p>A <code>SqliteCheckpointer</code> file records its schema version in <code>PRAGMA user_version</code>. Opening
+one written by an incompatible actants raises <code>CheckpointSchemaMismatch</code> rather than
+resetting the file.</p>
+<p>That is deliberately unlike the semantic cache, which is disposable and clears itself on
+a mismatch. These rows are the only record of which side effects have already run, so a
+misread checkpoint could re-run one that already happened. Finish or abandon those threads
+with the version that wrote them, then delete the file.</p>
+<h2 id="limits">Limits<a class="headerlink" href="#limits" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong><code>stream()</code> is not checkpointed.</strong> Only <code>run()</code> and <code>resume()</code> are. A streamed run has
+  no <code>thread_id</code> parameter.</li>
+<li><strong>Resume needs the same tools and the same agent shape.</strong> The checkpoint stores the
+  conversation, not your registry. Resuming with a tool renamed or removed will not end
+  well — if that tool was the in-flight call, resume raises <code>UnresolvedToolCallError</code>
+  rather than telling the model the side effect did not happen.</li>
+<li><strong>The at-least-once boundary is real.</strong> If a tool has an externally-visible side effect,
+  mark it <code>idempotent=False</code> and handle the resolution, or make the effect idempotent on
+  the tool's own side. Leaving the default on a <code>charge_card</code> is a decision to
+  double-charge on a crash.</li>
+</ul>
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../graph/">StateGraph</a> — the same guarantee at node granularity, for workflows that
+  branch and loop.</li>
+<li><a href="../agent/">Agent</a> — the run loop these checkpoints are taken from.</li>
+</ul>
 
 
 
@@ -2864,7 +3034,7 @@ Windows: <code>%APPDATA%/&lt;app&gt;</code></p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../cli/" class="md-footer__link md-footer__link--prev" aria-label="Previous: CLI helpers">
+          <a href="../react/" class="md-footer__link md-footer__link--prev" aria-label="Previous: ReAct loop">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2874,20 +3044,20 @@ Windows: <code>%APPDATA%/&lt;app&gt;</code></p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                CLI helpers
+                ReAct loop
               </div>
             </div>
           </a>
         
         
           
-          <a href="../testing/" class="md-footer__link md-footer__link--next" aria-label="Next: Testing">
+          <a href="../graph/" class="md-footer__link md-footer__link--next" aria-label="Next: StateGraph">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Testing
+                StateGraph
               </div>
             </div>
             <div class="md-footer__button md-icon">

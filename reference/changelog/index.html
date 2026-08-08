@@ -671,6 +671,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -843,6 +849,90 @@
     
   
     ReAct loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/durability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Durability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StateGraph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing agents
   
 
     
@@ -1592,6 +1682,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1661,6 +1755,62 @@
     
   
     Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/durability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Durability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StateGraph
   
 
     
@@ -2320,6 +2470,89 @@
 <p>This page mirrors the most recent releases for offline reading.</p>
 <h1 id="changelog_1">Changelog<a class="headerlink" href="#changelog_1" title="Permanent link">&para;</a></h1>
 <h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Durable execution for <code>Agent.run()</code>.</strong> <code>Agent(checkpointer=...)</code> plus
+  <code>run(prompt, thread_id=...)</code> persists the run's state after every LLM completion and
+  after <em>each individual tool result</em>; <code>agent.resume(thread_id)</code> continues it.</li>
+</ul>
+<p>The guarantee is deliberately narrow and stated rather than implied: resume is
+  <strong>at-most-once for every tool call whose result was recorded</strong>, and <strong>at-least-once for
+  the single call that was in flight when the process died</strong>. That one call is the
+  irreducible ambiguity — the process died before the tool could report — so actants
+  surfaces it instead of guessing. Tools registered <code>idempotent=False</code> are never
+  auto-replayed; they raise <code>UnresolvedToolCallError</code>, and the caller resumes with
+  <code>resolve="retry"</code> or <code>resolve="skip"</code>.</p>
+<ul>
+<li>
+<p><strong>Human-in-the-loop.</strong> <code>Agent(interrupt_before=["send_email"])</code> pauses the run before
+  those tools rather than dispatching them, returning an <code>AgentResult</code> with
+  <code>.interrupted</code> and <code>.pending_call</code>. <code>resume(thread_id, approve=True)</code> dispatches it;
+  <code>approve=False</code> appends a tool result recording the rejection, so the model responds to
+  the refusal instead of the run dying. The pending call lives in the checkpoint, so this
+  works across processes.</p>
+</li>
+<li>
+<p><code>Checkpointer</code> protocol with <code>InMemoryCheckpointer</code> and <code>SqliteCheckpointer</code>
+  implementations, plus <code>Checkpoint</code>, <code>StepRecord</code>, <code>CheckpointStatus</code>, and
+  <code>ResumeResolution</code>.</p>
+</li>
+<li>
+<p><code>Tool(idempotent=...)</code> / <code>register_function(..., idempotent=...)</code>. Defaults to <code>True</code>
+  because most tools are reads — which is the wrong default for anything that writes, and
+  the docs say so.</p>
+</li>
+<li>
+<p><code>CheckpointError</code>, <code>CheckpointSchemaMismatch</code>, <code>UnknownThreadError</code>, and
+  <code>UnresolvedToolCallError</code>, all under <code>ActantsError</code>.</p>
+</li>
+</ul>
+<p>Durability is opt-in per run: an <code>Agent</code> built without a <code>checkpointer</code>, or a <code>run()</code>
+called without a <code>thread_id</code>, behaves exactly as it did before and touches no storage.
+<code>stream()</code> is not yet checkpointed.</p>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>A graph node's completion is no longer lost when its router raises.</strong> <code>_next_of()</code>
+  ran between the node executing and the checkpoint, so a router returning an unmapped
+  key threw <em>after</em> the node's side effect had landed but <em>before</em> it was recorded —
+  and resume then ran that node a second time. Node completion is now checkpointed
+  before routing, and the routing decision separately, so a routing failure can never
+  un-record finished work. Resume re-runs only the router.</p>
+</li>
+<li>
+<p><strong>Concurrent <code>resume()</code> of one <code>thread_id</code> in one process no longer double-dispatches
+  a non-idempotent tool.</strong> The checkpointer's lock serialized individual <code>put()</code> calls
+  but not the read-decide-dispatch sequence, so two concurrent resumes both dispatched
+  the in-flight call. Resumes of a thread id now queue on a per-thread in-process lock.
+  Cross-<em>process</em> concurrency on one thread id remains undefined, as documented — no
+  in-process lock can close that.</p>
+</li>
+<li>
+<p><strong>A renamed or removed tool no longer discards the <code>idempotent=False</code> safety net.</strong>
+  <code>ToolRegistry.get</code> raises for a missing tool and the suppressed error left the
+  in-flight call marked idempotent, so instead of <code>UnresolvedToolCallError</code> the run
+  completed and told the model "Unknown tool" — i.e. that the side effect had <em>not</em>
+  happened, when it may well have. An unknown tool on the ambiguous in-flight call is
+  now treated as non-idempotent.</p>
+</li>
+<li>
+<p><strong>Strict-mode extraction no longer produces provider-valid output that pydantic
+  rejects.</strong> A field with a non-null default (<code>priority: int = 3</code>) is widened to
+  <code>["integer", "null"]</code> and marked required, because strict mode cannot express "may be
+  absent" — so a conforming provider could answer <code>null</code> and <code>extract()</code> would fail
+  after burning a repair. A <code>null</code> for a field the rewrite <em>made</em> nullable is now read
+  as the absence it stands for, and the field's default applies. Fields genuinely
+  declared <code>X | None</code> keep <code>null</code> as a real value.</p>
+</li>
+<li>
+<p><strong><code>merge_update</code> no longer shares mutable containers with the state it copied.</strong>
+  <code>model_copy(update=...)</code> is shallow, so <code>s1.items is s2.items</code> — two runs seeded from
+  one state object corrupted each other, and in-place node mutations reached another
+  run's state. The merged state is now independent, and <code>invoke()</code> deep-copies the state
+  it is given, so one seed object can start several concurrent runs.</p>
+</li>
+</ul>
 <h2 id="100-2026-08-06">[1.0.0] - 2026-08-06<a class="headerlink" href="#100-2026-08-06" title="Permanent link">&para;</a></h2>
 <p><strong>The API is now stable.</strong> See the
 <a href="https://actants.openintelligence-labs.org/reference/stability/">stability policy</a> for
@@ -2349,7 +2582,7 @@ unknown-cost reporting</strong> — an unpriced model now surfaces in
 contributing $0.00 to a total that looked authoritative — a <strong>published benchmark</strong>
 with full methodology and reproduction commands, and documentation whose every code
 block is executed as a test.</p>
-<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>tag</code> on every path that spends money.</strong> <code>LLM.stream</code>, <code>LLM.stream_events</code>,
   <code>LLM.extract</code>, <code>LLM.extract_stream</code>, and <code>LLM.run_agent_stream</code> now accept <code>tag</code>,
@@ -2461,7 +2694,7 @@ the freeze, all of it released here for the first time.</p>
   re-exports the identical class objects, so existing imports and <code>except</code> clauses are
   unaffected.</li>
 </ul>
-<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
+<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Provider-specific parameters pass through and reach the cache key.</strong> <code>complete</code>,
   <code>stream</code>, and <code>stream_events</code> accept arbitrary keyword arguments — <code>seed</code>, <code>top_p</code>,
@@ -2489,7 +2722,7 @@ the freeze, all of it released here for the first time.</p>
   the errors had no documentation at all.</p>
 </li>
 </ul>
-<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
 <p><strong><code>FallbackProvider</code> capability flags are derived from the chain on every access.</strong>
@@ -2531,7 +2764,7 @@ the freeze, all of it released here for the first time.</p>
   runs queue on a lock and each sees every turn committed before it.</p>
 </li>
 </ul>
-<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_2">Fixed<a class="headerlink" href="#fixed_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>LLM</code> now checks <code>supports_tool_calls</code> / <code>supports_streaming_tools</code> before sending
   tools to a provider. Tools passed to a provider that cannot use them were silently
@@ -2560,7 +2793,7 @@ the freeze, all of it released here for the first time.</p>
   reachable from the mkdocs nav.</li>
 </ul>
 <h2 id="053-2026-07-29">[0.5.3] - 2026-07-29<a class="headerlink" href="#053-2026-07-29" title="Permanent link">&para;</a></h2>
-<h3 id="fixed_2">Fixed<a class="headerlink" href="#fixed_2" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_3">Fixed<a class="headerlink" href="#fixed_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Pinned <code>mcp&gt;=1.0,&lt;2</code> in the <code>mcp</code>, <code>all</code>, and <code>dev</code> extras. The MCP Python
   SDK 2.0.0 removed <code>mcp.server.fastmcp</code> (used by <code>actants.mcp.serve</code> /
@@ -2677,7 +2910,7 @@ See 0.5.2.)</p>
 <li><code>[all]</code> extra now includes <code>[cli]</code> deps.</li>
 </ul>
 <h2 id="030-unreleased">[0.3.0] - unreleased<a class="headerlink" href="#030-unreleased" title="Permanent link">&para;</a></h2>
-<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
+<h3 id="added_3">Added<a class="headerlink" href="#added_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Streaming with tool calls.</strong> <code>provider.stream_events()</code> + <code>LLM.stream_events()</code> yield typed <code>TextDelta</code> / <code>ToolCallDelta</code> / <code>UsageDelta</code> / <code>FinishDelta</code> events. <code>LLM.run_agent_stream()</code> streams a full agent loop.</li>
 <li><strong>Partial-JSON streaming.</strong> <code>LLM.extract_stream(prompt, PydanticModel)</code> yields progressively-complete pydantic instances as JSON arrives. Forgiving parser tolerates truncated output.</li>
@@ -2692,7 +2925,7 @@ See 0.5.2.)</p>
 <li><code>BaseLLMProvider</code> gained <code>stream_events()</code> (default wraps <code>stream()</code>) and <code>supports_streaming_tools</code> flag.</li>
 </ul>
 <h2 id="020">[0.2.0]<a class="headerlink" href="#020" title="Permanent link">&para;</a></h2>
-<h3 id="added_3">Added<a class="headerlink" href="#added_3" title="Permanent link">&para;</a></h3>
+<h3 id="added_4">Added<a class="headerlink" href="#added_4" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>LLM.run_agent()</code> — tool-calling agent loop across Ollama / OpenAI / Anthropic.</li>
 <li><code>LLM.extract()</code> — structured output into any pydantic model with self-repair.</li>
@@ -2713,7 +2946,7 @@ See 0.5.2.)</p>
 <li><code>BaseLLMProvider.complete</code> gained a <code>tools</code> parameter; providers declare <code>supports_tool_calls</code>.</li>
 </ul>
 <h2 id="010">[0.1.0]<a class="headerlink" href="#010" title="Permanent link">&para;</a></h2>
-<h3 id="added_4">Added<a class="headerlink" href="#added_4" title="Permanent link">&para;</a></h3>
+<h3 id="added_5">Added<a class="headerlink" href="#added_5" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Initial release</li>
 <li><code>OllamaProvider</code> with chat, streaming, and health check</li>

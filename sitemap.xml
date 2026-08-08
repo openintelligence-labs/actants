@@ -2,178 +2,198 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://actants.openintelligence-labs.org/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/configuration/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/installation/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/quickstart/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/a2a/client/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/a2a/server/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/a2a/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/agent/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/cache/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/cli/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/config/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/cost-policies/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
+    </url>
+    <url>
+         <loc>https://actants.openintelligence-labs.org/api/durability/</loc>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/embeddings/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/errors/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
+    </url>
+    <url>
+         <loc>https://actants.openintelligence-labs.org/api/graph/</loc>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/llm/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/mcp/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/storage/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/testing/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/tools/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/api/tracing/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/concepts/agent/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
+    </url>
+    <url>
+         <loc>https://actants.openintelligence-labs.org/concepts/durability/</loc>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/concepts/embeddings/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
+    </url>
+    <url>
+         <loc>https://actants.openintelligence-labs.org/concepts/graph/</loc>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/concepts/llm/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/concepts/observability/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/concepts/react/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/concepts/storage/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/concepts/streaming/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
+    </url>
+    <url>
+         <loc>https://actants.openintelligence-labs.org/concepts/testing/</loc>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/concepts/tools/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/cookbook/a2a-pair/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/cookbook/cli-app/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/cookbook/embeddings/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/cookbook/mcp-tools/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/cookbook/research-agent/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/mcp/client/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/mcp/server/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/migration/crewai/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/migration/langchain/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/migration/pydantic-ai/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/reference/changelog/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/reference/differentiation/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/reference/faq/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/reference/otel/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
     <url>
          <loc>https://actants.openintelligence-labs.org/reference/stability/</loc>
-         <lastmod>2026-08-07</lastmod>
+         <lastmod>2026-08-08</lastmod>
     </url>
 </urlset>
